@@ -1,18 +1,23 @@
 from models import db
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import validates
-from sqlalchemy.orm import SerializerMixin
-
+from sqlalchemy_serializer import SerializerMixin
+from sqlalchemy import DateTime
 class Entry(db.Model, SerializerMixin):
     __tablename__ = 'entries'
-    id = db.Column(db.integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, unique=True, nullable=False, )
     main_text = db.Column(db.String, unique=True, nullable=False)
-    created_at = db.Column(db.datetime)
-    updated_at = db.Column(db.datetime)
+    created_at = db.Column(db.DateTime)
+    updated_at = db.Column(db.DateTime)
     journal_id = db.Column(db.Integer, db.ForeignKey('journals.id'), nullable=False)
     ai_prompt_used = db.Column(db.Boolean)
-
+    #! Relationships
+    journal = db.relationship("Journal", back_populates="entries")
+    moods = db.relationship("Mood", secondary="entry_moods", back_populates="entries")
+    #!Serializer
+    serialize_rules = ('-journal', 'moods')
+    #! Validations
     #! make sure title isnt empty
     @validates("title")
     def validate_title(self, key, value):

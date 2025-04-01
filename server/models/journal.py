@@ -2,7 +2,7 @@
 from models import db
 from datetime import datetime
 from sqlalchemy.orm import validates
-from sqlalchemy.orm import SerializerMixin
+from sqlalchemy_serializer import SerializerMixin
 
 class Journal(db.Model,SerializerMixin):
     __tablename__ = 'journals'
@@ -12,6 +12,14 @@ class Journal(db.Model,SerializerMixin):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     color = db.Column(db.String(7), nullable=False, default="#ffffff") #! store hex color code
 
+    #! Relationships
+    user = db.relationship("User", back_populates="journals")
+    entries = db.relationship("Entry", back_populates="journal", cascade="all, delete-orphan")
+    
+    #! Serializer
+    serialize_rules = ('-user', 'entries')
+
+    #! Validations 
     @validates("name")
     def validate_name(self, key, value):
         if not value or len(value.strip()) == 0:

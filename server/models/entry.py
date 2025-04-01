@@ -4,6 +4,7 @@ from sqlalchemy.orm import validates
 from sqlalchemy.orm import SerializerMixin
 
 class Entry(db.Model, SerializerMixin):
+    __tablename__ = 'entries'
     id = db.Column(db.integer, primary_key=True)
     title = db.Column(db.String, unique=True, nullable=False, )
     main_text = db.Column(db.String, unique=True, nullable=False)

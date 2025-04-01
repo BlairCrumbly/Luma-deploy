@@ -1,7 +1,6 @@
 import re
 from models import db
 from config import bcrypt
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import validates
 from better_profanity import profanity
 
@@ -33,7 +32,7 @@ class User(db.Model):
     @validates('username')
     def validate_username(self,key,username):
         username_lower = username.lower()
-        
+
         #! checks for offensive words and profanity
         if profanity.contains_profanity(username_lower):
             raise ValueError("Username contains inappropriate content")

@@ -5,6 +5,7 @@ from sqlalchemy.orm import validates
 from sqlalchemy.orm import SerializerMixin
 
 class Journal(db.Model,SerializerMixin):
+    __tablename__ = 'journals'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(30), unique=True, nullable=False)
     year = db.Column(db.Integer, unique=False, nullable=False)

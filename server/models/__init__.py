@@ -1,5 +1,4 @@
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import DateTime
+
 from config import db
 from .user import User
 from .mood import Mood

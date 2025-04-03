@@ -24,6 +24,10 @@ class EntryResource(Resource):
         except Exception as e:
             return {"error": f"An error occurred while fetching entries: {str(e)}"}, 500
         
-        
+    @jwt_required()
     def post(self):
+        try:
+            pass
+        except Exception as e:
+            pass 
 

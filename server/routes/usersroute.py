@@ -7,6 +7,8 @@ from flask import make_response
 from sqlalchemy.exc import IntegrityError
 import secrets
 import re
+import requests
+
 
 class Signup(Resource):
     def post (self):
@@ -66,9 +68,33 @@ class Login(Resource):
 class Logout(Resource):
     @jwt_required()
     def delete(self):
-        response = make_response('', 204)
-        unset_jwt_cookies(response)
-        return response
+        try:
+            # Get the current user ID from JWT identity
+            current_user_id = get_jwt_identity()
+            user = User.query.get(current_user_id)
+
+            # If a Google token exists, revoke it
+            if user and user.google_token:
+                revoke_url = f'https://oauth2.googleapis.com/revoke?token={user.google_token}'
+                response = requests.post(revoke_url)
+
+                if response.status_code == 200:
+                    print("Google token revoked successfully.")
+                else:
+                    print(f"Failed to revoke Google token: {response.text}")
+
+            # Prepare response and unset JWT cookies
+            response = make_response('', 204)
+            unset_jwt_cookies(response)
+
+            # Clear session or any additional user-related data here
+            # (if you use session-based storage for other info)
+            session.clear()
+
+            return response
+
+        except Exception as e:
+            return {"error": f"Error during logout: {str(e)}"}, 500
 
 #! redirect user to googles oauth page
 class GoogleLogin(Resource):
@@ -111,6 +137,9 @@ class GoogleAuthorize(Resource):
                     user.google_id = google_id
                     db.session.commit()
 
+            user.set_google_token(token["access_token"])
+            db.session.commit()
+
             access_token = create_access_token(identity=user.id)
             response = make_response(user.to_dict(), 200)
             set_access_cookies(response, access_token)
@@ -118,9 +147,6 @@ class GoogleAuthorize(Resource):
             return response
         except Exception as e:
             return {"error": str(e)}, 500
-
-
-
 
 class UserProfile(Resource):
     @jwt_required()
@@ -130,4 +156,23 @@ class UserProfile(Resource):
         return user.to_dict(), 200
 
 
-
+class DeleteUser(Resource):
+    @jwt_required()
+    def delete(self):
+        try:
+            current_user_id = get_jwt_identity()
+            user = User.query.get_or_404(current_user_id)
+            
+            # Optional: Delete related journals if necessary
+            # for journal in user.journals:
+            #     db.session.delete(journal)
+            
+            db.session.delete(user)
+            db.session.commit()
+            
+            response = make_response({"message": "User account deleted successfully"}, 200)
+            unset_jwt_cookies(response)
+            return response
+        
+        except Exception as e:
+            return {"error": f"Error deleting user: {str(e)}"}, 500

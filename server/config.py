@@ -41,15 +41,10 @@ app.config["JWT_SECRET_KEY"] = os.getenv('JWT_SECRET_KEY')
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=24)
 
 db = SQLAlchemy(app=app, metadata=metadata)
-
 jwt = JWTManager(app)
-
 migrate = Migrate(app=app, db=db)
-
 bcrypt = Bcrypt(app=app)
-
 api = Api(app=app)
-
 CORS(app)
 
 oauth = OAuth(app)

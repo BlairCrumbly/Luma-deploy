@@ -15,7 +15,7 @@ class JournalsResource(Resource):
             
             return [journal.to_dict() for journal in journals], 200
         except Exception as e:
-            return {'error:' f'An error occurred while fetching journals: {str(e)}', 500}
+            return {'error:' f'An error occurred while fetching journals: {str(e)}'}, 500
         
     @jwt_required()
     def post(self):

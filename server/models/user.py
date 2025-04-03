@@ -11,7 +11,10 @@ class User(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String, unique=True,index=True, nullable=False)
-    password_hash = db.Column(db.String(128), nullable=False)
+    password_hash = db.Column(db.String(128), nullable=True) #* for google users :D
+    google_id = db.Column(db.String, unique=True, nullable=True)
+    #* store google user id
+
 
 
     #! Relationships
@@ -19,7 +22,7 @@ class User(db.Model, SerializerMixin):
 
 
     #! Serializer
-    serialize_rules = ('-password_hash', 'journals')
+    serialize_rules = ('-password_hash', '-google_id','journals')
 
 
     #! Validations
@@ -34,29 +37,25 @@ class User(db.Model, SerializerMixin):
     def validate_username(self, key, username):
         username_lower = username.lower()
 
+        sanitized_username = re.sub(r"[^a-zA-Z0-9_.]", "", username_lower)
 
-       
-        if profanity.contains_profanity(username_lower):
+        if not sanitized_username:
+            raise ValueError("Username contains invalid characters") #! check not empty
+
+        if profanity.contains_profanity(sanitized_username):
             raise ValueError("Username contains inappropriate content")
-       
-       
-        if not re.match(r"^[a-zA-Z0-9_.]+$", username):
-            raise ValueError("Username contains invalid characters")
-       
-        return username
+
+        return sanitized_username
+
    
-    @validates('password')
+    @validates('password_hash')
     def validate_password(self, key, password):
-       
-        if len(password) < 8:
+        if password and len(password) < 8:
             raise ValueError("Password must be at least 8 characters long.")
-       
-        if not re.search(r"\d", password):
+        if password and not re.search(r"\d", password):
             raise ValueError("Password must contain at least one number")
-       
-        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
+        if password and not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
             raise ValueError("Password must contain at least one special character")
-       
         return password  
 
 

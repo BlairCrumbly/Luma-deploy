@@ -1,11 +1,12 @@
-from flask import request, jsonify
+from flask import request, redirect, url_for, session
 from flask_restful import Resource
-from config import app, db, api
+from config import app, db, api, google
 from models import User
 from flask_jwt_extended import create_access_token, set_access_cookies, jwt_required, get_jwt_identity, unset_jwt_cookies
 from flask import make_response
 from sqlalchemy.exc import IntegrityError
-
+import secrets
+import re
 
 class Signup(Resource):
     def post (self):
@@ -69,6 +70,58 @@ class Logout(Resource):
         unset_jwt_cookies(response)
         return response
 
+#! redirect user to googles oauth page
+class GoogleLogin(Resource):
+    def get(self):
+        nonce = secrets.token_urlsafe(32)  # Generate a secure nonce
+        state = secrets.token_urlsafe(32)  # Generate a secure state
+
+        session['nonce'] = nonce  # Store nonce in session
+        session['state'] = state  # Store state in session
+        session.modified = True  # Ensure session is saved
+
+        return google.authorize_redirect(
+            url_for("googleauthorize", _external=True),
+            state=state,  # Pass state for CSRF protection
+            nonce=nonce   # Explicitly pass nonce
+        )
+
+
+class GoogleAuthorize(Resource):
+    def get(self):
+        try:
+            token = google.authorize_access_token()  # Get access token from Google
+            user_info = google.parse_id_token(token, nonce=session['nonce'])  # Ensure nonce is passed
+            if not user_info:
+                return {"error": "Failed to fetch user info"}, 400
+            
+            email = user_info["email"]
+            username = user_info.get("name", email.split("@")[0])  # Use name or part of email
+            google_id = user_info.get("sub")  # Google ID is typically in the 'sub' field
+            
+            user = User.query.filter_by(email=email).first()
+            
+            if not user:
+                user = User(username=username, email=email, google_id=google_id)  # Store google_id
+                db.session.add(user)
+                db.session.commit()
+            else:
+                # Update the google_id if it's not set yet
+                if not user.google_id:
+                    user.google_id = google_id
+                    db.session.commit()
+
+            access_token = create_access_token(identity=user.id)
+            response = make_response(user.to_dict(), 200)
+            set_access_cookies(response, access_token)
+
+            return response
+        except Exception as e:
+            return {"error": str(e)}, 500
+
+
+
+
 class UserProfile(Resource):
     @jwt_required()
     def get(self):
@@ -77,8 +130,4 @@ class UserProfile(Resource):
         return user.to_dict(), 200
 
 
-api.add_resource(Signup, '/signup')
-api.add_resource(Login, '/login')
-api.add_resource(Logout, '/logout')
-api.add_resource(UserProfile, '/user/profile')
 

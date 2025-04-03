@@ -6,7 +6,7 @@ from flask_bcrypt import Bcrypt
 from flask_restful import Api
 from flask_cors import CORS
 from dotenv import load_dotenv
-
+from authlib.integrations.flask_client import OAuth
 
 import os
 from datetime import timedelta
@@ -39,20 +39,27 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
 app.config["JWT_SECRET_KEY"] = os.getenv('JWT_SECRET_KEY')
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=24)
-jwt = JWTManager(app)
+
 db = SQLAlchemy(app=app, metadata=metadata)
 
+jwt = JWTManager(app)
 
 migrate = Migrate(app=app, db=db)
 
-
 bcrypt = Bcrypt(app=app)
-
 
 api = Api(app=app)
 
-
 CORS(app)
 
+oauth = OAuth(app)
+google = oauth.register(
+    name='google',
+    client_id=os.getenv("CLIENT_ID"),
+    client_secret=os.getenv("CLIENT_SECRET"),
+    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+    redirect_uri="http://localhost:5555/authorize", 
+    client_kwargs={"scope": "openid email profile"}
+)
 
 

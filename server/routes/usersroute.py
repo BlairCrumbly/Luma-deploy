@@ -73,40 +73,40 @@ class Logout(Resource):
 #! redirect user to googles oauth page
 class GoogleLogin(Resource):
     def get(self):
-        nonce = secrets.token_urlsafe(32)  # Generate a secure nonce
-        state = secrets.token_urlsafe(32)  # Generate a secure state
+        nonce = secrets.token_urlsafe(32)
+        state = secrets.token_urlsafe(32)
 
-        session['nonce'] = nonce  # Store nonce in session
-        session['state'] = state  # Store state in session
-        session.modified = True  # Ensure session is saved
+        session['nonce'] = nonce
+        session['state'] = state
+        session.modified = True
 
         return google.authorize_redirect(
             url_for("googleauthorize", _external=True),
-            state=state,  # Pass state for CSRF protection
-            nonce=nonce   # Explicitly pass nonce
+            state=state,  #! Pass state for CSRF protection
+            nonce=nonce   #! Explicitly pass nonce
         )
 
 
 class GoogleAuthorize(Resource):
     def get(self):
         try:
-            token = google.authorize_access_token()  # Get access token from Google
-            user_info = google.parse_id_token(token, nonce=session['nonce'])  # Ensure nonce is passed
+            token = google.authorize_access_token() 
+            user_info = google.parse_id_token(token, nonce=session['nonce'])  
             if not user_info:
                 return {"error": "Failed to fetch user info"}, 400
             
             email = user_info["email"]
-            username = user_info.get("name", email.split("@")[0])  # Use name or part of email
-            google_id = user_info.get("sub")  # Google ID is typically in the 'sub' field
+            username = user_info.get("name", email.split("@")[0])  #! Use name or part of email
+            google_id = user_info.get("sub")  #! Google ID is typically in the 'sub' field, look into
             
             user = User.query.filter_by(email=email).first()
             
             if not user:
-                user = User(username=username, email=email, google_id=google_id)  # Store google_id
+                user = User(username=username, email=email, google_id=google_id)
                 db.session.add(user)
                 db.session.commit()
             else:
-                # Update the google_id if it's not set yet
+                #! Update the google_id if it's not set yet
                 if not user.google_id:
                     user.google_id = google_id
                     db.session.commit()

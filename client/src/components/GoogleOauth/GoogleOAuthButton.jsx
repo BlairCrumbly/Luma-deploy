@@ -2,17 +2,18 @@
 import React from "react";
 import "./GoogleOAuthButton.css";
 
-const GoogleOAuthButton = () => {
+
+function GoogleOAuthButton() {
   const handleGoogleLogin = () => {
-    // Redirect to your backend's Google login route (using proxy)
-    window.location.href = "/api/login/google";
+    // Here, you would typically initiate OAuth login via Google
+    console.log("Google OAuth Login");
   };
 
   return (
     <button onClick={handleGoogleLogin} className="google-oauth-btn">
-      Sign up with Google
+      Sign In with Google
     </button>
   );
-};
+}
 
 export default GoogleOAuthButton;

@@ -1,1 +1,1 @@
-//for api requests 
+//API request functions (fetch wrapper)

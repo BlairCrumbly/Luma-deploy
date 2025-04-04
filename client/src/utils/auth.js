@@ -1,1 +1,1 @@
-//handles requests to back end for auth :D
+//Helpers for tokens, user info, etc.

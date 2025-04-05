@@ -1,19 +1,17 @@
-// /src/components/GoogleOAuth/GoogleOAuthButton.js
-import React from "react";
-import "./GoogleOAuthButton.css";
+// GoogleOAuthButton.js
+import React from 'react';
 
-
-function GoogleOAuthButton() {
+const GoogleOAuthButton = () => {
   const handleGoogleLogin = () => {
-    // Here, you would typically initiate OAuth login via Google
-    console.log("Google OAuth Login");
+    // Adjust the URL and port as needed for your backend
+    window.location.href = '/login/google';
   };
 
   return (
-    <button onClick={handleGoogleLogin} className="google-oauth-btn">
-      Sign In with Google
+    <button onClick={handleGoogleLogin}>
+      Continue with Google
     </button>
   );
-}
+};
 
 export default GoogleOAuthButton;

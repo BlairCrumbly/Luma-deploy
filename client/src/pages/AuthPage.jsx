@@ -1,102 +1,64 @@
-//Shows AuthForm with toggle
-// /src/pages/AuthPage.js
-import React, { useState } from "react";
-import AuthForm from "../components/Auth/AuthForm";
-import GoogleOAuthButton from '../components/GoogleOauth/GoogleOAuthButton';
-import "../pages/AuthPage.css";
+// AuthPage.jsx
+import { useState } from 'react';
+import { useFormik } from "formik";
+import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
- // To navigate after successful login/signup
+import { login, signup } from "../services/api";
+import AuthForm from '../components/Auth/AuthForm';
+import GoogleOAuthButton from '../components/GoogleOauth/GoogleOAuthButton';
+import './AuthPage.css';
+import { useContext } from 'react';
+import { AuthContext } from '../components/contexts/AuthContext';
+import Dashboard from '../components/Dashboard/Dashboard';
+ 
 
-function AuthPage() {
-  const [isSignup, setIsSignup] = useState(true); // Track if the form is for signup or login
-  const [formData, setFormData] = useState({
-    email: "",
-    username: "",
-    password: ""
+export default function AuthPage() {
+  const { login: loginContext } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const [isSignup, setIsSignup] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const validationSchema = Yup.object({
+    username: Yup.string().required("Username is required"),
+    email: isSignup ? Yup.string().email("Invalid email").required("Email is required") : Yup.string(),
+    password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
   });
 
-  const navigate = useNavigate();
+  const formik = useFormik({
+    initialValues: { username: "", email: "", password: "" },
+    validationSchema,
+    onSubmit: async (values) => {
+      try {
+        const data = isSignup ? await signup(values) : await login(values);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevState) => ({
-      ...prevState,
-      [name]: value
-    }));
-  };
-
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
-    // Call API to handle signup or login here
-    if (isSignup) {
-      console.log("Signing up with", formData);
-      // For now, mock success and navigate to homepage
-      navigate("/");
-    } else {
-      console.log("Logging in with", formData);
-      // For now, mock success and navigate to homepage
-      navigate("/");
-    }
-  };
-
-  const toggleForm = () => {
-    setIsSignup((prev) => !prev); // Toggle between signup and login
-  };
+        if (data.id) {
+          loginContext(data);
+          navigate("/dashboard");
+        } else {
+          setMessage(data.message || "Something went wrong");
+        }
+      } catch (error) {
+        setMessage("Error connecting to server");
+      }
+    },
+  });
 
   return (
-    <div className="auth-page">
-      <div className="auth-form-container">
-        <h1>{isSignup ? "Sign Up" : "Log In"}</h1>
-
-        <form onSubmit={handleFormSubmit}>
-          <div>
-            <input
-              type="email"
-              name="email"
-              placeholder="Email"
-              value={formData.email}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-
-          {isSignup && (
-            <div>
-              <input
-                type="text"
-                name="username"
-                placeholder="Username"
-                value={formData.username}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-          )}
-
-          <div>
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-
-          <button type="submit">{isSignup ? "Sign Up" : "Log In"}</button>
-        </form>
-
-        <div className="toggle">
-          <span onClick={toggleForm}>
-            {isSignup ? "Already have an account? Log In" : "Don't have an account? Sign Up"}
-          </span>
-        </div>
-
-        <GoogleOAuthButton /> {/* Google OAuth Button */}
+    <div className="auth-container">
+      <div className="auth-card">
+        <h1>Taskr</h1>
+        <h2>{isSignup ? "Sign up" : "Login"}</h2>
+        <AuthForm isLogin={!isSignup} />
+        <p>OR</p>
+        <GoogleOAuthButton />
+        <p>
+          {isSignup ? "Already have an account? " : "Don't have an account? "}
+          <button className="toggle-btn" onClick={() => setIsSignup(!isSignup)}>
+            {isSignup ? "Login here" : "Signup here"}
+          </button>
+        </p>
+        {message && <p className="message-text">{message}</p>}
       </div>
     </div>
   );
 }
-
-export default AuthPage;

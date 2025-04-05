@@ -45,7 +45,7 @@ jwt = JWTManager(app)
 migrate = Migrate(app=app, db=db)
 bcrypt = Bcrypt(app=app)
 api = Api(app=app)
-CORS(app)
+CORS(app, supports_credentials=True)
 
 oauth = OAuth(app)
 google = oauth.register(
@@ -56,5 +56,4 @@ google = oauth.register(
     redirect_uri="http://localhost:5555/authorize", 
     client_kwargs={"scope": "openid email profile"}
 )
-
 

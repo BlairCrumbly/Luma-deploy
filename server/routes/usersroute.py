@@ -99,25 +99,45 @@ class Logout(Resource):
 #! redirect user to googles oauth page
 class GoogleLogin(Resource):
     def get(self):
-        nonce = secrets.token_urlsafe(32)
-        state = secrets.token_urlsafe(32)
+        try:
+            # Get state from frontend or generate new
+            frontend_state = request.args.get('state')
+            state = frontend_state or secrets.token_urlsafe(32)
+            nonce = secrets.token_urlsafe(32)
 
-        session['nonce'] = nonce
-        session['state'] = state
-        session.modified = True
-
-        return google.authorize_redirect(
-            url_for("googleauthorize", _external=True),
-            state=state,  #! Pass state for CSRF protection
-            nonce=nonce   #! Explicitly pass nonce
-        )
+            # Store in server-side session
+            session['nonce'] = nonce
+            session['state'] = state
+            session.modified = True  # Force session save
+            
+            # Verify session storage
+            print(f"Stored session state: {session['state']}")  # Debug
+            
+            return google.authorize_redirect(
+                url_for("googleauthorize", _external=True),
+                state=state,
+                nonce=nonce
+            )
+        except Exception as e:
+            return {"error": str(e)}, 500
 
 
 class GoogleAuthorize(Resource):
     def get(self):
         try:
-            token = google.authorize_access_token() 
-            user_info = google.parse_id_token(token, nonce=session['nonce'])  
+            # Get and validate state
+            returned_state = request.args.get('state')
+            stored_state = session.get('state')
+            
+            print(f"Comparing states - Stored: {stored_state}, Received: {returned_state}")  # Debug
+            
+            if not returned_state or returned_state != stored_state:
+                return {"error": "Invalid state parameter"}, 400
+            
+            # Continue with token handling
+            token = google.authorize_access_token()
+            user_info = google.parse_id_token(token, nonce=session['nonce']) 
+            #! Use nonce to verify the token 
             if not user_info:
                 return {"error": "Failed to fetch user info"}, 400
             
@@ -140,13 +160,20 @@ class GoogleAuthorize(Resource):
             user.set_google_token(token["access_token"])
             db.session.commit()
 
+
             access_token = create_access_token(identity=user.id)
             response = make_response(user.to_dict(), 200)
             set_access_cookies(response, access_token)
-
+            session.pop('state', None)
+            session.pop('nonce', None)
+            session.modified = True  # Force session save
+            #! Clear session data after use
             return response
         except Exception as e:
             return {"error": str(e)}, 500
+
+
+
 
 class UserProfile(Resource):
     @jwt_required()

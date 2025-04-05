@@ -1,110 +1,114 @@
-// toggle login/signup
-// /src/components/Auth/AuthForm.js
-import React, { useState } from "react";
-import { useFormik } from "formik";
-import * as Yup from "yup";
-import GoogleOAuthButton from "../GoogleOauth/GoogleOAuthButton";
-import "./AuthForm.css";
+// AuthForm.js
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const AuthForm = ({ isLogin }) => {
-  const [error, setError] = useState("");
+  const { login } = useAuth();  // Access the `login` function from AuthContext
+  const navigate = useNavigate();
 
-  // Define validation schema
   const validationSchema = Yup.object({
-    email: !isLogin
-      ? Yup.string().email("Invalid email").required("Email is required")
-      : Yup.string(), // not used for login
-    username: Yup.string().required("Username is required"),
-    password: Yup.string().required("Password is required"),
+    username: Yup.string()
+      .required('Username is required')
+      .matches(/^[a-zA-Z0-9_.]+$/, 'Invalid characters in username'),
+    password: Yup.string()
+      .required('Password is required')
+      .min(8, 'Password must be at least 8 characters'),
+    ...(!isLogin && {
+      email: Yup.string()
+        .email('Invalid email address')
+        .required('Email is required')
+    })
   });
 
   const formik = useFormik({
     initialValues: {
-      email: "",
-      username: "",
-      password: "",
+      username: '',
+      email: '',
+      password: ''
     },
-    validationSchema: validationSchema,
-    onSubmit: async (values, { setSubmitting }) => {
+    validationSchema,
+    onSubmit: async (values, { setSubmitting, setErrors }) => {
       try {
-        const endpoint = isLogin ? "/api/login" : "/api/signup";
+        const endpoint = isLogin ? '/api/login' : '/api/signup';
+        const body = isLogin ? {
+          username: values.username,
+          password: values.password
+        } : values;
+
         const response = await fetch(endpoint, {
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
-          credentials: "include", // to send cookies
-          body: JSON.stringify(values),
+          body: JSON.stringify(body),
+          credentials: 'include'
         });
-        const data = await response.json();
+
+        const data = await response.json(); // This is where the data (user) comes from
 
         if (!response.ok) {
-          setError(data.error || "An error occurred");
-        } else {
-          // Successful login/signup
-          // Redirect to dashboard, or update your auth context, etc.
-          window.location.href = "/dashboard"; // For example
+          throw new Error(data.error || 'Something went wrong');
         }
-      } catch (err) {
-        setError("An error occurred. Please try again.");
+
+        // Pass the returned user data to the login function
+        login(data);  // This will update the user in the AuthContext
+        navigate('/dashboard'); // Navigate to the home page or another page
+      } catch (error) {
+        setErrors({ submit: error.message });
+      } finally {
+        setSubmitting(false);
       }
-      setSubmitting(false);
-    },
+    }
   });
 
   return (
-    <form onSubmit={formik.handleSubmit} className="auth-form">
+    <form onSubmit={formik.handleSubmit}>
       {!isLogin && (
-        <div className="form-group">
+        <div>
+          <label>Email</label>
           <input
-            type="email"
             name="email"
-            placeholder="Email"
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            value={formik.values.email}
+            type="email"
+            {...formik.getFieldProps('email')}
           />
           {formik.touched.email && formik.errors.email && (
-            <div className="error">{formik.errors.email}</div>
+            <div>{formik.errors.email}</div>
           )}
         </div>
       )}
 
-      <div className="form-group">
+      <div>
+        <label>Username</label>
         <input
-          type="text"
           name="username"
-          placeholder="Username"
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          value={formik.values.username}
+          {...formik.getFieldProps('username')}
         />
         {formik.touched.username && formik.errors.username && (
-          <div className="error">{formik.errors.username}</div>
+          <div>{formik.errors.username}</div>
         )}
       </div>
 
-      <div className="form-group">
+      <div>
+        <label>Password</label>
         <input
-          type="password"
           name="password"
-          placeholder="Password"
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          value={formik.values.password}
+          type="password"
+          {...formik.getFieldProps('password')}
         />
         {formik.touched.password && formik.errors.password && (
-          <div className="error">{formik.errors.password}</div>
+          <div>{formik.errors.password}</div>
         )}
       </div>
 
-      {error && <div className="error-message">{error}</div>}
+      {formik.errors.submit && (
+        <div className="error">{formik.errors.submit}</div>
+      )}
 
-      <button type="submit" className="submit-btn">
-        {isLogin ? "Log In" : "Sign Up"}
+      <button type="submit" disabled={formik.isSubmitting}>
+        {isLogin ? 'Login' : 'Sign Up'}
       </button>
-
-      <GoogleOAuthButton />
     </form>
   );
 };

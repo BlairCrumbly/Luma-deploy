@@ -12,7 +12,7 @@ class User(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String, unique=True, index=True, nullable=False)
-    password_hash = db.Column(db.String(128), nullable=True) #* nullable for google users
+    password_hash = db.Column(db.String(128), nullable=True)  #* nullable for google users
     google_id = db.Column(db.String, unique=True, nullable=True)
     google_token = db.Column(db.String, nullable=True)
 
@@ -32,13 +32,15 @@ class User(db.Model, SerializerMixin):
 
     @validates('username')
     def validate_username(self, key, username):
-        username_lower = username.lower()
         #! remove unwanted characters (only letters, numbers, underscore, dot allowed)
-        sanitized_username = re.sub(r"[^a-zA-Z0-9_.]", "", username_lower)
+        sanitized_username = re.sub(r"[^a-zA-Z0-9_.]", "", username)  # Keep the original case
+
         if not sanitized_username:
             raise ValueError("Username contains invalid characters")
+        
         if profanity.contains_profanity(sanitized_username):
             raise ValueError("Username contains inappropriate content")
+        
         return sanitized_username
 
     @validates('password_hash')
@@ -54,9 +56,11 @@ class User(db.Model, SerializerMixin):
             raise ValueError("Password must contain at least one special character")
         return password
 
+    # Method to set password hash
     def set_password(self, password):
         self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
 
+    # Method to check password hash
     def check_password(self, password):
         return bcrypt.check_password_hash(self.password_hash, password)
 

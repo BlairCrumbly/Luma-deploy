@@ -1,68 +1,74 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
+import { api } from '../../services/api';
 
 export const AuthContext = createContext();
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+export const AuthProvider = ({ children }) => {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Retrieve the value from localStorage
-    const storedUser = localStorage.getItem("user");
+  // Check if user is already logged in on page load
 
-    // Check if storedUser exists and is not "undefined" or an empty string
-    if (storedUser && storedUser !== "undefined" && storedUser.trim() !== "") {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        // Optionally, check if parsedUser is an object with keys
-        if (parsedUser && typeof parsedUser === 'object' && Object.keys(parsedUser).length > 0) {
-          setUser(parsedUser);
-        } else {
-          setUser(null);
-        }
-      } catch (e) {
-        console.error('Error parsing user data from localStorage:', e);
-        setUser(null);
-      }
-    } else {
-      // If nothing valid is found in localStorage, try fetching from backend
-      fetch("/profile", {
-        credentials: "include",
-      })
-        .then((res) => (res.ok ? res.json() : null))
-        .then((data) => {
-          if (data) {
-            setUser(data);
-            localStorage.setItem("user", JSON.stringify(data));
-          }
-        })
-        .catch(() => setUser(null));
+
+  const login = async (username, password) => {
+    try {
+      const userData = await api.post('/login', { username, password });
+      setCurrentUser(userData);
+      return userData;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw new Error(error.message || 'Failed to login');
     }
-  }, []);
-
-  const login = (userData) => {
-    setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
-    console.log("User logged in:", userData); // Check if user data is correct
   };
 
-  const logout = () => {
-    fetch("/logout", {
-      method: "DELETE",
-      credentials: "include",
-    })
-      .then(() => {
-        setUser(null);
-        localStorage.removeItem("user");
-      })
-      .catch(() => setUser(null));
+  const signup = async (username, email, password) => {
+    try {
+      const userData = await api.post('/signup', { username, email, password });
+      setCurrentUser(userData);
+      return userData;
+    } catch (error) {
+      console.error('Signup error:', error);
+      throw new Error(error.message || 'Failed to create account');
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await api.delete('/logout');
+      setCurrentUser(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+      throw new Error(error.message || 'Failed to logout');
+    }
+  };
+
+  // Handle Google OAuth redirect
+  // This will typically be called in a useEffect in a component that handles the redirect
+  const handleGoogleRedirect = async () => {
+    try {
+      // The backend handles the OAuth flow and returns user data
+      // This is usually automatic via the redirect
+      const userData = await api.get('/user/profile');
+      setCurrentUser(userData);
+      return userData;
+    } catch (error) {
+      console.error('Google auth error:', error);
+      throw new Error(error.message || 'Failed to authenticate with Google');
+    }
+  };
+
+  const value = {
+    currentUser,
+    loading,
+    login,
+    signup,
+    logout,
+    handleGoogleRedirect
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
-}
-
-export const useAuth = () => useContext(AuthContext);
-export default AuthProvider;
+};

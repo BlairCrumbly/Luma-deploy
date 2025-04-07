@@ -8,6 +8,9 @@ from sqlalchemy.exc import IntegrityError
 import secrets
 import re
 import requests
+import urllib.parse
+import os
+
 
 
 class Signup(Resource):
@@ -96,54 +99,94 @@ class Logout(Resource):
         except Exception as e:
             return {"error": f"Error during logout: {str(e)}"}, 500
 
-#! redirect user to googles oauth page
 class GoogleLogin(Resource):
     def get(self):
-        try:
-            # Get state from frontend or generate new
-            frontend_state = request.args.get('state')
-            state = frontend_state or secrets.token_urlsafe(32)
-            nonce = secrets.token_urlsafe(32)
-
-            # Store in server-side session
-            session['nonce'] = nonce
-            session['state'] = state
-            session.modified = True  # Force session save
-            
-            # Verify session storage
-            print(f"Stored session state: {session['state']}")  # Debug
-            
-            return google.authorize_redirect(
-                url_for("googleauthorize", _external=True),
-                state=state,
-                nonce=nonce
-            )
-        except Exception as e:
-            return {"error": str(e)}, 500
+        # Generate a secure random string for CSRF protection
+        state = secrets.token_urlsafe(32)
+        
+        # Store state in a session cookie that will be sent back to the client
+        session['oauth_state'] = state
+        session.modified = True
+        
+        # Generate a nonce for OpenID Connect
+        nonce = secrets.token_urlsafe(32)
+        session['oauth_nonce'] = nonce
+        
+        # Redirect to Google OAuth with the correct scope format
+        redirect_uri = url_for("googleauthorize", _external=True)
+        
+        # Use the standard OAuth2 scope format
+        scope = "openid email profile"
+        
+        # Manual OAuth configuration to ensure correct parameters
+        authorize_url = "https://accounts.google.com/o/oauth2/auth"
+        client_id = os.getenv("CLIENT_ID")
+        
+        params = {
+            "client_id": client_id,
+            "response_type": "code",
+            "scope": scope,
+            "redirect_uri": redirect_uri,
+            "state": state,
+            "nonce": nonce,
+            "access_type": "offline",
+            "include_granted_scopes": "true"
+        }
+        
+        auth_url = f"{authorize_url}?{urllib.parse.urlencode(params)}"
+        return redirect(auth_url)
 
 
 class GoogleAuthorize(Resource):
     def get(self):
         try:
-            # Get and validate state
-            returned_state = request.args.get('state')
-            stored_state = session.get('state')
+            # Verify state parameter to prevent CSRF
+            state_param = request.args.get('state')
+            stored_state = session.get('oauth_state')
             
-            print(f"Comparing states - Stored: {stored_state}, Received: {returned_state}")  # Debug
+            if not state_param or not stored_state or state_param != stored_state:
+                return {"error": "Invalid state parameter. CSRF protection triggered."}, 400
             
-            if not returned_state or returned_state != stored_state:
-                return {"error": "Invalid state parameter"}, 400
+            # Exchange code for token
+            code = request.args.get('code')
+            if not code:
+                return {"error": "Authorization code not provided"}, 400
             
-            # Continue with token handling
-            token = google.authorize_access_token()
-            user_info = google.parse_id_token(token, nonce=session['nonce']) 
-            #! Use nonce to verify the token 
-            if not user_info:
-                return {"error": "Failed to fetch user info"}, 400
+            # Get the token using the code
+            token_url = "https://oauth2.googleapis.com/token"
+            client_id = os.getenv("CLIENT_ID")
+            client_secret = os.getenv("CLIENT_SECRET")
+            redirect_uri = url_for("googleauthorize", _external=True)
             
+            token_data = {
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "code": code,
+                "grant_type": "authorization_code",
+                "redirect_uri": redirect_uri
+            }
+            
+            token_response = requests.post(token_url, data=token_data)
+            
+            if token_response.status_code != 200:
+                return {"error": f"Failed to obtain token: {token_response.text}"}, 500
+                
+            token_json = token_response.json()
+            
+            # Get user info with the access token
+            user_info_url = "https://www.googleapis.com/oauth2/v3/userinfo"
+            headers = {"Authorization": f"Bearer {token_json['access_token']}"}
+            user_info_response = requests.get(user_info_url, headers=headers)
+            
+            if user_info_response.status_code != 200:
+                return {"error": "Failed to fetch user info"}, 500
+                
+            user_info = user_info_response.json()
+            
+            # Process user info
             email = user_info["email"]
-            username = user_info.get("name", email.split("@")[0])  #! Use name or part of email
-            google_id = user_info.get("sub")  #! Google ID is typically in the 'sub' field, look into
+            username = user_info.get("name", email.split("@")[0])
+            google_id = user_info.get("sub")
             
             user = User.query.filter_by(email=email).first()
             
@@ -152,28 +195,30 @@ class GoogleAuthorize(Resource):
                 db.session.add(user)
                 db.session.commit()
             else:
-                #! Update the google_id if it's not set yet
                 if not user.google_id:
                     user.google_id = google_id
                     db.session.commit()
-
-            user.set_google_token(token["access_token"])
+            
+            # Save the access token if needed
+            user.set_google_token(token_json.get("access_token"))
             db.session.commit()
-
-
+            
+            # Create JWT for your app authentication
             access_token = create_access_token(identity=user.id)
             response = make_response(user.to_dict(), 200)
             set_access_cookies(response, access_token)
-            session.pop('state', None)
-            session.pop('nonce', None)
-            session.modified = True  # Force session save
-            #! Clear session data after use
+            
+            # Clean up session
+            if 'oauth_state' in session:
+                session.pop('oauth_state')
+            if 'oauth_nonce' in session:
+                session.pop('oauth_nonce')
+                
             return response
+            
         except Exception as e:
+            app.logger.error(f"Google OAuth error: {str(e)}")
             return {"error": str(e)}, 500
-
-
-
 
 class UserProfile(Resource):
     @jwt_required()

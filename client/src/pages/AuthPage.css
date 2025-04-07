@@ -1,51 +1,66 @@
 .auth-page {
     display: flex;
-    height: 100vh;
-}
-
-.auth-left {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
+    min-height: 100vh;
+    background-color: #f7f9fc;
+    padding: 1rem;
+  }
+  
+  .auth-container {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
     padding: 2rem;
-    background-color: #f4f4f4;
-}
-
-.auth-header {
+  }
+  
+  .auth-title {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    color: #333;
     text-align: center;
-    margin-bottom: 2rem;
-}
-
-.project-name {
-    font-size: 3rem;
-    color: #3498db;
-    margin: 0;
-}
-
-.welcome-text {
-    font-size: 2rem;
-    color: #2c3e50;
-    margin: 0.5rem 0 2rem;
-}
-
-.toggle-section {
-    margin-top: 1rem;
+  }
+  
+  .divider {
+    display: flex;
+    align-items: center;
+    margin: 1.5rem 0;
+    color: #666;
+  }
+  
+  .divider::before,
+  .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background-color: #ddd;
+  }
+  
+  .divider span {
+    padding: 0 1rem;
     font-size: 0.9rem;
-}
-
-.toggle-btn {
+  }
+  
+  .toggle-mode {
+    text-align: center;
+    margin-top: 1.5rem;
+    color: #666;
+    font-size: 0.9rem;
+  }
+  
+  .link-button {
     background: none;
     border: none;
-    color: #3498db;
+    color: #4285f4;
     cursor: pointer;
     font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0;
     text-decoration: underline;
-}
-
-.auth-right {
-    flex: 1;
-    background-color: #e9ecef;
-    /* Future: Add background image or illustration here */
-}
+  }
+  
+  .link-button:hover {
+    color: #2b68d9;
+  }

@@ -1,11 +1,16 @@
-import React from "react";
+// src/pages/HomePage.js
+import React, { useContext } from 'react';
+import { AuthContext } from '../components/contexts/AuthContext';
 
-function HomePage() {
+const HomePage = () => {
+  const { currentUser, logout } = useContext(AuthContext);
+  
   return (
     <div>
-      <h1>Welcome to the Home Page</h1>
+      <h1>Welcome, {currentUser?.username}!</h1>
+      <button onClick={logout}>Logout</button>
     </div>
   );
-}
+};
 
 export default HomePage;

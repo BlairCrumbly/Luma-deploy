@@ -1,0 +1,26 @@
+.color-picker {
+    display: flex;
+    gap: 10px; /* Adds spacing between buttons */
+}
+
+.color-button {
+    cursor: pointer;
+    outline: none;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+    border: none;
+    width: 24px; /* Adjust as needed */
+    height: 24px; /* Ensures circular shape */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.color-button:hover {
+    transform: scale(1.1);
+}
+
+.color-button.selected {
+    border: 2px solid black;
+    transform: scale(1.1);
+}

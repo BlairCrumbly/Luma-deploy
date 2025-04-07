@@ -2,101 +2,90 @@ import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext'; //authcontext
 import './AuthForm.css';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
 
 const AuthForm = ({ isLogin }) => {
-  const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: ''
-  });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  
   const { login, signup } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
+  // Define initial values
+  const initialValues = isLogin 
+    ? { username: '', password: '' }
+    : { username: '', email: '', password: '' };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+  // Define Yup validation schema
+  const validationSchema = isLogin 
+    ? Yup.object({
+        username: Yup.string().required('Username is required'),
+        password: Yup.string().required('Password is required'),
+      })
+    : Yup.object({
+        username: Yup.string().required('Username is required'),
+        email: Yup.string()
+          .email('Invalid email address')
+          .required('Email is required'),
+        password: Yup.string()
+          .min(6, 'Password must be at least 6 characters')
+          .required('Password is required'),
+      });
 
+  // Handle form submission using Formik
+  const handleSubmit = async (values, { setSubmitting, setFieldError }) => {
     try {
       if (isLogin) {
-        // Login logic
-        await login(formData.username, formData.password);
+        await login(values.username, values.password);
         navigate('/');
       } else {
-        // Signup logic
-        if (!formData.email) {
-          throw new Error('Email is required');
-        }
-        await signup(formData.username, formData.email, formData.password);
+        await signup(values.username, values.email, values.password);
         navigate('/');
       }
     } catch (err) {
-      setError(err.message || 'Authentication failed');
+      // Set a generic error message; you can also map specific errors to fields
+      setFieldError('general', err.message || 'Authentication failed');
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   return (
-    <form className="auth-form" onSubmit={handleSubmit}>
-      {error && <div className="error-message">{error}</div>}
-      
-      <div className="form-group">
-        <label htmlFor="username">Username</label>
-        <input
-          type="text"
-          id="username"
-          name="username"
-          value={formData.username}
-          onChange={handleChange}
-          required
-        />
-      </div>
-      
-      {!isLogin && (
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required={!isLogin}
-          />
-        </div>
+    <Formik
+      initialValues={initialValues}
+      validationSchema={validationSchema}
+      onSubmit={handleSubmit}
+    >
+      {({ isSubmitting, errors }) => (
+        <Form className="auth-form">
+          {errors.general && (
+            <div className="error-message">{errors.general}</div>
+          )}
+
+          <div className="form-group">
+            <label htmlFor="username">Username</label>
+            <Field type="text" id="username" name="username" />
+            <ErrorMessage name="username" component="div" className="error-message" />
+          </div>
+
+          {!isLogin && (
+            <div className="form-group">
+              <label htmlFor="email">Email</label>
+              <Field type="email" id="email" name="email" />
+              <ErrorMessage name="email" component="div" className="error-message" />
+            </div>
+          )}
+
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <Field type="password" id="password" name="password" />
+            <ErrorMessage name="password" component="div" className="error-message" />
+          </div>
+
+          <button type="submit" className="submit-button" disabled={isSubmitting}>
+            {isSubmitting ? 'Processing...' : isLogin ? 'Log In' : 'Sign Up'}
+          </button>
+        </Form>
       )}
-      
-      <div className="form-group">
-        <label htmlFor="password">Password</label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-        />
-      </div>
-      
-      <button 
-        type="submit" 
-        className="submit-button"
-        disabled={loading}
-      >
-        {loading ? 'Processing...' : isLogin ? 'Log In' : 'Sign Up'}
-      </button>
-    </form>
+    </Formik>
   );
 };
 

@@ -6,6 +6,9 @@ import HomePage from './pages/Homepage';
 import OAuthRedirectHandler from './components/GoogleOauth/OauthHandler';
 import './styles/global.css';
 import ProtectedRoute from './components/ProtectedRoute';
+import EntriesPage from './pages/EntryPage';
+import JournalPage from './pages/JournalPage';
+
 
 
 
@@ -22,6 +25,16 @@ function App() {
           <Route path="/" element={
             <ProtectedRoute>
               <HomePage />
+            </ProtectedRoute>
+          } />
+            <Route path="/entries" element={
+            <ProtectedRoute>
+              <EntriesPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/journals" element={
+            <ProtectedRoute>
+              <JournalPage />
             </ProtectedRoute>
           } />
           

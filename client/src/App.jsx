@@ -8,6 +8,8 @@ import './styles/global.css';
 import ProtectedRoute from './components/ProtectedRoute';
 import EntriesPage from './pages/EntryPage';
 import JournalPage from './pages/JournalPage';
+import JournalFormPage from './pages/JournalFormPage';
+
 
 
 
@@ -35,6 +37,11 @@ function App() {
           <Route path="/journals" element={
             <ProtectedRoute>
               <JournalPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/journals/new" element={
+            <ProtectedRoute>
+              <JournalFormPage />  {/* This route will show the journal form */}
             </ProtectedRoute>
           } />
           

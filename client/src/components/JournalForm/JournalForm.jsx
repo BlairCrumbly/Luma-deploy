@@ -10,27 +10,29 @@ const JournalForm = ({ onJournalCreated }) => {
     const [title, setTitle] = useState('');
     const [year, setYear] = useState('');
     const [color, setColor] = useState('#E7E5E5');
-    
+    const [error, setError] = useState('');
   
     const handleSubmit = async (e) => {
       e.preventDefault();
       try {
         const newJournal = await api.post('/journals', { title, year, color });
-        onJournalCreated(newJournal); // Update parent component
+        // After successfully creating the journal, notify the parent component
+        if (onJournalCreated) {
+          onJournalCreated(newJournal); // Call the passed function
+        }
+        // Reset form fields
         setTitle('');
         setYear('');
         setColor('#E7E5E5');
-        setError('');
       } catch (err) {
         console.error('Error creating journal:', err);
-        
+        setError('Error creating journal. Please try again.');
       }
     };
   
     return (
       <form onSubmit={handleSubmit} className="journal-form">
         <h3>Create New Journal</h3>
-        
         <input
           type="text"
           placeholder="Title"
@@ -46,9 +48,10 @@ const JournalForm = ({ onJournalCreated }) => {
           required
         />
         <div>
-            <label>Pick a color:</label>
-            <ColorPicker selectedColor={color} setSelectedColor={setColor} />
+          <label>Pick a color:</label>
+          <ColorPicker selectedColor={color} setSelectedColor={setColor} />
         </div>
+        {error && <p className="error">{error}</p>}
         <button type="submit">Create Journal</button>
       </form>
     );

@@ -16,12 +16,18 @@ function App() {
         <Routes>
           {/* Public routes */}
           <Route path="/login" element={<AuthPage />} />
-          <Route path="/login/google" element={<OAuthRedirectHandler/>} />
+          <Route path="/login/google" element={<OAuthRedirectHandler />} />
           
           {/* Protected routes */}
           <Route path="/" element={
             <ProtectedRoute>
-              <HomePage/>
+              <HomePage />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/home" element={
+            <ProtectedRoute>
+              <HomePage />
             </ProtectedRoute>
           } />
           

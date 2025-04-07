@@ -1,6 +1,8 @@
 import React from 'react';
 import './GoogleOAuthButton.css';
 
+
+
 const GoogleOAuthButton = () => {
   const handleGoogleLogin = () => {
     // Simply redirect to backend endpoint

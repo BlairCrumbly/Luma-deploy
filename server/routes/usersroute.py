@@ -205,6 +205,8 @@ class GoogleAuthorize(Resource):
             
             # Create JWT for your app authentication
             access_token = create_access_token(identity=user.id)
+            
+            # Set cookies in a response
             response = make_response(user.to_dict(), 200)
             set_access_cookies(response, access_token)
             
@@ -214,11 +216,18 @@ class GoogleAuthorize(Resource):
             if 'oauth_nonce' in session:
                 session.pop('oauth_nonce')
                 
-            return response
+            # Add CORS headers to allow your frontend to access this response
+            response.headers.add('Access-Control-Allow-Origin', os.getenv('FRONTEND_URL', 'http://localhost:5173'))
+            response.headers.add('Access-Control-Allow-Credentials', 'true')
             
+            # Redirect to homepage or return the response as needed
+            return redirect('http://localhost:5173/home')  # Adjust this URL as necessary
+
         except Exception as e:
             app.logger.error(f"Google OAuth error: {str(e)}")
             return {"error": str(e)}, 500
+        
+
 
 class UserProfile(Resource):
     @jwt_required()

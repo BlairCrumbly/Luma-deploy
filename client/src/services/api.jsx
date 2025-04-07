@@ -8,7 +8,8 @@ export const api = {
         method: 'GET',
         credentials: 'include', // Important for cookies/JWT
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': csrfToken
         }
       });
 
@@ -31,7 +32,8 @@ export const api = {
         method: 'POST',
         credentials: 'include', // Important for cookies/JWT
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': csrfToken
         },
         body: JSON.stringify(data)
       });

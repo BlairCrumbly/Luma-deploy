@@ -1,5 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { api } from '../../services/api';
+import Cookies from 'js-cookie'; // For reading cookies
+import { useCallback } from 'react';
 
 export const AuthContext = createContext();
 
@@ -7,71 +9,94 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check if user is already logged in on page load
-
-
-  const login = async (username, password) => {
+  // Function to fetch the current user profile
+  const fetchCurrentUser = async () => {
     try {
-      const userData = await api.post('/login', { username, password });
+      const response = await fetch('/api/user/profile', {
+        credentials: 'include' // Important for cookies
+      });
+      
+      if (!response.ok) {
+        console.error('Failed to fetch user profile:', response.status);
+        return null;
+      }
+      
+      const userData = await response.json();
       setCurrentUser(userData);
       return userData;
     } catch (error) {
-      console.error('Login error:', error);
-      throw new Error(error.message || 'Failed to login');
+      console.error('Error fetching user profile:', error);
+      return null;
     }
   };
 
-  const signup = async (username, email, password) => {
-    try {
-      const userData = await api.post('/signup', { username, email, password });
-      setCurrentUser(userData);
-      return userData;
-    } catch (error) {
-      console.error('Signup error:', error);
-      throw new Error(error.message || 'Failed to create account');
-    }
-  };
-
-  const logout = async () => {
-    try {
-      // Perform logout API call
-      const response = await api.delete('/logout');
-  
-      // Clear the current user regardless of the response body
-      setCurrentUser(null);
-  
-      // Optionally redirect or show a toast here
-      // e.g., navigate('/login'); or toast.success("Logged out");
-  
-      return response;
-    } catch (error) {
-      console.error('Logout error:', error);
-      throw new Error(error.message || 'Failed to logout');
-    }
-  };
-
-  // Handle Google OAuth redirect
-  // This will typically be called in a useEffect in a component that handles the redirect
+  // Google OAuth redirect handler
   const handleGoogleRedirect = async () => {
     try {
-      // The backend handles the OAuth flow and returns user data
-      // This is usually automatic via the redirect
-      const userData = await api.get('/user/profile');
+      return await fetchCurrentUser(); // Simply use the fetchCurrentUser function
+    } catch (error) {
+      console.error('Google redirect handling failed:', error);
+      throw error;
+    }
+  };
+
+  // Initial auth check
+  useEffect(() => {
+    const checkAuth = async () => {
+      await fetchCurrentUser();
+      setLoading(false);
+    };
+    
+    checkAuth();
+  }, []);
+
+  // Login function
+  const login = async (username, password) => {
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Login failed');
+      }
+      
+      const userData = await response.json();
       setCurrentUser(userData);
       return userData;
     } catch (error) {
-      console.error('Google auth error:', error);
-      throw new Error(error.message || 'Failed to authenticate with Google');
+      console.error('Login failed:', error);
+      throw error;
+    }
+  };
+
+  // Logout function
+  const logout = async () => {
+    try {
+      await fetch('/api/logout', {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      
+      setCurrentUser(null);
+    } catch (error) {
+      console.error('Logout failed:', error);
+      throw error;
     }
   };
 
   const value = {
     currentUser,
+    setCurrentUser,
     loading,
     login,
-    signup,
     logout,
-    handleGoogleRedirect
+    handleGoogleRedirect,
+    fetchCurrentUser
   };
 
   return (

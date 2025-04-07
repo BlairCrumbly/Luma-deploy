@@ -1,73 +1,70 @@
 import React, { useEffect, useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
-import { handleOAuthRedirect } from '../Auth/Auth';
+
 
 const OAuthRedirectHandler = () => {
-  const { handleGoogleRedirect } = useContext(AuthContext);
+  const auth = useContext(AuthContext);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const processRedirect = async () => {
+    const handleRedirect = async () => {
       try {
-        // Get URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
+        console.log("Starting OAuth redirect handling...");
         
-        // Check for any error parameters
-        const error = urlParams.get('error');
-        if (error) {
-          throw new Error(`OAuth error: ${error}`);
+        // Debug the auth object to see what's available
+        console.log("Auth context:", auth);
+        
+        // Use handleGoogleRedirect which is defined in the AuthContext
+        const userData = await auth.handleGoogleRedirect();
+        console.log("User data received:", userData);
+        
+        if (userData) {
+          // Authentication successful, redirect to home
+          navigate('/home', { replace: true });
+        } else {
+          throw new Error('No user data returned after authentication');
         }
-        
-        // Verify the state parameter
-        const returnedState = urlParams.get('state');
-        const storedState = localStorage.getItem('oauth_state');
-        
-        if (!returnedState || returnedState !== storedState) {
-          throw new Error('State verification failed. Please try again.');
-        }
-        
-        // Clean up the stored state
-        localStorage.removeItem('oauth_state');
-        
-        // Complete the authentication process
-        await handleGoogleRedirect();
-        navigate('/');
       } catch (err) {
         console.error('OAuth error:', err);
-        setError(err.message || 'Failed to authenticate');
+        setError(err.message || 'Authentication failed');
         setTimeout(() => {
-          navigate('/login');
+          navigate('/login', { replace: true });
         }, 3000);
       } finally {
         setLoading(false);
       }
     };
 
-    processRedirect();
-  }, [navigate, handleGoogleRedirect]);
+    handleRedirect();
+  }, [auth, navigate]);
 
   if (loading) {
     return (
-      <div className="oauth-redirect-handler">
-        <div className="loading-spinner"></div>
-        <p>Completing authentication...</p>
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent border-blue-600 align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
+          <p className="mt-4">Completing authentication...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="oauth-redirect-handler error">
-        <p>Authentication failed: {error}</p>
-        <p>Redirecting to login page...</p>
+      <div className="flex justify-center items-center h-screen">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <strong className="font-bold">Authentication failed!</strong>
+          <p className="block sm:inline">{error}</p>
+          <p className="mt-2">Redirecting to login page...</p>
+        </div>
       </div>
     );
   }
 
-  return null; // Won't be rendered as we navigate away on success
+  return null;
 };
 
 export default OAuthRedirectHandler;

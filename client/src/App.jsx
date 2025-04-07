@@ -5,20 +5,9 @@ import AuthPage from './pages/AuthPage';
 import HomePage from './pages/Homepage';
 import OAuthRedirectHandler from './components/GoogleOauth/OauthHandler';
 import './styles/global.css';
+import ProtectedRoute from './components/ProtectedRoute';
 
 
-// Protected route wrapper
-const ProtectedRoute = ({ children }) => {
-  // Use the AuthContext to check if user is authenticated
-  // For now, we'll simulate this check
-  const isAuthenticated = localStorage.getItem('user') !== null;
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  return children;
-};
 
 function App() {
   return (

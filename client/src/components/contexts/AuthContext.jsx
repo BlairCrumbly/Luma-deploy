@@ -34,8 +34,16 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await api.delete('/logout');
+      // Perform logout API call
+      const response = await api.delete('/logout');
+  
+      // Clear the current user regardless of the response body
       setCurrentUser(null);
+  
+      // Optionally redirect or show a toast here
+      // e.g., navigate('/login'); or toast.success("Logged out");
+  
+      return response;
     } catch (error) {
       console.error('Logout error:', error);
       throw new Error(error.message || 'Failed to logout');

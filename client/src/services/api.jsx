@@ -51,38 +51,41 @@ export const api = {
   // DELETE request
   async delete(endpoint, data = null) {
     try {
+      const csrfToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrf_access_token='))
+        ?.split('=')[1]; // Get CSRF token from cookie
+  
       const options = {
         method: 'DELETE',
-        credentials: 'include', // Important for cookies/JWT
+        credentials: 'include', // Ensure cookies are sent with the request
         headers: {
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': csrfToken, // Include CSRF token in headers
+        },
       };
-
+  
       if (data) {
         options.body = JSON.stringify(data);
       }
-
-      const response = await fetch(`/api${endpoint}`, options);
-
+  
+      const apiUrl = `/api${endpoint}`;
+      const response = await fetch(apiUrl, options);
+  
       if (!response.ok) {
-        // Try to parse error as JSON, but handle cases where response might be empty
-        if (response.status !== 204) { // 204 No Content is a valid response for DELETE
-          const errorText = await response.text();
-          const errorData = errorText ? JSON.parse(errorText) : {};
-          throw new Error(errorData.error || 'Network response was not ok');
-        }
+        const errorText = await response.text();
+        const errorData = errorText ? JSON.parse(errorText) : {};
+        throw new Error(errorData.error || 'Network response was not ok');
       }
-
-      // Handle 204 No Content which is often returned for successful DELETE operations
+  
       if (response.status === 204) {
         return null;
       }
-
+  
       return await response.json();
     } catch (error) {
       console.error(`DELETE ${endpoint} error:`, error);
       throw error;
     }
   }
-};
+}   

@@ -221,7 +221,7 @@ class GoogleAuthorize(Resource):
             response.headers.add('Access-Control-Allow-Credentials', 'true')
             
             # Redirect to homepage or return the response as needed
-            return redirect('http://localhost:5173/home')  # Adjust this URL as necessary
+            return redirect('http://localhost:5173/')  # Adjust this URL as necessary
 
         except Exception as e:
             app.logger.error(f"Google OAuth error: {str(e)}")

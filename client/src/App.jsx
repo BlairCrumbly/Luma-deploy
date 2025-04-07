@@ -25,12 +25,6 @@ function App() {
             </ProtectedRoute>
           } />
           
-          <Route path="/home" element={
-            <ProtectedRoute>
-              <HomePage />
-            </ProtectedRoute>
-          } />
-          
           {/* Redirect all other routes to home */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

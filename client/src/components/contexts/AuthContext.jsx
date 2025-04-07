@@ -53,11 +53,13 @@ export const AuthProvider = ({ children }) => {
   // Login function
   const login = async (username, password) => {
     try {
+      const csrfToken = Cookies.get('csrf_access_token'); 
       const response = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
-        credentials: 'include'
+        credentials: 'include',
+        'X-CSRF-TOKEN': csrfToken
       });
       
       if (!response.ok) {
@@ -77,17 +79,27 @@ export const AuthProvider = ({ children }) => {
   // Logout function
   const logout = async () => {
     try {
-      await fetch('/api/logout', {
+      const csrfToken = Cookies.get('csrf_access_token');  // Get CSRF token from cookies
+  
+      const response = await fetch('/api/logout', {
         method: 'DELETE',
-        credentials: 'include'
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': csrfToken,  // Include CSRF token
+        },
+        credentials: 'include',  // Include cookies in the request
       });
-      
+  
+      if (!response.ok) {
+        throw new Error('Logout failed');
+      }
+  
       setCurrentUser(null);
     } catch (error) {
       console.error('Logout failed:', error);
-      throw error;
     }
   };
+  
 
   const value = {
     currentUser,

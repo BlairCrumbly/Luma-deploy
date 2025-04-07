@@ -9,7 +9,8 @@ export const api = {
         credentials: 'include', // Important for cookies/JWT
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': csrfToken
+          'X-CSRF-TOKEN': csrfToken,
+          
         }
       });
 
@@ -32,8 +33,8 @@ export const api = {
         method: 'POST',
         credentials: 'include', // Important for cookies/JWT
         headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': csrfToken
+          'Content-Type': 'application/json'
+          
         },
         body: JSON.stringify(data)
       });
@@ -51,11 +52,11 @@ export const api = {
   },
 
   // DELETE request
-  async delete(endpoint, data = null) {
+  async delete(endpoint) {
     try {
       const csrfToken = document.cookie
         .split('; ')
-        .find(row => row.startsWith('csrf_access_token='))
+        .find(row => row.startsWith('csrf_access_token'))
         ?.split('=')[1]; // Get CSRF token from cookie
   
       const options = {
@@ -66,10 +67,6 @@ export const api = {
           'X-CSRF-TOKEN': csrfToken, // Include CSRF token in headers
         },
       };
-  
-      if (data) {
-        options.body = JSON.stringify(data);
-      }
   
       const apiUrl = `/api${endpoint}`;
       const response = await fetch(apiUrl, options);
@@ -90,4 +87,4 @@ export const api = {
       throw error;
     }
   }
-}   
+}

@@ -72,5 +72,11 @@ google = oauth.register(
     client_kwargs={"scope": "openid email profile"}
 )
 
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', os.getenv('FRONTEND_URL', 'http://localhost:5173'))
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
+    return response
+
 
 

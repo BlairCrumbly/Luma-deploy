@@ -63,7 +63,7 @@ class Login(Resource):
             else:
                 access_token = create_access_token(identity=user.id)
                 response = make_response(user.to_dict(), 200)
-                set_access_cookies(response,access_token)
+                set_access_cookies(response,access_token, )
                 return response
         except Exception as e:
             return {'error': f'Error logging in user: {str(e)}'}, 500
@@ -104,6 +104,7 @@ class GoogleLogin(Resource):
         # Generate a secure random string for CSRF protection
         state = secrets.token_urlsafe(32)
         
+        
         # Store state in a session cookie that will be sent back to the client
         session['oauth_state'] = state
         session.modified = True
@@ -143,7 +144,6 @@ class GoogleAuthorize(Resource):
             # Verify state parameter to prevent CSRF
             state_param = request.args.get('state')
             stored_state = session.get('oauth_state')
-            
             if not state_param or not stored_state or state_param != stored_state:
                 return {"error": "Invalid state parameter. CSRF protection triggered."}, 400
             
@@ -167,20 +167,16 @@ class GoogleAuthorize(Resource):
             }
             
             token_response = requests.post(token_url, data=token_data)
-            
             if token_response.status_code != 200:
                 return {"error": f"Failed to obtain token: {token_response.text}"}, 500
-                
             token_json = token_response.json()
             
             # Get user info with the access token
             user_info_url = "https://www.googleapis.com/oauth2/v3/userinfo"
             headers = {"Authorization": f"Bearer {token_json['access_token']}"}
             user_info_response = requests.get(user_info_url, headers=headers)
-            
             if user_info_response.status_code != 200:
                 return {"error": "Failed to fetch user info"}, 500
-                
             user_info = user_info_response.json()
             
             # Process user info
@@ -189,7 +185,6 @@ class GoogleAuthorize(Resource):
             google_id = user_info.get("sub")
             
             user = User.query.filter_by(email=email).first()
-            
             if not user:
                 user = User(username=username, email=email, google_id=google_id)
                 db.session.add(user)
@@ -199,29 +194,27 @@ class GoogleAuthorize(Resource):
                     user.google_id = google_id
                     db.session.commit()
             
-            # Save the access token if needed
+            # Save the Google access token if needed
             user.set_google_token(token_json.get("access_token"))
             db.session.commit()
             
             # Create JWT for your app authentication
             access_token = create_access_token(identity=user.id)
             
-            # Set cookies in a response
-            response = make_response(user.to_dict(), 200)
+            # Instead of creating one response and then redirecting,
+            # create a redirect response and set cookies on it.
+            response = redirect('http://localhost:5173/')
             set_access_cookies(response, access_token)
             
             # Clean up session
-            if 'oauth_state' in session:
-                session.pop('oauth_state')
-            if 'oauth_nonce' in session:
-                session.pop('oauth_nonce')
-                
-            # Add CORS headers to allow your frontend to access this response
+            session.pop('oauth_state', None)
+            session.pop('oauth_nonce', None)
+            
+            # Add CORS headers if needed
             response.headers.add('Access-Control-Allow-Origin', os.getenv('FRONTEND_URL', 'http://localhost:5173'))
             response.headers.add('Access-Control-Allow-Credentials', 'true')
             
-            # Redirect to homepage or return the response as needed
-            return redirect('http://localhost:5173/')  # Adjust this URL as necessary
+            return response
 
         except Exception as e:
             app.logger.error(f"Google OAuth error: {str(e)}")

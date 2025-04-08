@@ -25,7 +25,7 @@
     margin-bottom: 30px;
     position: absolute;
     top: 20px;
-    left: 50%;
+    left: 45%;
     transform: translateX(-50%);
   }
   
@@ -72,6 +72,24 @@
     height: 3px;
     margin: 4px 0;
     background-color: white;
+  }
+
+  .logout-btn {
+    background: #580081;   /* Same background as navbar */
+    border: none;          /* Remove default border */
+    color: rgb(255, 156, 156);          /* White text */
+    font-size: 1em;        /* Match nav link font size */
+    padding: 10px 15px;    /* Padding to match nav links */
+    width: 100%;
+    text-align: left;      /* Align text to the left */
+    cursor: pointer;
+    transition: background-color 0.3s ease, font-weight 0.3s ease;
+  }
+  
+  /* On hover, change background color and make text bold */
+  .logout-btn:hover {
+
+    font-weight: bold;
   }
   
   /* Mobile responsiveness - collapsible menu */

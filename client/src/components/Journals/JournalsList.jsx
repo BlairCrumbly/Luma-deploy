@@ -1,5 +1,8 @@
 import './JournalsList.css';
 import { useState, useEffect } from "react"
+import {api} from '../../services/api'
+import JournalCard from '../JournalCard/JournalCard'
+
 const JournalsList = () => {
     const [journals, setJournals] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -20,22 +23,27 @@ const JournalsList = () => {
       fetchJournals();
     }, []);
   
+    const handleCardClick = (journalId) => {
+      console.log(`Clicked on journal with ID: ${journalId}`);
+    };
+  
     if (loading) return <div>Loading journals...</div>;
-    
   
     return (
       <div className="journals-list">
-        <h2>Your Journals</h2>
+        
         {journals.length === 0 ? (
           <div>No journals found.</div>
         ) : (
-          <ul>
+          <div className="card-container">
             {journals.map((journal) => (
-              <li key={journal.id} className="journal-item" style={{ backgroundColor: journal.color }}>
-                <h3>{journal.title} ({journal.year})</h3>
-              </li>
+              <JournalCard
+                key={journal.id}
+                journal={journal} //! edit later
+                onClick={handleCardClick}
+              />
             ))}
-          </ul>
+          </div>
         )}
       </div>
     );

@@ -1,0 +1,115 @@
+/* Navbar styles */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 10%; /* Reduced width */
+    height: 100vh;
+    background-color: #580081;
+    color: white;
+    padding-top: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding-left: 10px;
+    transition: all 0.3s ease;
+  }
+  
+  /* Logo styles - adjust font-size and centering if needed */
+  .navbar .logo {
+    width: 100%;
+    text-align: center;
+    font-size: 1.2em; /* Smaller font for a narrow sidebar */
+    font-weight: bold;
+    margin-bottom: 30px;
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  /* Nav Links styles */
+  .nav-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 80px; /* Push links below the logo */
+  }
+  
+  /* Instead of targeting the anchor, apply spacing to the list item */
+  .nav-links .nav-link {
+    margin-bottom: 10px; /* Space between links */
+    width: 100%;
+  }
+  
+  .nav-links .nav-link a {
+    display: block;             /* Ensure the link takes full width */
+    color: white;
+    text-decoration: none;
+    font-size: 1em;             /* Slightly smaller font */
+    padding: 10px 15px;
+    text-align: left;
+  }
+  
+  .nav-links .nav-link a:hover {
+    font-weight: bold;
+  }
+  
+  /* Hamburger Icon (if using collapsible menu on mobile) */
+  .hamburger {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    padding: 10px;
+  }
+  
+  .hamburger .bar {
+    width: 25px;
+    height: 3px;
+    margin: 4px 0;
+    background-color: white;
+  }
+  
+  /* Mobile responsiveness - collapsible menu */
+  @media (max-width: 768px) {
+    .navbar {
+      width: 15%; /* Keep same narrow width when collapsed */
+      /* Add bottom padding so content isn't flush with bottom */
+      padding-bottom: 20px;
+    }
+  
+    .hamburger {
+      display: flex;
+    }
+  
+    .nav-links {
+      display: none;
+      flex-direction: column;
+      width: 100%;
+      margin-top: 20px; /* Reduce margin-top to push links higher */
+    }
+  
+    .nav-links.active {
+      display: flex;
+    }
+  
+    .nav-links .nav-link {
+      font-size: 0.9em;
+      padding: 8px 12px;
+      margin-bottom: 10px; /* Adjust spacing as needed */
+    }
+  
+    .navbar.open {
+      width: 100%;
+      /* Ensure there’s some padding at the bottom when open */
+      padding-bottom: 20px;
+    }
+  
+    .navbar:not(.open) .logo {
+      display: none;
+    }
+  }

@@ -8,7 +8,7 @@ const HomePage = () => {
   return (
     <div>
       <h1>Welcome, {currentUser?.username}!</h1>
-      <button onClick={logout}>Logout</button>
+
     </div>
   );
 };

@@ -1,0 +1,55 @@
+/* Container for the journal cards */
+.journals-container {
+    display: flex;
+    flex-wrap: wrap; 
+    justify-content: space-around; 
+    gap: 20px; 
+    padding: 20px;
+  }
+  
+  /* Individual journal card */
+  .journal-card {
+    cursor: pointer;
+    color: white;
+    padding: 20px;
+    width: 150px;
+    height: 200px; 
+    border-radius: 20px 0 0 20px; 
+    background: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 1px solid #ddd;
+    position: relative;
+  }
+  
+  .journal-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+  }
+  
+  .journal-card-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .journal-card h3 {
+    font-size: 1.2em;
+    margin: 0;
+  }
+  
+  /* Curved spine effect */
+  .journal-card:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -10px; /* Move the spine slightly outside the card on the left side */
+    width: 20px; /* Width of the spine */
+    height: 100%;
+    background-color: #333; /* Dark color for the spine */
+    border-radius: 20px 0 0 20px;
+  }
+  

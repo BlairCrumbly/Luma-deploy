@@ -1,0 +1,131 @@
+.entry-editor-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 20px;
+  }
+  
+  .entry-header {
+    margin-bottom: 20px;
+  }
+  
+  .entry-header h1 {
+    margin-bottom: 10px;
+    font-size: 28px;
+  }
+  
+  .entry-moods {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+  }
+  
+  .mood-emoji {
+    font-size: 24px;
+    cursor: default;
+  }
+  
+  .ai-prompt {
+    background-color: #f9f9f9;
+    border-left: 4px solid #4a90e2;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+  }
+  
+  .ai-prompt h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 18px;
+    color: #4a90e2;
+  }
+  
+  .ai-prompt p {
+    margin: 0;
+    font-style: italic;
+    color: #555;
+  }
+  
+  .editor-wrapper {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  
+  /* Make Quill fill the available space */
+  .editor-wrapper .quill {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .editor-wrapper .ql-container {
+    flex-grow: 1;
+    font-size: 16px;
+    overflow-y: auto;
+  }
+  
+  .editor-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+  }
+  
+  .back-button, .save-button {
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .back-button {
+    background-color: #f1f1f1;
+    border: 1px solid #ddd;
+    color: #333;
+  }
+  
+  .back-button:hover {
+    background-color: #e5e5e5;
+  }
+  
+  .save-button {
+    background-color: #dddddd;
+    border: none;
+    color: #888;
+  }
+  
+  .save-button.active {
+    background-color: #4a90e2;
+    color: white;
+  }
+  
+  .save-button.active:hover {
+    background-color: #3672b9;
+  }
+  
+  .save-button:disabled {
+    background-color: #dddddd;
+    color: #888;
+    cursor: not-allowed;
+  }
+  
+  .loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-size: 18px;
+    color: #666;
+  }
+  
+  .error {
+    color: #e74c3c;
+    text-align: center;
+    margin-top: 40px;
+    font-size: 18px;
+  }

@@ -5,8 +5,8 @@
     left: 0;
     width: 10%; /* Reduced width */
     height: 100vh;
-    background-color: #580081;
-    color: white;
+    background-color: #885784;
+    color:  #f0e8d1;
     padding-top: 20px;
     z-index: 1000;
     display: flex;
@@ -48,7 +48,7 @@
   
   .nav-links .nav-link a {
     display: block;             /* Ensure the link takes full width */
-    color: white;
+    color:  #f0e8d1;
     text-decoration: none;
     font-size: 1em;             /* Slightly smaller font */
     padding: 10px 15px;
@@ -75,7 +75,7 @@
   }
 
   .logout-btn {
-    background: #580081;   /* Same background as navbar */
+    background-color: #885784;   /* Same background as navbar */
     border: none;          /* Remove default border */
     color: rgb(255, 156, 156);          /* White text */
     font-size: 1em;        /* Match nav link font size */
@@ -98,10 +98,13 @@
       width: 15%; /* Keep same narrow width when collapsed */
       /* Add bottom padding so content isn't flush with bottom */
       padding-bottom: 20px;
+
     }
   
     .hamburger {
       display: flex;
+      
+      
     }
   
     .nav-links {

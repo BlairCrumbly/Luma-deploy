@@ -1,23 +1,20 @@
-from config import db, api
+from config import db, api, app
 from flask import request, jsonify
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import Entry, Journal, Mood, EntryMood
 from datetime import datetime
 import random
+import requests
+import json
 
-# AI prompts list - we would normally integrate with an actual AI service
-AI_PROMPTS = [
+# Fallback prompts in case API fails
+FALLBACK_PROMPTS = [
     "What was the most meaningful conversation you had today?",
     "Describe a moment today that made you feel grateful.",
     "What's something you learned or realized today?",
     "If you could change one decision you made today, what would it be?",
-    "What's something that challenged you today and how did you handle it?",
-    "Write about something that brought you joy today.",
-    "Reflect on a mistake you made recently and what you learned from it.",
-    "What's something you're looking forward to in the near future?",
-    "Describe your current emotional state and what might have led to it.",
-    "What's one thing you'd like to remember about today?"
+    "What's something that challenged you today and how did you handle it?"
 ]
 
 class EntryResource(Resource):
@@ -166,9 +163,90 @@ class AiPromptResource(Resource):
     @jwt_required()
     def get(self):
         try:
-            # In a real implementation, this could call an external AI service
-            # For now, just return a random prompt from our predefined list
-            prompt = random.choice(AI_PROMPTS)
-            return {"prompt": prompt}, 200
+            current_user_id = get_jwt_identity()
+            
+            # Get Writecream API config from environment variables
+            api_url = app.config.get("WRITECREAM_API_URL")
+            api_key = app.config.get("WRITECREAM_API_KEY")
+            tool_id = app.config.get("WRITECREAM_TOOL_ID")
+            
+            # Validate that the required configuration is available
+            if not all([api_url, api_key, tool_id]):
+                app.logger.error("Writecream API configuration missing")
+                return {"prompt": random.choice(FALLBACK_PROMPTS), 
+                        "note": "Using fallback prompt due to missing API configuration"}, 200
+            
+            # Get user's recent entries to generate a more personalized prompt
+            user_entries = (
+                Entry.query.join(Journal)
+                .filter(Journal.user_id == current_user_id)
+                .order_by(Entry.created_at.desc())
+                .limit(3)
+                .all()
+            )
+            
+            # Generate context for the API based on user's moods if available
+            context = "Generate a thoughtful journal prompt for self-reflection"
+            
+            # Add mood context if entries exist
+            if user_entries:
+                moods = []
+                for entry in user_entries:
+                    for mood in entry.moods:
+                        moods.append(mood.name.lower())
+                
+                if moods:
+                    # Get unique moods
+                    unique_moods = list(set(moods))
+                    if len(unique_moods) > 0:
+                        mood_text = ", ".join(unique_moods[:3])  # Use up to 3 recent moods
+                        context = f"Generate a thoughtful journal prompt for someone feeling {mood_text}"
+            
+            app.logger.info(f"Making Writecream API request with context: {context}")
+            
+            # Make API request to Writecream
+            response = requests.post(
+                api_url,
+                headers={"Content-Type": "application/json"},
+                data=json.dumps({
+                    "key": api_key,
+                    "tool_id": tool_id,
+                    "tool_input": context
+                }),
+                timeout=5  # Set a timeout to prevent hanging requests
+            )
+            
+            # Check if request was successful
+            if response.status_code == 200:
+                prompt_data = response.json()
+                app.logger.info(f"Received API response: {prompt_data}")
+                
+                # Assuming the API returns a string or a field containing the prompt
+                # Adjust this based on the actual API response structure
+                if isinstance(prompt_data, str):
+                    prompt = prompt_data
+                elif isinstance(prompt_data, dict) and "output" in prompt_data:
+                    prompt = prompt_data["output"]
+                else:
+                    # If the API response format is unexpected, use a fallback
+                    prompt = random.choice(FALLBACK_PROMPTS)
+                    app.logger.warning("Unexpected API response format, using fallback prompt")
+                    
+                return {"prompt": prompt}, 200
+            else:
+                # If API call fails, use a fallback prompt
+                app.logger.warning(f"API returned status code {response.status_code}")
+                prompt = random.choice(FALLBACK_PROMPTS)
+                return {"prompt": prompt, 
+                        "note": f"Using fallback prompt due to API response: {response.status_code}"}, 200
+                
+        except requests.exceptions.RequestException as e:
+            # Handle request exceptions (timeout, connection error, etc.)
+            app.logger.error(f"Request exception when calling Writecream API: {str(e)}")
+            prompt = random.choice(FALLBACK_PROMPTS)
+            return {"prompt": prompt, "note": "Using fallback prompt due to API connectivity issues"}, 200
         except Exception as e:
-            return {"error": f"Error generating AI prompt: {str(e)}"}, 500
+            # For any other exceptions, use fallback and log the error
+            app.logger.error(f"Error in AI Prompt generation: {str(e)}")
+            prompt = random.choice(FALLBACK_PROMPTS)
+            return {"prompt": prompt, "note": "Using fallback prompt due to an error"}, 200

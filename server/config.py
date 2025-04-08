@@ -48,6 +48,12 @@ app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=30)
 
+#ai stuff :P
+
+app.config["WRITECREAM_API_URL"] = os.getenv("WRITECREAM_API_URL")
+app.config["WRITECREAM_API_KEY"] = os.getenv("WRITECREAM_API_KEY")
+app.config["WRITECREAM_TOOL_ID"] = os.getenv("WRITECREAM_TOOL_ID")
+
 sess = Session(app)
 
 db = SQLAlchemy(app=app, metadata=metadata)

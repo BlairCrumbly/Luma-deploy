@@ -6,8 +6,8 @@ from sqlalchemy import DateTime
 class Entry(db.Model, SerializerMixin):
     __tablename__ = 'entries'
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String, unique=True, nullable=False, )
-    main_text = db.Column(db.String, unique=True, nullable=False)
+    title = db.Column(db.String, unique=False, nullable=False, )
+    main_text = db.Column(db.String, unique=False, nullable=True)
     created_at = db.Column(db.DateTime)
     updated_at = db.Column(db.DateTime)
     journal_id = db.Column(db.Integer, db.ForeignKey('journals.id'), nullable=False)

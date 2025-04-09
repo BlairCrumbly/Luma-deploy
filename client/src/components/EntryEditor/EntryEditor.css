@@ -129,3 +129,35 @@
     margin-top: 40px;
     font-size: 18px;
   }
+
+  /* EntryEditor.css */
+
+/* Container for the whole editor */
+.entry-editor-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+  }
+  
+  /* Styling the ReactQuill editor container */
+  .ReactQuill {
+    width: 100%;
+    min-height: 400px; /* You can adjust this height */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+  }
+  
+  /* Styling for the toolbar */
+  .ql-toolbar {
+    background-color: #f1f1f1;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  /* Styling for the Quill content */
+  .ql-editor {
+    min-height: 200px;
+  }
+  

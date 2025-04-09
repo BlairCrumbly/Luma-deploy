@@ -1,65 +1,47 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import ReactQuill from 'react-quill'; // Import React Quill
+import 'react-quill/dist/quill.snow.css'; // Import Quill styles
 import { api } from '../../services/api';
 import './EntryEditor.css';
 
 const EntryEditor = () => {
   const { entryId } = useParams();
+  console.log("Entry ID:", entryId);
   const location = useLocation();
   const navigate = useNavigate();
   const isNewEntry = location.state?.isNewEntry || false;
   const requestedAiPrompt = location.state?.aiPrompt || false;
-  
+
   const [entry, setEntry] = useState(null);
-  const [content, setContent] = useState('');
+  const [editorContent, setEditorContent] = useState(''); // Content for React Quill
   const [aiPrompt, setAiPrompt] = useState('');
-  const [moods, setMoods] = useState([]);
+  const [moods, setMoods] = useState([]); // Assuming moods are selected by the user
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [unsavedChanges, setUnsavedChanges] = useState(false);
-
-  // Quill editor modules/formats configuration
-  const modules = {
-    toolbar: [
-      [{ 'header': [1, 2, 3, false] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-      ['link', 'blockquote'],
-      [{ 'color': [] }, { 'background': [] }],
-      ['clean']
-    ],
-  };
-
-  const formats = [
-    'header',
-    'bold', 'italic', 'underline', 'strike',
-    'list', 'bullet',
-    'link', 'blockquote',
-    'color', 'background'
-  ];
 
   // Fetch entry data and possibly AI prompt
   useEffect(() => {
     const fetchEntryData = async () => {
       try {
         setLoading(true);
-        const entryData = await api.get(`/entries/${entryId}`);
-        setEntry(entryData);
-        setContent(entryData.main_text || '');
-        setMoods(entryData.moods || []);
-        
-        // If this is a new entry with AI prompt requested
+  
+        if (isNewEntry) {
+          setEntry({ title: '', main_text: '' });
+          setEditorContent('');
+        } else {
+          // Ensure the entryId is valid and used in the request
+          const entryData = await api.get(`/entries/${entryId}`);
+          setEntry(entryData);
+          setEditorContent(entryData.main_text || ''); // Set the content for React Quill
+        }
+  
+        // Handle AI prompt if it's a new entry and requested
         if (isNewEntry && requestedAiPrompt) {
-          try {
-            const promptResponse = await api.get('/ai-prompt');
-            setAiPrompt(promptResponse.prompt);
-          } catch (promptErr) {
-            console.error('Error fetching AI prompt:', promptErr);
-            setAiPrompt('What would you like to write about today?');
-          }
+          const promptResponse = await api.get('/ai-prompt');
+          setAiPrompt(promptResponse.prompt || 'What would you like to write about today?');
         }
       } catch (err) {
         console.error('Error fetching entry:', err);
@@ -68,13 +50,13 @@ const EntryEditor = () => {
         setLoading(false);
       }
     };
-
+  
     fetchEntryData();
   }, [entryId, isNewEntry, requestedAiPrompt]);
 
   // Handle content changes
-  const handleContentChange = (newContent) => {
-    setContent(newContent);
+  const handleEditorChange = (content) => {
+    setEditorContent(content);
     setUnsavedChanges(true);
   };
 
@@ -82,13 +64,25 @@ const EntryEditor = () => {
   const handleSave = async () => {
     try {
       setSaving(true);
-      
-      await api.put(`/entries/${entryId}`, {
-        main_text: content
-      });
-      
+  
+      // Validate that there is content to save
+      if (!editorContent.trim()) {
+        setError('Please enter some text to save.');
+        return;
+      }
+  
+      const requestData = {
+        main_text: editorContent // Send only the updated content
+      };
+  
+      console.log('Sending PATCH request data:', requestData);
+  
+      // Send PATCH request to update the entry
+      const response = await api.patch(`/entries/${entryId}`, requestData); // Use entryId from the URL
+      console.log('Response from API:', response);
+  
       setUnsavedChanges(false);
-      // Show success message or toast notification here if needed
+      alert('Entry saved successfully!');
     } catch (err) {
       console.error('Error saving entry:', err);
       setError('Failed to save entry. Please try again.');
@@ -96,6 +90,7 @@ const EntryEditor = () => {
       setSaving(false);
     }
   };
+  
 
   // Warn before leaving with unsaved changes
   useEffect(() => {
@@ -116,9 +111,9 @@ const EntryEditor = () => {
 
   return (
     <div className="entry-editor-container">
+      {/* Entry Header */}
       <div className="entry-header">
         <h1>{entry.title}</h1>
-        
         <div className="entry-moods">
           {moods.map(mood => (
             <span key={mood.id} className="mood-emoji" title={`Mood score: ${mood.score}`}>
@@ -126,7 +121,6 @@ const EntryEditor = () => {
             </span>
           ))}
         </div>
-        
         {requestedAiPrompt && aiPrompt && (
           <div className="ai-prompt">
             <h3>Writing Prompt</h3>
@@ -134,26 +128,28 @@ const EntryEditor = () => {
           </div>
         )}
       </div>
-      
+
+      {/* React-Quill Editor */}
       <div className="editor-wrapper">
-        <ReactQuill 
-          theme="snow"
-          value={content}
-          onChange={handleContentChange}
-          modules={modules}
-          formats={formats}
-          placeholder="Start writing here..."
+        <ReactQuill
+          value={editorContent}
+          onChange={handleEditorChange}
+          modules={{
+            toolbar: [
+              [{ 'header': '1' }, { 'header': '2' }, { 'font': [] }],
+              [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+              ['bold', 'italic', 'underline', 'strike'],
+              ['link'],
+              [{ 'align': [] }],
+              ['clean']
+            ]
+          }}
         />
       </div>
-      
+
+      {/* Save and back buttons */}
       <div className="editor-actions">
-        <button 
-          className="back-button"
-          onClick={() => navigate(-1)}
-        >
-          Back
-        </button>
-        
+        <button className="back-button" onClick={() => navigate(-1)}>Back</button>
         <button 
           className={`save-button ${unsavedChanges ? 'active' : ''}`}
           onClick={handleSave}

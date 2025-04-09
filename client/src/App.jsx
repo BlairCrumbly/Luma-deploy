@@ -10,6 +10,11 @@ import EntriesPage from './pages/EntryPage';
 import JournalPage from './pages/JournalPage';
 import JournalFormPage from './pages/JournalFormPage';
 import Navbar from './components/Navbar/Navbar'
+import EntriesList from './components/Entries/EntriesList';
+import EntryForm from './components/EntryForm/EntryForm';
+import EntryEditor from './components/EntryEditor/EntryEditor';
+
+
 
 
 
@@ -47,9 +52,29 @@ function App() {
                 <JournalFormPage />  {/* This route will show the journal form */}
               </ProtectedRoute>
             } />
+              <Route path="/journal/:journalId/entries" element={
+              <ProtectedRoute>
+                <EntriesList />
+              </ProtectedRoute>
+            } />
+            
+            {/* New entry form route */}
+            <Route path="/journal/new-entry" element={
+              <ProtectedRoute>
+                <EntryForm />
+              </ProtectedRoute>
+            } />
+
+            {/* Entry editor route */}
+            <Route path="/entry/:entryId" element={
+              <ProtectedRoute>
+                <EntryEditor />
+              </ProtectedRoute>
+            } />
 
             {/* Redirect all other routes to home */}
             <Route path="*" element={<Navigate to="/" replace />} />
+
           </Routes>
         </div>
       </Router>

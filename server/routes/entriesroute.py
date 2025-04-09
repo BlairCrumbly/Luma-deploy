@@ -158,6 +158,54 @@ class EntryResource(Resource):
         except Exception as e:
             db.session.rollback()
             return {"error": f"Error deleting entry: {str(e)}"}, 500
+        
+
+    @jwt_required()
+    def put(self, entry_id):
+        try:
+            data = request.get_json()
+            current_user_id = get_jwt_identity()
+
+            # Find the entry and verify ownership
+            entry = (
+                Entry.query.join(Journal)
+                .filter(Entry.id == entry_id, Journal.user_id == current_user_id)
+                .first()
+            )
+
+            if not entry:
+                return {"error": "Entry not found or access denied"}, 404
+
+            # Update fields with the provided data
+            title = data.get('title', entry.title)
+            main_text = data.get('main_text', entry.main_text)
+            ai_prompt_used = data.get('ai_prompt_used', entry.ai_prompt_used)
+            mood_ids = data.get('mood_ids', [])
+
+            # Update entry fields
+            entry.title = title
+            entry.main_text = main_text
+            entry.ai_prompt_used = ai_prompt_used
+            entry.updated_at = datetime.now()  # Update the timestamp
+
+            # Update associated moods
+            # Delete existing moods for the entry
+            EntryMood.query.filter_by(entry_id=entry_id).delete()
+            
+            for mood_id in mood_ids:
+                # Verify the mood exists
+                mood = Mood.query.get(mood_id)
+                if mood:
+                    entry_mood = EntryMood(entry_id=entry_id, mood_id=mood_id)
+                    db.session.add(entry_mood)
+
+            db.session.commit()
+
+            return entry.to_dict(), 200
+
+        except Exception as e:
+            db.session.rollback()
+            return {"error": f"Error updating entry: {str(e)}"}, 500
 
 class AiPromptResource(Resource):
     @jwt_required()

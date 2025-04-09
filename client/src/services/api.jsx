@@ -54,6 +54,63 @@ export const api = {
 
     return await response.json();
   },
+  async put(endpoint, data) {
+    try {
+      const csrfToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrf_access_token'))
+        ?.split('=')[1]; // Get CSRF token from cookie
+  
+      const response = await fetch(`/api${endpoint}`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': csrfToken || '', // Use the token if found, or empty string
+        },
+        body: JSON.stringify(data),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Network response was not ok');
+      }
+  
+      return await response.json();
+    } catch (error) {
+      console.error(`PUT ${endpoint} error:`, error);
+      throw error;
+    }
+  },
+  // PATCH request
+  async patch(endpoint, data) {
+    try {
+      const csrfToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrf_access_token'))
+        ?.split('=')[1]; // Get CSRF token from cookie
+
+      const response = await fetch(`/api${endpoint}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': csrfToken || '', // Use the token if found, or empty string
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Network response was not ok');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error(`PATCH ${endpoint} error:`, error);
+      throw error;
+    }
+  },
 
   // DELETE request
   async delete(endpoint) {

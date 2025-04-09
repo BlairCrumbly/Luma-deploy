@@ -57,6 +57,9 @@ const Navbar = () => {
             <Link to="/journals/new">New Journal</Link>
           </li>
           <li className="nav-link">
+            <Link to="/journal/new-entry">New Entry</Link>
+          </li>
+          <li className="nav-link">
             {/* Use a button for logout */}
             <button className="logout-btn" onClick={handleLogout}>
               Logout

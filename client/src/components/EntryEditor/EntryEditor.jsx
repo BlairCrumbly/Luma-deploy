@@ -7,7 +7,6 @@ import './EntryEditor.css';
 
 const EntryEditor = () => {
   const { entryId } = useParams();
-  console.log("Entry ID:", entryId);
   const location = useLocation();
   const navigate = useNavigate();
   const isNewEntry = location.state?.isNewEntry || false;

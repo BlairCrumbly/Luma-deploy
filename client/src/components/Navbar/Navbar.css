@@ -50,7 +50,7 @@
     display: block;             /* Ensure the link takes full width */
     color:  #f0e8d1;
     text-decoration: none;
-    font-size: 1em;             /* Slightly smaller font */
+    font-size: 0.8em;             /* Slightly smaller font */
     padding: 10px 15px;
     text-align: left;
   }

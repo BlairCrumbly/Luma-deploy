@@ -24,8 +24,8 @@ const HomePage = () => {
       try {
         // Fetch journals
         const journalsData = await api.get('/journals');
-        // Sort by ID (assuming newer journals have higher IDs) and take 3
-        const sortedJournals = journalsData.sort((a, b) => b.id - a.id).slice(0, 4);
+        // Sort by ID (and take 4
+        const sortedJournals = journalsData.sort((a, b) => b.id - a.id).slice(0, 5);
         setRecentJournals(sortedJournals);
 
         // Fetch entries

@@ -1,6 +1,7 @@
+// client/src/components/Auth/AuthForm.jsx
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../contexts/AuthContext'; //authcontext
+import { AuthContext } from '../contexts/AuthContext';
 import './AuthForm.css';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
@@ -35,11 +36,10 @@ const AuthForm = ({ isLogin }) => {
     try {
       if (isLogin) {
         await login(values.username, values.password);
-        navigate('/');
       } else {
         await signup(values.username, values.email, values.password);
-        navigate('/');
       }
+      navigate('/');
     } catch (err) {
       // Set a generic error message; you can also map specific errors to fields
       setFieldError('general', err.message || 'Authentication failed');

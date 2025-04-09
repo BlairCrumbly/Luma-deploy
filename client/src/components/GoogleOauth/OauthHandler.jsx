@@ -2,9 +2,8 @@ import React, { useEffect, useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 
-
 const OAuthRedirectHandler = () => {
-  const auth = useContext(AuthContext);
+  const { fetchCurrentUser } = useContext(AuthContext);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,16 +13,13 @@ const OAuthRedirectHandler = () => {
       try {
         console.log("Starting OAuth redirect handling...");
         
-        // Debug the auth object to see what's available
-        console.log("Auth context:", auth);
-        
-        // Use handleGoogleRedirect which is defined in the AuthContext
-        const userData = await auth.handleGoogleRedirect();
-        console.log("User data received:", userData);
+        // We don't need to do anything special here - the backend has already set cookies
+        // We just need to fetch the current user info
+        const userData = await fetchCurrentUser();
         
         if (userData) {
           // Authentication successful, redirect to home
-          navigate('/home', { replace: true });
+          navigate('/', { replace: true });
         } else {
           throw new Error('No user data returned after authentication');
         }
@@ -39,7 +35,7 @@ const OAuthRedirectHandler = () => {
     };
 
     handleRedirect();
-  }, [auth, navigate]);
+  }, [fetchCurrentUser, navigate]);
 
   if (loading) {
     return (

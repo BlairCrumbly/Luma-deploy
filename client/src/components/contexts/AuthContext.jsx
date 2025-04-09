@@ -9,15 +9,19 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Function to fetch the current user profile
+  // Improved fetchCurrentUser function with proper error handling
   const fetchCurrentUser = async () => {
     try {
       const response = await fetch('/api/user/profile', {
-        credentials: 'include' // Important for cookies
+        credentials: 'include', // Important for cookies
+        headers: {
+          'Content-Type': 'application/json',
+        }
       });
       
       if (!response.ok) {
         console.error('Failed to fetch user profile:', response.status);
+        setCurrentUser(null);
         return null;
       }
       
@@ -26,17 +30,8 @@ export const AuthProvider = ({ children }) => {
       return userData;
     } catch (error) {
       console.error('Error fetching user profile:', error);
+      setCurrentUser(null);
       return null;
-    }
-  };
-
-  // Google OAuth redirect handler
-  const handleGoogleRedirect = async () => {
-    try {
-      return await fetchCurrentUser(); // Simply use the fetchCurrentUser function
-    } catch (error) {
-      console.error('Google redirect handling failed:', error);
-      throw error;
     }
   };
 
@@ -50,16 +45,14 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
 
-  // Login function
+  // Improved login function
   const login = async (username, password) => {
     try {
-      const csrfToken = Cookies.get('csrf_access_token'); 
       const response = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
         credentials: 'include',
-        'X-CSRF-TOKEN': csrfToken
       });
       
       if (!response.ok) {
@@ -76,7 +69,41 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Logout function
+  // Sign up function
+  const signup = async (username, email, password) => {
+    try {
+      const response = await fetch('/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, email, password }),
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Signup failed');
+      }
+      
+      const userData = await response.json();
+      setCurrentUser(userData);
+      return userData;
+    } catch (error) {
+      console.error('Signup failed:', error);
+      throw error;
+    }
+  };
+
+  // Google OAuth redirect handler
+  const handleGoogleRedirect = async () => {
+    try {
+      return await fetchCurrentUser(); // Simply use the fetchCurrentUser function
+    } catch (error) {
+      console.error('Google redirect handling failed:', error);
+      throw error;
+    }
+  };
+
+  // Improved logout function
   const logout = async () => {
     try {
       const csrfToken = Cookies.get('csrf_access_token');  // Get CSRF token from cookies
@@ -99,13 +126,12 @@ export const AuthProvider = ({ children }) => {
       console.error('Logout failed:', error);
     }
   };
-  
 
   const value = {
     currentUser,
-    setCurrentUser,
     loading,
     login,
+    signup,
     logout,
     handleGoogleRedirect,
     fetchCurrentUser

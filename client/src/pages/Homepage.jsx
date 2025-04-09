@@ -6,7 +6,7 @@ import JournalCard from '../components/JournalCard/JournalCard';
 import CalendarHeatmap from 'react-calendar-heatmap';
 import 'react-calendar-heatmap/dist/styles.css';
 import '../styles/Homepage.css';
-import EntryForm from '../components/EntryForm/EntryForm';
+
 
 const HomePage = () => {
   const { currentUser } = useContext(AuthContext);
@@ -14,7 +14,6 @@ const HomePage = () => {
   const [latestEntries, setLatestEntries] = useState([]);
   const [entriesHeatmap, setEntriesHeatmap] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   
   // State for current month view
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -22,37 +21,51 @@ const HomePage = () => {
   useEffect(() => {
     const fetchHomeData = async () => {
       try {
-        // Fetch journals
-        const journalsData = await api.get('/journals');
-        // Sort by ID (and take 4
-        const sortedJournals = journalsData.sort((a, b) => b.id - a.id).slice(0, 5);
-        setRecentJournals(sortedJournals);
+        // Fetch journals - handle 404 or other errors
+        try {
+          const journalsData = await api.get('/journals');
+          // Sort by ID and take 5
+          const sortedJournals = journalsData.sort((a, b) => b.id - a.id).slice(0, 5);
+          setRecentJournals(sortedJournals);
+        } catch (journalErr) {
+          console.log('Could not load journals, possibly a new user', journalErr);
+          setRecentJournals([]);
+        }
 
-        // Fetch entries
-        const entriesData = await api.get('/entries');
-        // Sort by creation date and take 4 most recent
-        const recentEntries = entriesData
-          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-          .slice(0, 4);
-        setLatestEntries(recentEntries);
+        // Fetch entries - handle 404 or other errors
+        try {
+          const entriesData = await api.get('/entries');
+          // Sort by creation date and take 4 most recent
+          const recentEntries = entriesData
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+            .slice(0, 4);
+          setLatestEntries(recentEntries);
 
-        // Process entries for heatmap
-        const entryDates = entriesData.reduce((acc, entry) => {
-          const date = entry.created_at.split('T')[0]; // Get YYYY-MM-DD format
-          acc[date] = (acc[date] || 0) + 1;
-          return acc;
-        }, {});
+          // Process entries for heatmap
+          const entryDates = entriesData.reduce((acc, entry) => {
+            const date = entry.created_at.split('T')[0]; // Get YYYY-MM-DD format
+            acc[date] = (acc[date] || 0) + 1;
+            return acc;
+          }, {});
 
-        const heatmapData = Object.keys(entryDates).map(date => ({
-          date,
-          count: entryDates[date]
-        }));
+          const heatmapData = Object.keys(entryDates).map(date => ({
+            date,
+            count: entryDates[date]
+          }));
 
-        setEntriesHeatmap(heatmapData);
-        setLoading(false);
+          setEntriesHeatmap(heatmapData);
+        } catch (entriesErr) {
+          console.log('Could not load entries, possibly a new user', entriesErr);
+          setLatestEntries([]);
+          setEntriesHeatmap([]);
+        }
       } catch (err) {
-        console.error('Error fetching homepage data:', err);
-        setError(err.message);
+        console.error('Error in fetchHomeData:', err);
+        // Set empty arrays to ensure the page still renders
+        setRecentJournals([]);
+        setLatestEntries([]);
+        setEntriesHeatmap([]);
+      } finally {
         setLoading(false);
       }
     };
@@ -74,60 +87,35 @@ const HomePage = () => {
     window.location.href = `/journal/${journalId}/entries`;
   };
 
-  // Function to get the first day of the current month
-  const getStartDate = () => {
-    const start = new Date(currentDate);
-    start.setDate(1);
-    return start;
-  };
-
-  // Function to get the last day of the current month
-  const getEndDate = () => {
-    const end = new Date(currentDate);
-    end.setMonth(end.getMonth() + 1, 0);
-    return end;
-  };
-
-  // Function to navigate to previous month
-  const goToPreviousMonth = () => {
-    const newDate = new Date(currentDate);
-    newDate.setMonth(newDate.getMonth() - 1);
-    setCurrentDate(newDate);
-  };
-
-  // Function to navigate to next month
-  const goToNextMonth = () => {
-    const newDate = new Date(currentDate);
-    newDate.setMonth(newDate.getMonth() + 1);
-    setCurrentDate(newDate);
-  };
-
   // Function to format month name
   const formatMonthYear = (date) => {
     return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   };
 
   if (loading) return <div className="loading">Loading your dashboard...</div>;
-  if (error) return <div className="error">Error: {error}</div>;
+
+  // If user is not logged in, show a welcome message
+
 
   return (
     <div className="homepage-container">
       <div className="homepage-header">
-        <h1>Welcome, {currentUser?.username}!</h1>
+        <h1>Welcome, {currentUser?.username || 'there'}!</h1>
         <p className="subtitle">Your journaling dashboard</p>
       </div>
 
       <div className="homepage-section">
         <div className="section-header">
-          <h2>Recent Journals</h2>
+          <h2>Your Journals</h2>
           <Link to="/journals" className="view-all-link">View All</Link>
         </div>
         
         <div className="journals-row">
           {recentJournals.length === 0 ? (
             <div className="no-data-message">
-              <p>No journals yet. Create your first journal to start writing!</p>
-              <Link to="/journals/new" className="create-button">Create Journal</Link>
+              <p>You don't have any journals yet.</p>
+              <p>Create your first journal to start organizing your thoughts!</p>
+              <Link to="/journals/new" className="create-button">Create Your First Journal</Link>
             </div>
           ) : (
             <>
@@ -156,8 +144,9 @@ const HomePage = () => {
         <div className="entries-grid">
           {latestEntries.length === 0 ? (
             <div className="no-data-message">
-              <p>No entries yet. Create your first entry to begin your journey!</p>
-              <Link to="/journal/new-entry" className="create-button">Write Entry</Link>
+              <p>You haven't written any entries yet.</p>
+              <p>Start documenting your thoughts, feelings, and experiences today!</p>
+              <Link to="/journal/new-entry" className="create-button">Write Your First Entry</Link>
             </div>
           ) : (
             latestEntries.map(entry => (
@@ -187,38 +176,61 @@ const HomePage = () => {
           <h2>Your Writing Activity</h2>
         </div>
         
-        {/* <div className="calendar-navigation">
-          <button onClick={goToPreviousMonth} className="calendar-nav-btn">
-            &larr; Prev
-          </button>
-          <h3 className="current-month">{formatMonthYear(currentDate)}</h3>
-          <button onClick={goToNextMonth} className="calendar-nav-btn">
-            Next &rarr;
-          </button>
-        </div> */}
-        
-        <div className="heatmap-container">
-          <CalendarHeatmap
-            startDate={new Date(new Date().setFullYear(new Date().getFullYear() - 1))}
-            endDate={new Date()}
-            values={entriesHeatmap}
-            classForValue={(value) => {
-              if (!value) {
-                return 'color-empty';
-              }
-              return `color-scale-${Math.min(value.count, 4)}`;
-            }}
-            tooltipDataAttrs={(value) => {
-              if (!value || !value.date) {
-                return null;
-              }
-              return {
-                'data-tip': `${value.date}: ${value.count} entries`,
-              };
-            }}
-          />
-        </div>
+        {entriesHeatmap.length === 0 ? (
+          <div className="no-data-message">
+            <p>No writing activity to display yet.</p>
+            <p>Regular journaling helps build a meaningful record of your journey.</p>
+            <Link to="/journal/new-entry" className="create-button">Start Writing Today</Link>
+          </div>
+        ) : (
+          <div className="heatmap-container">
+            <CalendarHeatmap
+              startDate={new Date(new Date().setFullYear(new Date().getFullYear() - 1))}
+              endDate={new Date()}
+              values={entriesHeatmap}
+              classForValue={(value) => {
+                if (!value) {
+                  return 'color-empty';
+                }
+                return `color-scale-${Math.min(value.count, 4)}`;
+              }}
+              tooltipDataAttrs={(value) => {
+                if (!value || !value.date) {
+                  return null;
+                }
+                return {
+                  'data-tip': `${value.date}: ${value.count} entries`,
+                };
+              }}
+            />
+          </div>
+        )}
       </div>
+      
+      {recentJournals.length === 0 && latestEntries.length === 0 && (
+        <div className="getting-started-section">
+          <h2>Getting Started</h2>
+          <div className="getting-started-steps">
+            <div className="step">
+              <div className="step-number">1</div>
+              <h3>Create a Journal</h3>
+              <p>Journals help you organize your entries by themes or purposes</p>
+              <Link to="/journals/new" className="step-button">Create Journal</Link>
+            </div>
+            <div className="step">
+              <div className="step-number">2</div>
+              <h3>Write Your First Entry</h3>
+              <p>Express your thoughts, feelings, and experiences</p>
+              <Link to="/new-entry" className="step-button">Write Entry</Link>
+            </div>
+            <div className="step">
+              <div className="step-number">3</div>
+              <h3>Build a Routine</h3>
+              <p>Make journaling a regular habit for the greatest benefits</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -97,9 +97,9 @@
   }
   
   /* Mobile responsiveness - collapsible menu */
-  @media (max-width: 768px) {
+  @media (max-width: 1200px) {
     .navbar {
-      width: 15%; /* Keep same narrow width when collapsed */
+      width: 10%; /* Keep same narrow width when collapsed */
       /* Add bottom padding so content isn't flush with bottom */
       padding-bottom: 20px;
 

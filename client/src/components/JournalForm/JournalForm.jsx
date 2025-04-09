@@ -34,7 +34,13 @@ const JournalForm = ({ onJournalCreated }) => {
       setStatus({ success: 'Journal created successfully!' });
     } catch (err) {
       console.error('Error creating journal:', err);
-      setStatus({ error: 'Error creating journal. Please try again.' });
+      
+      // Check if it's a unique constraint violation error
+      if (err.message && err.message.includes('UNIQUE constraint failed: journals.title')) {
+        setStatus({ error: 'A journal with this title already exists. Please use a different title.' });
+      } else {
+        setStatus({ error: 'Error creating journal. Please try again.' });
+      }
     } finally {
       setSubmitting(false);
     }
@@ -45,7 +51,7 @@ const JournalForm = ({ onJournalCreated }) => {
       <Formik
         initialValues={{
           title: '',
-          year: '',
+          year: new Date().getFullYear(), // Default to current year
           color: '#E7E5E5'
         }}
         validationSchema={JournalSchema}

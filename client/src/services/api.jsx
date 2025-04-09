@@ -18,9 +18,15 @@ export const api = {
         }
       });
 
+      // For 404 errors with new users, return empty array instead of throwing
+      if (response.status === 404) {
+        console.log(`Endpoint ${endpoint} not found, returning empty array`);
+        return [];
+      }
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Network response was not ok');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Request failed with status ${response.status}`);
       }
 
       return await response.json();
@@ -32,28 +38,34 @@ export const api = {
 
   // POST request
   async post(endpoint, data) {
-    const csrfToken = document.cookie
-      .split('; ')
-      .find(row => row.startsWith('csrf_access_token'))
-      ?.split('=')[1];
+    try {
+      const csrfToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrf_access_token'))
+        ?.split('=')[1];
 
-    const response = await fetch(`/api${endpoint}`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': csrfToken || '',
-      },
-      body: JSON.stringify(data),
-    });
+      const response = await fetch(`/api${endpoint}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': csrfToken || '',
+        },
+        body: JSON.stringify(data),
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Network response was not ok');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Request failed with status ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error(`POST ${endpoint} error:`, error);
+      throw error;
     }
-
-    return await response.json();
   },
+
   async put(endpoint, data) {
     try {
       const csrfToken = document.cookie
@@ -72,8 +84,8 @@ export const api = {
       });
   
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Network response was not ok');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Request failed with status ${response.status}`);
       }
   
       return await response.json();
@@ -82,6 +94,7 @@ export const api = {
       throw error;
     }
   },
+
   // PATCH request
   async patch(endpoint, data) {
     try {
@@ -101,8 +114,8 @@ export const api = {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Network response was not ok');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Request failed with status ${response.status}`);
       }
 
       return await response.json();
@@ -125,7 +138,7 @@ export const api = {
         credentials: 'include', // Ensure cookies are sent with the request
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': csrfToken, // Include CSRF token in headers
+          'X-CSRF-TOKEN': csrfToken || '', // Use the token if found, or empty string
         },
       };
   
@@ -133,9 +146,12 @@ export const api = {
       const response = await fetch(apiUrl, options);
   
       if (!response.ok) {
+        if (response.status === 404) {
+          return null; // Return null for 404 errors
+        }
         const errorText = await response.text();
         const errorData = errorText ? JSON.parse(errorText) : {};
-        throw new Error(errorData.error || 'Network response was not ok');
+        throw new Error(errorData.error || `Request failed with status ${response.status}`);
       }
   
       if (response.status === 204) {

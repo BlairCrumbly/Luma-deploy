@@ -14,6 +14,9 @@ const HomePage = () => {
   const [entriesHeatmap, setEntriesHeatmap] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // State for current month view
+  const [currentDate, setCurrentDate] = useState(new Date());
 
   useEffect(() => {
     const fetchHomeData = async () => {
@@ -68,6 +71,39 @@ const HomePage = () => {
   const handleJournalClick = (journalId) => {
     // Navigate to journal entries
     window.location.href = `/journal/${journalId}/entries`;
+  };
+
+  // Function to get the first day of the current month
+  const getStartDate = () => {
+    const start = new Date(currentDate);
+    start.setDate(1);
+    return start;
+  };
+
+  // Function to get the last day of the current month
+  const getEndDate = () => {
+    const end = new Date(currentDate);
+    end.setMonth(end.getMonth() + 1, 0);
+    return end;
+  };
+
+  // Function to navigate to previous month
+  const goToPreviousMonth = () => {
+    const newDate = new Date(currentDate);
+    newDate.setMonth(newDate.getMonth() - 1);
+    setCurrentDate(newDate);
+  };
+
+  // Function to navigate to next month
+  const goToNextMonth = () => {
+    const newDate = new Date(currentDate);
+    newDate.setMonth(newDate.getMonth() + 1);
+    setCurrentDate(newDate);
+  };
+
+  // Function to format month name
+  const formatMonthYear = (date) => {
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   };
 
   if (loading) return <div className="loading">Loading your dashboard...</div>;
@@ -149,6 +185,17 @@ const HomePage = () => {
         <div className="section-header">
           <h2>Your Writing Activity</h2>
         </div>
+        
+        {/* <div className="calendar-navigation">
+          <button onClick={goToPreviousMonth} className="calendar-nav-btn">
+            &larr; Prev
+          </button>
+          <h3 className="current-month">{formatMonthYear(currentDate)}</h3>
+          <button onClick={goToNextMonth} className="calendar-nav-btn">
+            Next &rarr;
+          </button>
+        </div> */}
+        
         <div className="heatmap-container">
           <CalendarHeatmap
             startDate={new Date(new Date().setFullYear(new Date().getFullYear() - 1))}

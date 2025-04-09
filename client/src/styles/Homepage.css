@@ -136,15 +136,76 @@
     font-size: 1.2rem;
   }
   
+  /* Calendar and heatmap styles */
+  .calendar-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    max-width: 500px; /* Width for horizontal calendar */
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .calendar-nav-btn {
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .calendar-nav-btn:hover {
+    background: #e9e9e9;
+    border-color: #ccc;
+  }
+  
+  .current-month {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 500;
+  }
+  
   .heatmap-container {
-    max-width: 100%;
-    overflow-x: auto;
-    padding: 20px 0;
+    max-width: 100%; /* Width for horizontal calendar */
+    margin: 0 auto;
+    padding: 15px;
+    border: 1px solid #e1e1e1;
+    border-radius: 8px;
+    background: #fff;
+    position: relative;
+  }
+  
+  /* Control the overall size of the calendar */
+  .react-calendar-heatmap {
+    width: 100%;
+    height: auto;
+  }
+  
+  /* Make the heatmap boxes smaller */
+  .react-calendar-heatmap .react-calendar-heatmap-all-weeks .react-calendar-heatmap-week .react-calendar-heatmap-day rect {
+    width: 12px; /* Smaller width */
+    height: 12px; /* Smaller height */
+    rx: 2px; /* Rounded corners */
+  }
+  
+  /* Style for weekday labels (now on the left side for horizontal layout) */
+  .react-calendar-heatmap .react-calendar-heatmap-weekday-labels {
+    font-size: 10px;
+    fill: #767676;
+  }
+  
+  /* Adjust spacing between columns */
+  .react-calendar-heatmap .react-calendar-heatmap-all-weeks .react-calendar-heatmap-week {
+    height: 16px; /* Controls vertical spacing */
   }
   
   /* Heatmap color scale */
   .react-calendar-heatmap .color-empty {
     fill: #eeeeee;
+    stroke: #d9d9d9;
+    stroke-width: 0.5px;
   }
   
   .react-calendar-heatmap .color-scale-1 {

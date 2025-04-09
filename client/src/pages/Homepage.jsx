@@ -6,6 +6,7 @@ import JournalCard from '../components/JournalCard/JournalCard';
 import CalendarHeatmap from 'react-calendar-heatmap';
 import 'react-calendar-heatmap/dist/styles.css';
 import '../styles/Homepage.css';
+import EntryForm from '../components/EntryForm/EntryForm';
 
 const HomePage = () => {
   const { currentUser } = useContext(AuthContext);
@@ -24,7 +25,7 @@ const HomePage = () => {
         // Fetch journals
         const journalsData = await api.get('/journals');
         // Sort by ID (assuming newer journals have higher IDs) and take 3
-        const sortedJournals = journalsData.sort((a, b) => b.id - a.id).slice(0, 3);
+        const sortedJournals = journalsData.sort((a, b) => b.id - a.id).slice(0, 4);
         setRecentJournals(sortedJournals);
 
         // Fetch entries

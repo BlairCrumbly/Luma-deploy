@@ -132,7 +132,7 @@ const EntryForm = () => {
             >
               {availableJournals.map(journal => (
                 <option key={journal.id} value={journal.id}>
-                  {journal.name || `Journal ${journal.id}`}
+                  {journal.name || `Journal ${journal.title}`}
                 </option>
               ))}
             </select>

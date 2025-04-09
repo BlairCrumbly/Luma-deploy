@@ -1,5 +1,5 @@
 from config import app, db
-from models import db, Mood
+from models import Mood
 
 
 

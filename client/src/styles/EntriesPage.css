@@ -29,11 +29,13 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    
   }
   
   .filter-container label {
     font-size: 0.9rem;
     color: #555;
+    
   }
   
   .journal-filter {
@@ -41,11 +43,11 @@
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 0.9rem;
-    background-color: white;
+    background-color: rgba(255, 255, 255, 0.197);
   }
   
   .new-entry-btn {
-    background-color: #2D8FB6;
+    background-color: #57886a;
     color: white;
     padding: 8px 15px;
     border-radius: 4px;
@@ -55,7 +57,7 @@
   }
   
   .new-entry-btn:hover {
-    background-color: #246d8c;
+    background-color: #426f54;
   }
   
   .entries-list {
@@ -92,7 +94,7 @@
   }
   
   .entry-title:hover {
-    color: #2D8FB6;
+    color: #57886a;
   }
   
   .entry-meta {
@@ -104,7 +106,7 @@
   }
   
   .entry-journal a {
-    color: #2D8FB6;
+    color: #57886a;
     text-decoration: none;
   }
   
@@ -117,7 +119,7 @@
     color: #555;
     font-size: 0.95rem;
     line-height: 1.5;
-    margin-bottom: 15px;
+    margin-bottom: 0px;
   }
   
   .entry-footer {
@@ -245,7 +247,7 @@
   
   .create-entry-button {
     display: inline-block;
-    background-color: #2D8FB6;
+    background-color: #57886a;
     color: white;
     padding:-10px 20px;
     border-radius: 5px;
@@ -256,7 +258,7 @@
   }
   
   .create-entry-button:hover {
-    background-color: #246d8c;
+    background-color: #406a50;
   }
   
   .loading, .error {

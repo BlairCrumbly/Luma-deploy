@@ -12,8 +12,8 @@ const JournalFormPage = () => {
   
     return (
       <div>
-        <h1>Create a New Journal</h1>
-        {/* Pass handleJournalCreated as the onJournalCreated prop */}
+        
+
         <JournalForm onJournalCreated={handleJournalCreated} />
       </div>
     );

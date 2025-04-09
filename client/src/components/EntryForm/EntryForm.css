@@ -53,7 +53,7 @@
   }
   
   .mood-button.selected {
-    border: 2px solid #4a90e2;
+    border: 2px solid #57886a;
     transform: scale(1.1);
   }
   
@@ -83,14 +83,14 @@
   }
   
   .method-button.selected {
-    background-color: #4a90e2;
+    background-color: #57886a;
     color: white;
-    border-color: #4a90e2;
+    border-color: #456c54;
   }
   
   .submit-button {
     padding: 12px;
-    background-color: #4a90e2;
+    background-color: #57886a;
     color: white;
     border: none;
     border-radius: 4px;
@@ -101,7 +101,7 @@
   }
   
   .submit-button:hover {
-    background-color: #3672b9;
+    background-color: #426f54;
   }
   
   .submit-button:disabled {

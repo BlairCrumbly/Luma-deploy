@@ -27,7 +27,8 @@
   
   .ai-prompt {
     background-color: #f9f9f9;
-    border-left: 4px solid #4a90e2;
+    border-left: 4px solid #426f54;
+
     padding: 15px;
     margin-bottom: 20px;
     border-radius: 4px;
@@ -37,7 +38,8 @@
     margin-top: 0;
     margin-bottom: 10px;
     font-size: 18px;
-    color: #4a90e2;
+    color: #426f54;
+
   }
   
   .ai-prompt p {
@@ -100,12 +102,12 @@
   }
   
   .save-button.active {
-    background-color: #4a90e2;
+    background-color: #57886a;
     color: white;
   }
   
   .save-button.active:hover {
-    background-color: #3672b9;
+    background-color: #426f54;
   }
   
   .save-button:disabled {

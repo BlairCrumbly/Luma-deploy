@@ -5,7 +5,7 @@
     left: 0;
     width: 10%; /* Reduced width */
     height: 100vh;
-    background-color: #885784;
+    background-color: #57886a;
     color:  #f0e8d1;
     padding-top: 20px;
     z-index: 1000;
@@ -20,7 +20,7 @@
   .navbar .logo {
     width: 100%;
     text-align: center;
-    font-size: 1.2em; /* Smaller font for a narrow sidebar */
+    font-size: 3em; /* Smaller font for a narrow sidebar */
     font-weight: bold;
     margin-bottom: 30px;
     position: absolute;
@@ -50,9 +50,10 @@
     display: block;             /* Ensure the link takes full width */
     color:  #f0e8d1;
     text-decoration: none;
-    font-size: 0.8em;             /* Slightly smaller font */
+    font-size: 2em;             /* Slightly smaller font */
     padding: 10px 15px;
     text-align: left;
+    margin-top: 60px;
   }
   
   .nav-links .nav-link a:hover {
@@ -75,15 +76,17 @@
   }
 
   .logout-btn {
-    background-color: #885784;   /* Same background as navbar */
+    background-color: #57886a;  /* Same background as navbar */
+    font-family:"Space Mono", monospace;;
     border: none;          /* Remove default border */
     color: rgb(255, 156, 156);          /* White text */
-    font-size: 1em;        /* Match nav link font size */
+    font-size: 2em;        /* Match nav link font size */
     padding: 10px 15px;    /* Padding to match nav links */
     width: 100%;
     text-align: left;      /* Align text to the left */
     cursor: pointer;
     transition: background-color 0.3s ease, font-weight 0.3s ease;
+    
   }
   
   /* On hover, change background color and make text bold */

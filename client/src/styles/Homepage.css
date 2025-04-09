@@ -2,7 +2,7 @@
 .homepage-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 10px;
   }
   
   .homepage-header {
@@ -88,10 +88,10 @@
     text-decoration: none;
     color: inherit;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    background: white;
+    background: rgba(255, 255, 255, 0.29);
     display: flex;
     flex-direction: column;
-    height: 100px;
+    
   }
   
   .entry-card:hover {
@@ -122,6 +122,25 @@
     font-size: 0.85rem;
     color: #888;
   }
+
+  .entry-footer {
+    display: flex
+;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0px;
+    padding-top: 15px;
+    border-top: 1px solid #f0f0f000;
+}
+
+.entry-footer {
+    display: flex
+;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: #888;
+}
   
   .entry-date {
     font-style: italic;
@@ -134,6 +153,7 @@
   
   .mood-emoji {
     font-size: 1.2rem;
+    font-size: 24px;
   }
   
   /* Calendar and heatmap styles */
@@ -170,7 +190,7 @@
   .heatmap-container {
     max-width: 100%; /* Width for horizontal calendar */
     margin: 0 auto;
-    padding: 15px;
+    padding: 10px;
     border: 1px solid #e1e1e1;
     border-radius: 8px;
     background: #fff;
@@ -209,7 +229,7 @@
   }
   
   .react-calendar-heatmap .color-scale-1 {
-    fill: #d6e9c6;
+    fill: #c8e2b4;
   }
   
   .react-calendar-heatmap .color-scale-2 {

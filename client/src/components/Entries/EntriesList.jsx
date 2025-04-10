@@ -40,7 +40,6 @@ const EntriesList = () => {
 
   return (
     <div className="entries-list">
-      <h2>Your Entries</h2>
       {entries.length === 0 ? (
         <div className="no-entries">
           <p>No entries found. Start writing your first entry!</p>

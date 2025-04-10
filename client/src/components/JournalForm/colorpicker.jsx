@@ -1,4 +1,4 @@
-
+import './JournalForm.css';
 const ALLOWED_COLORS = [
     "#EA3232", // red
     "#F19748", // orange

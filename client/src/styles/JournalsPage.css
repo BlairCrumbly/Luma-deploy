@@ -1,0 +1,13 @@
+.journals-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    border-bottom: 1px solid #e1e1e1;
+    padding-bottom: 15px;
+  }
+  
+  .journals-header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+  }

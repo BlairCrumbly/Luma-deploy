@@ -14,7 +14,7 @@
     padding: 20px;
     width: 100px;
     height: 150px; 
-    border-radius: 20px 0 0 20px; 
+    border-radius: 20px 10px 10px 0px; 
     background: #fff;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -46,10 +46,10 @@
     content: '';
     position: absolute;
     top: 0;
-    left: -10px; /* Move the spine slightly outside the card on the left side */
-    width: 20px; /* Width of the spine */
+    left: -3px; /* Move the spine slightly outside the card on the left side */
+    width: 15px; /* Width of the spine */
     height: 100%;
     background-color: #333; /* Dark color for the spine */
-    border-radius: 20px 0 0 20px;
+    border-radius: 20px 0px 0 10px;
   }
   

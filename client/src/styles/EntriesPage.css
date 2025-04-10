@@ -240,16 +240,19 @@
   .no-entries-message {
     text-align: center;
     padding: 40px 20px;
-    background-color: #f9f9f9;
+    background-color: #f9f9f96a;
     border-radius: 8px;
     color: #555;
+    border-style: dashed;
+    border-color: #333;
+    border-width: 1px;
   }
   
   .create-entry-button {
     display: inline-block;
     background-color: #57886a;
     color: white;
-    padding:-10px 20px;
+    padding:10px 20px;
     border-radius: 5px;
     text-decoration: none;
     font-weight: 500;

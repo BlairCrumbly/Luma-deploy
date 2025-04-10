@@ -14,6 +14,7 @@ const JournalPage = () => {
     return (
       <div className="journal-page">
         <h1>My Journals</h1>
+        
         <JournalsList/>
       </div>
     );

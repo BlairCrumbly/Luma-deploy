@@ -2,12 +2,13 @@ import './JournalsList.css';
 import { useState, useEffect } from "react"
 import {api} from '../../services/api'
 import JournalCard from '../JournalCard/JournalCard'
+import { Link } from 'react-router-dom';
 
 const JournalsList = () => {
     const [journals, setJournals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-  
+    const [filterJournal, setFilterJournal] = useState('all');
     useEffect(() => {
       const fetchJournals = async () => {
         try {
@@ -33,7 +34,10 @@ const JournalsList = () => {
       <div className="journals-list">
         
         {journals.length === 0 ? (
-          <div>No journals found.</div>
+          <div className="no-journals-message"><p>No journals found. {filterJournal !== 'all' ? 'Try selecting a different journal or ' : ''}Start by making your first journal!</p>
+          <Link to={"/journals/new"} className="create-entry-button">Create Journal</Link>
+          </div>
+          
         ) : (
           <div className="card-container">
             {journals.map((journal) => (

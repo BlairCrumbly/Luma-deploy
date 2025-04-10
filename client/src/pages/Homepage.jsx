@@ -25,7 +25,7 @@ const HomePage = () => {
         try {
           const journalsData = await api.get('/journals');
           // Sort by ID and take 5
-          const sortedJournals = journalsData.sort((a, b) => b.id - a.id).slice(0, 5);
+          const sortedJournals = journalsData.sort((a, b) => b.id - a.id).slice(0, 4);
           setRecentJournals(sortedJournals);
         } catch (journalErr) {
           console.log('Could not load journals, possibly a new user', journalErr);

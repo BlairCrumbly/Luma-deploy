@@ -398,6 +398,14 @@
   transition: background-color 0.3s;
 }
 
+.icon-container{
+  width: 50px; /* Adjust size as needed */
+  height: 50px;
+  
+  align-items: center;
+  justify-content: center;
+}
+
 .step-button:hover {
   background-color: #426f54;
 }

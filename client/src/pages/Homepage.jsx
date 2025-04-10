@@ -226,7 +226,10 @@ const HomePage = () => {
             <div className="step">
               <div className="step-number">3</div>
               <h3>Build a Routine</h3>
-              <p>Make journaling a regular habit for the greatest benefits</p>
+              <p>Write, reflect, and heal –find your inner glow</p>
+              
+              <img class="icon-container" src="../../images/idea-icon.png" alt="lightbulb with brain in it icon" />
+              
             </div>
           </div>
         </div>

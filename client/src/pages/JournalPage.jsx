@@ -8,7 +8,7 @@ const JournalPage = () => {
     const [refreshFlag, setRefreshFlag] = useState(false);
   
     const handleJournalCreated = () => {
-      setRefreshFlag(!refreshFlag); // Toggle to re-fetch journals
+      setRefreshFlag(!refreshFlag);
     };
   
     return (

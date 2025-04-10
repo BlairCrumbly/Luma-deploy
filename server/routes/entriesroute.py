@@ -24,7 +24,6 @@ class EntryResource(Resource):
             current_user_id = get_jwt_identity()
 
             if entry_id:
-                # Get a specific entry
                 entry = (
                     Entry.query.join(Journal)
                     .filter(Entry.id == entry_id, Journal.user_id == current_user_id)
@@ -36,7 +35,7 @@ class EntryResource(Resource):
                 
                 return entry.to_dict(), 200
             else:
-                # Get all entries for the user
+
                 entries = (
                     Entry.query.join(Journal)
                     .filter(Journal.user_id == current_user_id)
@@ -57,7 +56,7 @@ class EntryResource(Resource):
             data = request.get_json()
             current_user_id = get_jwt_identity()
             
-            # Validate required fields
+            #! Validate required fields
             title = data.get('title')
             journal_id = data.get('journal_id')
             mood_ids = data.get('mood_ids', [])
@@ -66,15 +65,14 @@ class EntryResource(Resource):
             if not title or not journal_id:
                 return {"error": "Title and journal_id are required"}, 400
             
-            # Verify journal belongs to the current user
+            #! Verify journal belongs to the current user
             journal = Journal.query.filter_by(id=journal_id, user_id=current_user_id).first()
             if not journal:
                 return {"error": "Journal not found or access denied"}, 404
             
-            # Create new entry
             new_entry = Entry(
                 title=title,
-                main_text="",  # Will be updated in the editor
+                main_text="",  #* Will be updated in the editor
                 created_at=datetime.now(),
                 updated_at=datetime.now(),
                 journal_id=journal_id,
@@ -82,14 +80,14 @@ class EntryResource(Resource):
             )
             
             db.session.add(new_entry)
-            db.session.flush()  # Get the ID without committing
+            db.session.flush()
             
             # Associate moods with the entry
             for mood_id in mood_ids:
                 # Verify the mood exists
                 mood = Mood.query.get(mood_id)
                 if not mood:
-                    continue  # Skip invalid moods
+                    continue
                 
                 entry_mood = EntryMood(entry_id=new_entry.id, mood_id=mood_id)
                 db.session.add(entry_mood)
@@ -109,7 +107,7 @@ class EntryResource(Resource):
             data = request.get_json()
             current_user_id = get_jwt_identity()
             
-            # Find the entry and verify ownership
+            #! Find the entry and verify ownership
             entry = (
                 Entry.query.join(Journal)
                 .filter(Entry.id == entry_id, Journal.user_id == current_user_id)
@@ -119,7 +117,7 @@ class EntryResource(Resource):
             if not entry:
                 return {"error": "Entry not found or access denied"}, 404
             
-            # Only update fields that are present in the request
+            #! Only update fields that are present in the request
             if 'main_text' in data:
                 entry.main_text = data['main_text']
                 entry.updated_at = datetime.now()
@@ -136,7 +134,6 @@ class EntryResource(Resource):
         try:
             current_user_id = get_jwt_identity()
             
-            # Find the entry and verify ownership
             entry = (
                 Entry.query.join(Journal)
                 .filter(Entry.id == entry_id, Journal.user_id == current_user_id)
@@ -146,10 +143,8 @@ class EntryResource(Resource):
             if not entry:
                 return {"error": "Entry not found or access denied"}, 404
             
-            # Delete associated entry_moods first
             EntryMood.query.filter_by(entry_id=entry_id).delete()
             
-            # Delete the entry
             db.session.delete(entry)
             db.session.commit()
             
@@ -166,7 +161,6 @@ class EntryResource(Resource):
             data = request.get_json()
             current_user_id = get_jwt_identity()
 
-            # Find the entry and verify ownership
             entry = (
                 Entry.query.join(Journal)
                 .filter(Entry.id == entry_id, Journal.user_id == current_user_id)
@@ -176,24 +170,19 @@ class EntryResource(Resource):
             if not entry:
                 return {"error": "Entry not found or access denied"}, 404
 
-            # Update fields with the provided data
             title = data.get('title', entry.title)
             main_text = data.get('main_text', entry.main_text)
             ai_prompt_used = data.get('ai_prompt_used', entry.ai_prompt_used)
             mood_ids = data.get('mood_ids', [])
 
-            # Update entry fields
             entry.title = title
             entry.main_text = main_text
             entry.ai_prompt_used = ai_prompt_used
             entry.updated_at = datetime.now()  # Update the timestamp
 
-            # Update associated moods
-            # Delete existing moods for the entry
             EntryMood.query.filter_by(entry_id=entry_id).delete()
             
             for mood_id in mood_ids:
-                # Verify the mood exists
                 mood = Mood.query.get(mood_id)
                 if mood:
                     entry_mood = EntryMood(entry_id=entry_id, mood_id=mood_id)
@@ -206,7 +195,7 @@ class EntryResource(Resource):
         except Exception as e:
             db.session.rollback()
             return {"error": f"Error updating entry: {str(e)}"}, 500
-
+#!AI =============================================================== yay!
 class AiPromptResource(Resource):
     @jwt_required()
     def get(self):

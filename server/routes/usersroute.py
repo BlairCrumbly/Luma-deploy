@@ -72,7 +72,6 @@ class Logout(Resource):
     @jwt_required()
     def delete(self):
         try:
-            # Get the current user ID from JWT identity
             current_user_id = get_jwt_identity()
             user = User.query.get(current_user_id)
 
@@ -86,12 +85,11 @@ class Logout(Resource):
                 else:
                     print(f"Failed to revoke Google token: {response.text}")
 
-            # Prepare response and unset JWT cookies
+            
             response = make_response('', 204)
             unset_jwt_cookies(response)
 
-            # Clear session or any additional user-related data here
-            # (if you use session-based storage for other info)
+
             session.clear()
 
             return response
@@ -101,25 +99,19 @@ class Logout(Resource):
 
 class GoogleLogin(Resource):
     def get(self):
-        # Generate a secure random string for CSRF protection
         state = secrets.token_urlsafe(32)
         
         
-        # Store state in a session cookie that will be sent back to the client
         session['oauth_state'] = state
         session.modified = True
         
-        # Generate a nonce for OpenID Connect
         nonce = secrets.token_urlsafe(32)
         session['oauth_nonce'] = nonce
         
-        # Redirect to Google OAuth with the correct scope format
         redirect_uri = url_for("googleauthorize", _external=True)
         
-        # Use the standard OAuth2 scope format
         scope = "openid email profile"
         
-        # Manual OAuth configuration to ensure correct parameters
         authorize_url = "https://accounts.google.com/o/oauth2/auth"
         client_id = os.getenv("CLIENT_ID")
         
@@ -147,12 +139,12 @@ class GoogleAuthorize(Resource):
             if not state_param or not stored_state or state_param != stored_state:
                 return {"error": "Invalid state parameter. CSRF protection triggered."}, 400
             
-            # Exchange code for token
+            #! Exchange code for token
             code = request.args.get('code')
             if not code:
                 return {"error": "Authorization code not provided"}, 400
             
-            # Get the token using the code
+            #! Get the token using the code
             token_url = "https://oauth2.googleapis.com/token"
             client_id = os.getenv("CLIENT_ID")
             client_secret = os.getenv("CLIENT_SECRET")
@@ -171,7 +163,7 @@ class GoogleAuthorize(Resource):
                 return {"error": f"Failed to obtain token: {token_response.text}"}, 500
             token_json = token_response.json()
             
-            # Get user info with the access token
+            #! Get user info with the access token
             user_info_url = "https://www.googleapis.com/oauth2/v3/userinfo"
             headers = {"Authorization": f"Bearer {token_json['access_token']}"}
             user_info_response = requests.get(user_info_url, headers=headers)
@@ -179,7 +171,6 @@ class GoogleAuthorize(Resource):
                 return {"error": "Failed to fetch user info"}, 500
             user_info = user_info_response.json()
             
-            # Process user info
             email = user_info["email"]
             username = user_info.get("name", email.split("@")[0])
             google_id = user_info.get("sub")
@@ -194,23 +185,18 @@ class GoogleAuthorize(Resource):
                     user.google_id = google_id
                     db.session.commit()
             
-            # Save the Google access token if needed
             user.set_google_token(token_json.get("access_token"))
             db.session.commit()
             
-            # Create JWT for your app authentication
             access_token = create_access_token(identity=user.id)
             
-            # Instead of creating one response and then redirecting,
-            # create a redirect response and set cookies on it.
             response = redirect('http://localhost:5173/')
             set_access_cookies(response, access_token)
             
-            # Clean up session
+            #! Clean up session
             session.pop('oauth_state', None)
             session.pop('oauth_nonce', None)
             
-            # Add CORS headers if needed
             response.headers.add('Access-Control-Allow-Origin', os.getenv('FRONTEND_URL', 'http://localhost:5173'))
             response.headers.add('Access-Control-Allow-Credentials', 'true')
             
@@ -229,7 +215,7 @@ class UserProfile(Resource):
         user = User.query.get_or_404(current_user_id)
         return user.to_dict(), 200
 
-
+#in progress
 class DeleteUser(Resource):
     @jwt_required()
     def delete(self):

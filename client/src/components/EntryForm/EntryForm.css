@@ -26,6 +26,16 @@
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 16px;
+    font-family: "Space Mono", monospace;
+  }
+  .journal-dropdown{
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.805);
+    font-family: "Space Mono", monospace;
+    border-radius: 5px;
+    border-width: 0.1px;
+    border-color: #ddd;
+    color: #848484;
   }
   
   .mood-selector {
@@ -76,6 +86,7 @@
     background-color: white;
     cursor: pointer;
     transition: background-color 0.2s ease;
+    font-family: "Space Mono", monospace;
   }
   
   .method-button:hover {

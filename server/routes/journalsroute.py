@@ -23,7 +23,7 @@ class JournalsResource(Resource):
             data = request.get_json()
             current_user_id = get_jwt_identity()
 
-            # extra validation
+            #! extra validation
             title = data.get('title')
             year = data.get('year')
             color = data.get('color', '#E7E5E5')

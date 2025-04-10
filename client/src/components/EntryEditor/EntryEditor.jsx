@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import ReactQuill from 'react-quill'; // Import React Quill
-import 'react-quill/dist/quill.snow.css'; // Import Quill styles
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 import { api } from '../../services/api';
 import './EntryEditor.css';
 
@@ -13,9 +13,9 @@ const EntryEditor = () => {
   const requestedAiPrompt = location.state?.aiPrompt || false;
 
   const [entry, setEntry] = useState(null);
-  const [editorContent, setEditorContent] = useState(''); // Content for React Quill
+  const [editorContent, setEditorContent] = useState('');
   const [aiPrompt, setAiPrompt] = useState('');
-  const [moods, setMoods] = useState([]); // Assuming moods are selected by the user
+  const [moods, setMoods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -31,10 +31,9 @@ const EntryEditor = () => {
           setEntry({ title: '', main_text: '' });
           setEditorContent('');
         } else {
-          // Ensure the entryId is valid and used in the request
           const entryData = await api.get(`/entries/${entryId}`);
           setEntry(entryData);
-          setEditorContent(entryData.main_text || ''); // Set the content for React Quill
+          setEditorContent(entryData.main_text || '');
         }
   
         // Handle AI prompt if it's a new entry and requested
@@ -53,31 +52,31 @@ const EntryEditor = () => {
     fetchEntryData();
   }, [entryId, isNewEntry, requestedAiPrompt]);
 
-  // Handle content changes
+  
   const handleEditorChange = (content) => {
     setEditorContent(content);
     setUnsavedChanges(true);
   };
 
-  // Save entry
+  //! save
   const handleSave = async () => {
     try {
       setSaving(true);
   
-      // Validate that there is content to save
+      //! Validate that there is text to save
       if (!editorContent.trim()) {
         setError('Please enter some text to save.');
         return;
       }
   
       const requestData = {
-        main_text: editorContent // Send only the updated content
+        main_text: editorContent //! Send only the updated content
       };
   
       console.log('Sending PATCH request data:', requestData);
   
-      // Send PATCH request to update the entry
-      const response = await api.patch(`/entries/${entryId}`, requestData); // Use entryId from the URL
+      //! PATCH to update
+      const response = await api.patch(`/entries/${entryId}`, requestData);
       console.log('Response from API:', response);
   
       setUnsavedChanges(false);
@@ -91,12 +90,12 @@ const EntryEditor = () => {
   };
   
 
-  // Warn before leaving with unsaved changes
+  //! Warn if changed usnavedd
   useEffect(() => {
     const handleBeforeUnload = (e) => {
       if (unsavedChanges) {
         e.preventDefault();
-        e.returnValue = ''; // This message is not displayed in modern browsers
+        e.returnValue = '';
       }
     };
 
@@ -110,7 +109,6 @@ const EntryEditor = () => {
 
   return (
     <div className="entry-editor-container">
-      {/* Entry Header */}
       <div className="entry-header">
         <h1>{entry.title}</h1>
         <div className="entry-moods">
@@ -128,7 +126,7 @@ const EntryEditor = () => {
         )}
       </div>
 
-      {/* React-Quill Editor */}
+      {/* Quill Editor */}
       <div className="editor-wrapper">
         <ReactQuill
           value={editorContent}

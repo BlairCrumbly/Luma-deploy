@@ -6,7 +6,7 @@ import ColorPicker from './colorpicker';
 import './JournalForm.css';
 
 const JournalForm = ({ onJournalCreated }) => {
-  // Define validation schema with Yup
+
   const JournalSchema = Yup.object().shape({
     title: Yup.string()
       .required('Title is required')
@@ -51,7 +51,7 @@ const JournalForm = ({ onJournalCreated }) => {
       <Formik
         initialValues={{
           title: '',
-          year: new Date().getFullYear(), // Default to current year
+          year: new Date().getFullYear(),
           color: '#E7E5E5'
         }}
         validationSchema={JournalSchema}

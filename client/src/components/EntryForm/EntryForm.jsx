@@ -12,7 +12,7 @@ const EntryForm = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // Define validation schema with Yup
+
   const EntrySchema = Yup.object().shape({
     title: Yup.string()
       .required('Title is required')
@@ -25,7 +25,7 @@ const EntryForm = () => {
     ai_prompt_used: Yup.boolean()
   });
 
-  // Fetch available moods on component mount
+  //! fetch moods ON mount
   useEffect(() => {
     const fetchMoods = async () => {
       try {
@@ -40,7 +40,7 @@ const EntryForm = () => {
     fetchMoods();
   }, []);
 
-  // Fetch available journals for a dropdown
+
   useEffect(() => {
     const fetchJournals = async () => {
       try {
@@ -60,15 +60,15 @@ const EntryForm = () => {
     setError('');
   
     try {
-      // Create the new entry
+      //! Create the new entry
       const newEntry = await api.post('/entries', values);
   
-      // Check if the entry was created successfully
+      
       if (!newEntry || !newEntry.id) {
         throw new Error('Failed to create entry. No entry ID returned.');
       }
   
-      // Redirect to EntryEditor to fill in main text
+      //! Redirect to EntryEditor to fill in main text
       navigate(`/entry/${newEntry.id}`, { 
         state: { 
           isNewEntry: true,
@@ -119,6 +119,7 @@ const EntryForm = () => {
                 as="select"
                 id="journal_id"
                 name="journal_id"
+                className="journal-dropdown"
               >
                 <option value="">Select a journal</option>
                 {availableJournals.map(journal => (

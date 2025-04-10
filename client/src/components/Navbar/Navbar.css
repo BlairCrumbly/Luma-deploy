@@ -77,17 +77,17 @@
   }
 
   .logout-btn {
-    background-color: #57886a;  /* Same background as navbar */
+    background-color: #57886a00;
     font-family:"Space Mono", monospace;;
-    border: none;          /* Remove default border */
-    color: rgb(255, 156, 156);          /* White text */
-    font-size: 2em;        /* Match nav link font size */
-    padding: 10px 15px;    /* Padding to match nav links */
+    border: none;
+    color: rgb(255, 156, 156);
+    font-size: 2em;
+    padding: 10px 15px;
     width: 100%;
-    text-align: left;      /* Align text to the left */
+    text-align: left;
     cursor: pointer;
     transition: background-color 0.3s ease, font-weight 0.3s ease;
-    
+    margin-top: 50px;
   }
   
   /* On hover, change background color and make text bold */

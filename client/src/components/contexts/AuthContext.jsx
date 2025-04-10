@@ -1,6 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
-import { api } from '../../services/api';
-import Cookies from 'js-cookie'; // For reading cookies
+import Cookies from 'js-cookie';
 import { useCallback } from 'react';
 
 export const AuthContext = createContext();
@@ -9,11 +8,11 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Improved fetchCurrentUser function with proper error handling
+  
   const fetchCurrentUser = async () => {
     try {
       const response = await fetch('/api/user/profile', {
-        credentials: 'include', // Important for cookies
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         }
@@ -35,7 +34,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Initial auth check
+  //! Initial auth check
   useEffect(() => {
     const checkAuth = async () => {
       await fetchCurrentUser();
@@ -45,7 +44,7 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
 
-  // Improved login function
+  //!LOGIN
   const login = async (username, password) => {
     try {
       const response = await fetch('/api/login', {
@@ -69,7 +68,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Sign up function
+  //! SIGNUP
   const signup = async (username, email, password) => {
     try {
       const response = await fetch('/api/signup', {
@@ -93,17 +92,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Google OAuth redirect handler
+  //! Handle Google Oauth redirect
   const handleGoogleRedirect = async () => {
     try {
-      return await fetchCurrentUser(); // Simply use the fetchCurrentUser function
+      return await fetchCurrentUser();
     } catch (error) {
       console.error('Google redirect handling failed:', error);
       throw error;
     }
   };
 
-  // Improved logout function
+  //! LOGOUT
   const logout = async () => {
     try {
       const csrfToken = Cookies.get('csrf_access_token');  // Get CSRF token from cookies
@@ -112,7 +111,7 @@ export const AuthProvider = ({ children }) => {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': csrfToken,  // Include CSRF token
+          'X-CSRF-TOKEN': csrfToken,
         },
         credentials: 'include',  // Include cookies in the request
       });

@@ -46,7 +46,7 @@
     content: '';
     position: absolute;
     top: 0;
-    left: -3px; /* Move the spine slightly outside the card on the left side */
+    left: -3px;
     width: 15px; /* Width of the spine */
     height: 100%;
     background-color: #333; /* Dark color for the spine */

@@ -13,12 +13,11 @@ const OAuthRedirectHandler = () => {
       try {
         console.log("Starting OAuth redirect handling...");
         
-        // We don't need to do anything special here - the backend has already set cookies
-        // We just need to fetch the current user info
+
         const userData = await fetchCurrentUser();
         
         if (userData) {
-          // Authentication successful, redirect to home
+
           navigate('/', { replace: true });
         } else {
           throw new Error('No user data returned after authentication');

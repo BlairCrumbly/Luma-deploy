@@ -6,7 +6,7 @@ import './AuthPage.css';
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   
-  // Ensure the page doesn't scroll
+ 
 
   
   const toggleMode = () => {

@@ -5,8 +5,7 @@ import './GoogleOAuthButton.css';
 
 const GoogleOAuthButton = () => {
   const handleGoogleLogin = () => {
-    // Simply redirect to backend endpoint
-    window.location.href = 'http://localhost:5555/login/google';
+    window.location.href = '/api/login/google';
   };
 
   return (

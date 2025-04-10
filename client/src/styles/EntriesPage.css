@@ -44,6 +44,7 @@
     border-radius: 4px;
     font-size: 0.9rem;
     background-color: rgba(255, 255, 255, 0.197);
+    font-family: "Space Mono", monospace;
   }
   
   .new-entry-btn {

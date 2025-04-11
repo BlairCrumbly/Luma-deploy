@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 
 const OAuthRedirectHandler = () => {
-  const { fetchCurrentUser } = useContext(AuthContext);
+  const { handleGoogleRedirect } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -13,11 +14,23 @@ const OAuthRedirectHandler = () => {
       try {
         console.log("Starting OAuth redirect handling...");
         
-
-        const userData = await fetchCurrentUser();
+        // Check for error in URL parameters
+        const urlParams = new URLSearchParams(location.search);
+        const errorParam = urlParams.get('error');
+        
+        if (errorParam) {
+          throw new Error(`Authentication error: ${errorParam}`);
+        }
+        
+        // Check for state parameter issues
+        if (urlParams.get('state') === null) {
+          throw new Error('Missing state parameter - possible CSRF issue');
+        }
+        
+        //! Try to get the current user with the new tokens
+        const userData = await handleGoogleRedirect();
         
         if (userData) {
-
           navigate('/', { replace: true });
         } else {
           throw new Error('No user data returned after authentication');
@@ -34,7 +47,7 @@ const OAuthRedirectHandler = () => {
     };
 
     handleRedirect();
-  }, [fetchCurrentUser, navigate]);
+  }, [handleGoogleRedirect, navigate, location]);
 
   if (loading) {
     return (

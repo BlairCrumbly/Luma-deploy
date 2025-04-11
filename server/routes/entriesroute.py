@@ -7,6 +7,8 @@ from datetime import datetime
 import random
 import requests
 import json
+import os
+from datetime import date
 
 # Fallback prompts in case API fails
 FALLBACK_PROMPTS = [
@@ -196,22 +198,55 @@ class EntryResource(Resource):
             db.session.rollback()
             return {"error": f"Error updating entry: {str(e)}"}, 500
 #!AI =============================================================== yay!
+
 class AiPromptResource(Resource):
     @jwt_required()
     def get(self):
         try:
             current_user_id = get_jwt_identity()
             
-            # Get Writecream API config from environment variables
-            api_url = app.config.get("WRITECREAM_API_URL")
-            api_key = app.config.get("WRITECREAM_API_KEY")
-            tool_id = app.config.get("WRITECREAM_TOOL_ID")
+            # Get OpenRouter API config from environment variables
+            api_key = os.getenv("MOONSHOT_API_KEY")
+            api_url = os.getenv("MOONSHOT_API_URL") or "https://openrouter.ai/api/v1"
             
-            # Validate that the required configuration is available
-            if not all([api_url, api_key, tool_id]):
-                app.logger.error("Writecream API configuration missing")
+            # Validate that API key is available
+            if not api_key:
+                app.logger.error("OpenRouter API key missing")
                 return {"prompt": random.choice(FALLBACK_PROMPTS), 
                         "note": "Using fallback prompt due to missing API configuration"}, 200
+            
+            # Check rate limiting
+            # Store usage in a simple text file
+            usage_file = "ai_prompt_usage.json"
+            today = date.today().isoformat()
+            
+            try:
+                if os.path.exists(usage_file):
+                    with open(usage_file, "r") as f:
+                        usage_data = json.load(f)
+                else:
+                    usage_data = {"date": today, "count": 0}
+                    
+                # Reset if it's a new day
+                if usage_data["date"] != today:
+                    usage_data = {"date": today, "count": 0}
+                    
+                # Check if we've hit the limit (conservative 45 requests per day)
+                if usage_data["count"] >= 45:
+                    app.logger.warning("Daily OpenRouter API limit reached")
+                    return {"prompt": random.choice(FALLBACK_PROMPTS),
+                            "note": "Using fallback prompt due to daily limit reached"}, 200
+                            
+                # Increment usage
+                usage_data["count"] += 1
+                
+                # Save updated usage
+                with open(usage_file, "w") as f:
+                    json.dump(usage_data, f)
+                    
+            except Exception as e:
+                app.logger.error(f"Error handling usage tracking: {str(e)}")
+                # Continue execution even if tracking fails
             
             # Get user's recent entries to generate a more personalized prompt
             user_entries = (
@@ -223,7 +258,8 @@ class AiPromptResource(Resource):
             )
             
             # Generate context for the API based on user's moods if available
-            context = "Generate a thoughtful journal prompt for self-reflection"
+            system_prompt = "You are a thoughtful journaling assistant. Generate a single, insightful journaling prompt that encourages self-reflection."
+            user_prompt = "Create a journal prompt for today."
             
             # Add mood context if entries exist
             if user_entries:
@@ -237,19 +273,37 @@ class AiPromptResource(Resource):
                     unique_moods = list(set(moods))
                     if len(unique_moods) > 0:
                         mood_text = ", ".join(unique_moods[:3])  # Use up to 3 recent moods
-                        context = f"Generate a thoughtful journal prompt for someone feeling {mood_text}"
+                        user_prompt = f"Create a journal prompt for someone feeling {mood_text}."
             
-            app.logger.info(f"Making Writecream API request with context: {context}")
+            app.logger.info(f"Making OpenRouter API request with context: {user_prompt}")
             
-            # Make API request to Writecream
+            # Make API request to OpenRouter
+            headers = {
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+                "HTTP-Referer": request.headers.get("Origin", "http://localhost:5173"),
+                "X-Title": "Luma"
+            }
+            
+            payload = {
+                "model": "moonshotai/kimi-vl-a3b-thinking:free",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": system_prompt
+                    },
+                    {
+                        "role": "user",
+                        "content": user_prompt
+                    }
+                ],
+                "max_tokens": 80  # Keep responses short
+            }
+            
             response = requests.post(
-                api_url,
-                headers={"Content-Type": "application/json"},
-                data=json.dumps({
-                    "key": api_key,
-                    "tool_id": tool_id,
-                    "tool_input": context
-                }),
+                f"{api_url}/chat/completions",
+                headers=headers,
+                json=payload,
                 timeout=5  # Set a timeout to prevent hanging requests
             )
             
@@ -258,18 +312,13 @@ class AiPromptResource(Resource):
                 prompt_data = response.json()
                 app.logger.info(f"Received API response: {prompt_data}")
                 
-                # Assuming the API returns a string or a field containing the prompt
-                # Adjust this based on the actual API response structure
-                if isinstance(prompt_data, str):
-                    prompt = prompt_data
-                elif isinstance(prompt_data, dict) and "output" in prompt_data:
-                    prompt = prompt_data["output"]
-                else:
-                    # If the API response format is unexpected, use a fallback
+                try:
+                    prompt = prompt_data["choices"][0]["message"]["content"].strip()
+                    return {"prompt": prompt}, 200
+                except (KeyError, IndexError) as e:
+                    app.logger.error(f"Error parsing API response: {str(e)}")
                     prompt = random.choice(FALLBACK_PROMPTS)
-                    app.logger.warning("Unexpected API response format, using fallback prompt")
-                    
-                return {"prompt": prompt}, 200
+                    return {"prompt": prompt, "note": "Error parsing API response"}, 200
             else:
                 # If API call fails, use a fallback prompt
                 app.logger.warning(f"API returned status code {response.status_code}")
@@ -278,12 +327,10 @@ class AiPromptResource(Resource):
                         "note": f"Using fallback prompt due to API response: {response.status_code}"}, 200
                 
         except requests.exceptions.RequestException as e:
-            # Handle request exceptions (timeout, connection error, etc.)
-            app.logger.error(f"Request exception when calling Writecream API: {str(e)}")
+            app.logger.error(f"Request exception when calling OpenRouter API: {str(e)}")
             prompt = random.choice(FALLBACK_PROMPTS)
             return {"prompt": prompt, "note": "Using fallback prompt due to API connectivity issues"}, 200
         except Exception as e:
-            # For any other exceptions, use fallback and log the error
             app.logger.error(f"Error in AI Prompt generation: {str(e)}")
             prompt = random.choice(FALLBACK_PROMPTS)
             return {"prompt": prompt, "note": "Using fallback prompt due to an error"}, 200

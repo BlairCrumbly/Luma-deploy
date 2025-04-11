@@ -10,12 +10,11 @@ const AuthForm = ({ isLogin }) => {
   const { login, signup } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // Define initial values
+
   const initialValues = isLogin 
     ? { username: '', password: '' }
     : { username: '', email: '', password: '' };
 
-  // Define Yup validation schema
   const validationSchema = isLogin 
     ? Yup.object({
         username: Yup.string().required('Username is required'),
@@ -31,7 +30,7 @@ const AuthForm = ({ isLogin }) => {
           .required('Password is required'),
       });
 
-  // Handle form submission using Formik
+
   const handleSubmit = async (values, { setSubmitting, setFieldError }) => {
     try {
       if (isLogin) {
@@ -41,7 +40,6 @@ const AuthForm = ({ isLogin }) => {
       }
       navigate('/');
     } catch (err) {
-      // Set a generic error message; you can also map specific errors to fields
       setFieldError('general', err.message || 'Authentication failed');
     } finally {
       setSubmitting(false);

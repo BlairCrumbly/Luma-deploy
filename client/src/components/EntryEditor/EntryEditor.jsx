@@ -4,6 +4,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { api } from '../../services/api';
 import './EntryEditor.css';
+import AiInput from '../AiInput/AiInput';
 
 const EntryEditor = () => {
   const { entryId } = useParams();
@@ -17,11 +18,12 @@ const EntryEditor = () => {
   const [aiPrompt, setAiPrompt] = useState('');
   const [moods, setMoods] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [aiLoading, setAiLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [unsavedChanges, setUnsavedChanges] = useState(false);
 
-  // Fetch entry data and possibly AI prompt
+  // Fetch entry data
   useEffect(() => {
     const fetchEntryData = async () => {
       try {
@@ -34,12 +36,25 @@ const EntryEditor = () => {
           const entryData = await api.get(`/entries/${entryId}`);
           setEntry(entryData);
           setEditorContent(entryData.main_text || '');
+          
+          // Fetch moods associated with this entry
+          if (entryData.moods && entryData.moods.length > 0) {
+            setMoods(entryData.moods);
+          }
         }
   
         // Handle AI prompt if it's a new entry and requested
         if (isNewEntry && requestedAiPrompt) {
-          const promptResponse = await api.get('/ai-prompt');
-          setAiPrompt(promptResponse.prompt || 'What would you like to write about today?');
+          setAiLoading(true);
+          try {
+            const promptResponse = await api.get('/ai-prompt');
+            setAiPrompt(promptResponse.prompt || 'What would you like to write about today?');
+          } catch (err) {
+            console.error('Error fetching AI prompt:', err);
+            setAiPrompt('What would you like to write about today?');
+          } finally {
+            setAiLoading(false);
+          }
         }
       } catch (err) {
         console.error('Error fetching entry:', err);
@@ -51,31 +66,31 @@ const EntryEditor = () => {
   
     fetchEntryData();
   }, [entryId, isNewEntry, requestedAiPrompt]);
-
   
   const handleEditorChange = (content) => {
     setEditorContent(content);
     setUnsavedChanges(true);
   };
 
-  //! save
+  const handlePromptGenerated = (prompt) => {
+    setAiPrompt(prompt);
+  };
+
   const handleSave = async () => {
     try {
       setSaving(true);
   
-      //! Validate that there is text to save
       if (!editorContent.trim()) {
         setError('Please enter some text to save.');
         return;
       }
   
       const requestData = {
-        main_text: editorContent //! Send only the updated content
+        main_text: editorContent
       };
   
       console.log('Sending PATCH request data:', requestData);
   
-      //! PATCH to update
       const response = await api.patch(`/entries/${entryId}`, requestData);
       console.log('Response from API:', response);
   
@@ -88,9 +103,7 @@ const EntryEditor = () => {
       setSaving(false);
     }
   };
-  
 
-  //! Warn if changed usnavedd
   useEffect(() => {
     const handleBeforeUnload = (e) => {
       if (unsavedChanges) {
@@ -102,6 +115,19 @@ const EntryEditor = () => {
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [unsavedChanges]);
+
+  // Get a new AI prompt
+  const refreshAiPrompt = async () => {
+    setAiLoading(true);
+    try {
+      const promptResponse = await api.get('/ai-prompt');
+      setAiPrompt(promptResponse.prompt || 'What would you like to write about today?');
+    } catch (err) {
+      console.error('Error refreshing AI prompt:', err);
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   if (loading) return <div className="loading">Loading entry...</div>;
   if (error) return <div className="error">{error}</div>;
@@ -118,10 +144,29 @@ const EntryEditor = () => {
             </span>
           ))}
         </div>
-        {requestedAiPrompt && aiPrompt && (
+        {requestedAiPrompt && (
           <div className="ai-prompt">
-            <h3>Writing Prompt</h3>
-            <p>{aiPrompt}</p>
+            <div className="ai-prompt-header">
+              <h3>Writing Prompt</h3>
+              <button 
+                className="refresh-prompt-button" 
+                onClick={refreshAiPrompt}
+                disabled={aiLoading}
+              >
+                {aiLoading ? (
+                  <span className="ai-prompt-loading"></span>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38" />
+                  </svg>
+                )}
+              </button>
+            </div>
+            <p>{aiLoading ? "Generating prompt..." : aiPrompt}</p>
+            <AiInput 
+              onPromptGenerated={handlePromptGenerated}
+              setLoading={setAiLoading}
+            />
           </div>
         )}
       </div>

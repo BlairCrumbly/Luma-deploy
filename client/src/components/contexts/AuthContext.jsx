@@ -1,15 +1,52 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useCallback } from 'react';
 import Cookies from 'js-cookie';
-import { useCallback } from 'react';
+
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  const [refreshing, setRefreshing] = useState(false);
   
-  const fetchCurrentUser = async () => {
+  // Function to refresh the token
+  const refreshToken = useCallback(async () => {
+    if (refreshing) return false;
+    
+    try {
+      setRefreshing(true);
+      const csrfToken = Cookies.get('csrf_refresh_token');
+      
+      if (!csrfToken) {
+        console.error('No CSRF refresh token found');
+        return false;
+      }
+      
+      const response = await fetch('/api/refresh-token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': csrfToken,
+        },
+        credentials: 'include',  // Important for cookies
+      });
+      
+      if (!response.ok) {
+        console.error('Token refresh failed:', response.status);
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Token refresh error:', error);
+      return false;
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshing]);
+  
+  // Function to fetch user profile with auto-refresh capability
+  const fetchCurrentUser = useCallback(async () => {
     try {
       const response = await fetch('/api/user/profile', {
         credentials: 'include',
@@ -17,6 +54,21 @@ export const AuthProvider = ({ children }) => {
           'Content-Type': 'application/json',
         }
       });
+      
+      if (response.status === 401) {
+        // Token expired, try to refresh
+        console.log('Authentication token expired, attempting refresh...');
+        const refreshed = await refreshToken();
+        if (refreshed) {
+          // Try again with the new token
+          console.log('Token refreshed successfully, retrying fetch');
+          return await fetchCurrentUser();
+        } else {
+          console.log('Token refresh failed, user not authenticated');
+          setCurrentUser(null);
+          return null;
+        }
+      }
       
       if (!response.ok) {
         console.error('Failed to fetch user profile:', response.status);
@@ -32,9 +84,9 @@ export const AuthProvider = ({ children }) => {
       setCurrentUser(null);
       return null;
     }
-  };
+  }, [refreshToken]);
 
-  //! Initial auth check
+  // Initial auth check
   useEffect(() => {
     const checkAuth = async () => {
       await fetchCurrentUser();
@@ -42,9 +94,22 @@ export const AuthProvider = ({ children }) => {
     };
     
     checkAuth();
-  }, []);
+  }, [fetchCurrentUser]);
 
-  //!LOGIN
+  //! Set up token refresh interval
+  useEffect(() => {
+
+    const refreshInterval = setInterval(() => {
+      if (currentUser) {
+        console.log('Performing scheduled token refresh');
+        refreshToken();
+      }
+    }, 45 * 60 * 1000); // 45 minutes
+    
+    return () => clearInterval(refreshInterval);
+  }, [currentUser, refreshToken]);
+
+  // LOGIN
   const login = async (username, password) => {
     try {
       const response = await fetch('/api/login', {
@@ -68,7 +133,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  //! SIGNUP
+  // SIGNUP
   const signup = async (username, email, password) => {
     try {
       const response = await fetch('/api/signup', {
@@ -92,9 +157,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  //! Handle Google Oauth redirect
+  //! Handle Google OAuth redirect
   const handleGoogleRedirect = async () => {
     try {
+      console.log('Handling Google OAuth redirect');
       return await fetchCurrentUser();
     } catch (error) {
       console.error('Google redirect handling failed:', error);
@@ -105,24 +171,32 @@ export const AuthProvider = ({ children }) => {
   //! LOGOUT
   const logout = async () => {
     try {
-      const csrfToken = Cookies.get('csrf_access_token');  // Get CSRF token from cookies
-  
+      const csrfToken = Cookies.get('csrf_access_token');
+      
+      if (!csrfToken) {
+        console.error('No CSRF access token found for logout');
+        setCurrentUser(null);
+        return;
+      }
+      
       const response = await fetch('/api/logout', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
           'X-CSRF-TOKEN': csrfToken,
         },
-        credentials: 'include',  // Include cookies in the request
+        credentials: 'include',
       });
-  
+      
       if (!response.ok) {
-        throw new Error('Logout failed');
+        console.error('Logout request failed:', response.status);
       }
-  
+      
       setCurrentUser(null);
     } catch (error) {
       console.error('Logout failed:', error);
+      // Still clear user state on error
+      setCurrentUser(null);
     }
   };
 
@@ -133,7 +207,8 @@ export const AuthProvider = ({ children }) => {
     signup,
     logout,
     handleGoogleRedirect,
-    fetchCurrentUser
+    fetchCurrentUser,
+    refreshToken
   };
 
   return (

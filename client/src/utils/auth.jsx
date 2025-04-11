@@ -1,4 +1,4 @@
-// context/auth.jsx
+
 
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { useHistory } from "react-router-dom";
@@ -38,6 +38,7 @@ export const AuthProvider = ({ children }) => {
     user,
     loading,
     login,
+    signup,
     logout,
   };
 

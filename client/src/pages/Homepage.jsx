@@ -3,7 +3,9 @@ import { Link } from 'react-router-dom';
 import { AuthContext } from '../components/contexts/AuthContext';
 import { api } from '../services/api';
 import JournalCard from '../components/JournalCard/JournalCard';
-import CalendarHeatmap from 'react-calendar-heatmap';
+import CalendarHeatmapView from '../components/CalHeatmap/CalendarHeatmapView';
+import MoodLineGraph from '../components/MoodGraph/MoodLineGraph';
+
 import 'react-calendar-heatmap/dist/styles.css';
 import '../styles/Homepage.css';
 
@@ -13,6 +15,7 @@ const HomePage = () => {
   const [recentJournals, setRecentJournals] = useState([]);
   const [latestEntries, setLatestEntries] = useState([]);
   const [entriesHeatmap, setEntriesHeatmap] = useState([]);
+  const [entriesWithMoods, setEntriesWithMoods] = useState([]);
   const [loading, setLoading] = useState(true);
   
   // State for current month view
@@ -40,6 +43,9 @@ const HomePage = () => {
             .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
             .slice(0, 4);
           setLatestEntries(recentEntries);
+          
+          // Save all entries with mood data for the mood graph
+          setEntriesWithMoods(entriesData);
 
           // Process entries for heatmap
           const entryDates = entriesData.reduce((acc, entry) => {
@@ -54,10 +60,12 @@ const HomePage = () => {
           }));
 
           setEntriesHeatmap(heatmapData);
+          
         } catch (entriesErr) {
           console.log('Could not load entries, possibly a new user', entriesErr);
           setLatestEntries([]);
           setEntriesHeatmap([]);
+          setEntriesWithMoods([]);
         }
       } catch (err) {
         console.error('Error in fetchHomeData:', err);
@@ -65,6 +73,7 @@ const HomePage = () => {
         setRecentJournals([]);
         setLatestEntries([]);
         setEntriesHeatmap([]);
+        setEntriesWithMoods([]);
       } finally {
         setLoading(false);
       }
@@ -93,9 +102,6 @@ const HomePage = () => {
   };
 
   if (loading) return <div className="loading">Loading your dashboard...</div>;
-
-  // If user is not logged in, show a welcome message
-
 
   return (
     <div className="homepage-container">
@@ -175,36 +181,33 @@ const HomePage = () => {
         <div className="section-header">
           <h2>Your Writing Activity</h2>
         </div>
-        
-        {entriesHeatmap.length === 0 ? (
-          <div className="no-data-message">
-            <p>No writing activity to display yet.</p>
-            <p>Regular journaling helps build a meaningful record of your journey.</p>
-            <Link to="/journal/new-entry" className="create-button">Start Writing Today</Link>
+        <div className="activity-dashboard">
+          {/* Left side - Mood Graph column */}
+          <div className="activity-content">
+            {entriesWithMoods.length === 0 ? (
+              <div className="no-data-message">
+                <p>No mood data to display yet.</p>
+                <p>Add moods to your entries to see your emotional journey over time.</p>
+                <Link to="/journal/new-entry" className="create-button">Start Writing Today</Link>
+              </div>
+            ) : (
+              <MoodLineGraph entriesData={entriesWithMoods} />
+            )}
           </div>
-        ) : (
-          <div className="heatmap-container">
-            <CalendarHeatmap
-              startDate={new Date(new Date().setFullYear(new Date().getFullYear() - 1))}
-              endDate={new Date()}
-              values={entriesHeatmap}
-              classForValue={(value) => {
-                if (!value) {
-                  return 'color-empty';
-                }
-                return `color-scale-${Math.min(value.count, 4)}`;
-              }}
-              tooltipDataAttrs={(value) => {
-                if (!value || !value.date) {
-                  return null;
-                }
-                return {
-                  'data-tip': `${value.date}: ${value.count} entries`,
-                };
-              }}
-            />
+          
+          {/* Right side - Calendar column */}
+          <div className="activity-calendar">
+            {entriesHeatmap.length === 0 ? (
+              <div className="no-data-message">
+                <p>No writing activity to display yet.</p>
+                <p>Regular journaling helps build a meaningful record of your journey.</p>
+                <Link to="/journal/new-entry" className="create-button">Start Writing Today</Link>
+              </div>
+            ) : (
+              <CalendarHeatmapView entriesData={entriesHeatmap} />
+            )}
           </div>
-        )}
+        </div>
       </div>
       
       {recentJournals.length === 0 && latestEntries.length === 0 && (
@@ -227,9 +230,7 @@ const HomePage = () => {
               <div className="step-number">3</div>
               <h3>Build a Routine</h3>
               <p>Write, reflect, and heal –find your inner glow</p>
-              
-              <img class="icon-container" src="../../images/idea-icon.png" alt="lightbulb with brain in it icon" />
-              
+              <img className="icon-container" src="../../images/idea-icon.png" alt="lightbulb with brain in it icon" />
             </div>
           </div>
         </div>

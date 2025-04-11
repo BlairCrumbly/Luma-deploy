@@ -152,7 +152,7 @@
   border-radius: 4px;
   padding: 8px 15px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  
 }
 
 .calendar-nav-btn:hover {
@@ -166,13 +166,13 @@
   font-weight: 500;
 }
 
-.heatmap-container {
+.heatmap-container{
   max-width: 100%;
   margin: 0 auto;
   padding: 10px;
   border: 1px solid #e1e1e1;
   border-radius: 8px;
-  background: #fff;
+  background-color: none;
   position: relative;
 }
 

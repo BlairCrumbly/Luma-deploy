@@ -1,0 +1,67 @@
+{
+  "name": "@cal-heatmap/tooltip",
+  "version": "1.0.0-beta.0",
+  "description": "Tooltip plugin for cal-heatmap",
+  "main": "index.js",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/@cal-heatmap/tooltip.git"
+  },
+  "homepage": "https://cal-heatmap.com",
+  "scripts": {
+    "prepare": "npm run typecheck && npm run lint && npm run build",
+    "format": "npm run lint -- --fix",
+    "lint": "npx eslint src/ test/",
+    "build": "rm -rf dist/* && rollup -c",
+    "dev": "rollup --config -w",
+    "typecheck": "npx tsc --noEmit"
+  },
+  "node": ">=14.16",
+  "author": "",
+  "license": "MIT",
+  "browserslist": "last 2 versions, not dead, > 0.2%",
+  "exports": {
+    ".": {
+      "import": "./dist/tooltip.esm.js",
+      "require": "./dist/tooltip.js",
+      "types": "./src/index.d.ts"
+    },
+    "./package.json": "./package.json",
+    "./tooltip.css": "./dist/tooltip.css"
+  },
+  "peerDependencies": {
+    "cal-heatmap": "^4.3.0",
+    "dayjs": "^1.11.7"
+  },
+  "dependencies": {
+    "@popperjs/core": "^2.11.8",
+    "core-js": "^3.36.0"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.20.2",
+    "@rollup/plugin-babel": "^6.0.3",
+    "@rollup/plugin-commonjs": "^25.0.0",
+    "@rollup/plugin-json": "^6.0.0",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.0",
+    "@rollup/plugin-typescript": "^11.0.0",
+    "autoprefixer": "^10.4.17",
+    "eslint": "^8.29.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-airbnb-typescript": "^17.0.0",
+    "postcss": "^8.4.20",
+    "prettier": "^3.0.0",
+    "rollup": "^4.0.0",
+    "rollup-plugin-filesize": "^10.0.0",
+    "rollup-plugin-postcss": "^4.0.2",
+    "sass": "^1.70.0",
+    "tsd": "^0.30.0",
+    "tslib": "^2.6.2",
+    "typescript": "^5.0.0"
+  },
+  "files": [
+    "dist",
+    "src/types.d.ts"
+  ]
+}

@@ -69,7 +69,7 @@ const HomePage = () => {
         }
       } catch (err) {
         console.error('Error in fetchHomeData:', err);
-        // Set empty arrays to ensure the page still renders
+        //! Set empty arrays to ensure the page still renders
         setRecentJournals([]);
         setLatestEntries([]);
         setEntriesHeatmap([]);
@@ -92,14 +92,15 @@ const HomePage = () => {
   };
 
   const handleJournalClick = (journalId) => {
-    // Navigate to journal entries
+    
     window.location.href = `/journal/${journalId}/entries`;
   };
 
-  // Function to format month name
+  
   const formatMonthYear = (date) => {
     return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   };
+  const hasCalendarData = entriesHeatmap.length > 0;
 
   if (loading) return <div className="loading">Loading your dashboard...</div>;
 
@@ -196,7 +197,7 @@ const HomePage = () => {
           </div>
           
           {/* Right side - Calendar column */}
-          <div className="activity-calendar">
+          <div className={`activity-calendar ${hasCalendarData ? 'has-data' : ''}`}>
             {entriesHeatmap.length === 0 ? (
               <div className="no-data-message">
                 <p>No writing activity to display yet.</p>

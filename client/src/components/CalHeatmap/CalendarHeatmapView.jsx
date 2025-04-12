@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import './CalendarHeatmapView.css';
 
 import CalHeatmap from 'cal-heatmap';
-import Tooltip from '@cal-heatmap/tooltip'; // Correct way for v4
+import Tooltip from '@cal-heatmap/tooltip';
 
 
 
@@ -24,24 +24,22 @@ const CalendarHeatmapView = ({ entriesData }) => {
   const [displayDate, setDisplayDate] = useState(formatMonthYear(currentDate));
   
   useEffect(() => {
-    // Convert entriesData to the format expected by cal-heatmap
+
     const formattedData = entriesData.map(entry => ({
       date: new Date(entry.date),
       value: entry.count
     }));
     
-    // Clear any existing calendar
+
     if (calendarContainerRef.current) {
       calendarContainerRef.current.innerHTML = '';
     }
     
     try {
-      // Create a new instance
+
       const newCal = new CalHeatmap();
       
 
-      
-      // Paint the calendar
       newCal.paint({
         itemSelector: calendarContainerRef.current,
         range: 1,
@@ -84,7 +82,7 @@ const CalendarHeatmapView = ({ entriesData }) => {
       console.error("Error initializing calendar:", err);
     }
     
-    // Cleanup function
+
     return () => {
       if (calendarContainerRef.current) {
         calendarContainerRef.current.innerHTML = '';

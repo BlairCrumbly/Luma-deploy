@@ -13,7 +13,7 @@ import {
   Legend,
 } from 'chart.js';
 
-// Register ChartJS components
+//! Register ChartJS components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -31,23 +31,23 @@ const MoodLineGraph = ({ entriesData }) => {
   useEffect(() => {
     if (!entriesData || entriesData.length === 0) return;
 
-    // Process entries data to get mood scores over time
+
     const processedData = processEntriesForMoodGraph(entriesData);
     setChartData(processedData);
   }, [entriesData]);
 
   const processEntriesForMoodGraph = (entries) => {
-    // Group entries by date (using YYYY-MM-DD format)
+
     const entriesByDate = {};
     const dates = [];
     
-    // Sort entries by date
+    //! Sort entries by date
     const sortedEntries = [...entries].sort((a, b) => 
       new Date(a.created_at) - new Date(b.created_at)
     );
 
-    // Get last X entries (adjust number as needed)
-    const recentEntries = sortedEntries.slice(-30); // Last 30 entries or days
+
+    const recentEntries = sortedEntries.slice(-30); //! Last 30 entries or days
     
     recentEntries.forEach(entry => {
       const date = new Date(entry.created_at);
@@ -56,7 +56,7 @@ const MoodLineGraph = ({ entriesData }) => {
         day: 'numeric'
       });
       
-      // Calculate average mood score if multiple moods per entry
+      //! Calculate average mood score if multiple moods per entry
       let moodScore = 0;
       if (entry.moods && entry.moods.length > 0) {
         moodScore = entry.moods.reduce((sum, mood) => sum + mood.score, 0) / entry.moods.length;
@@ -74,7 +74,7 @@ const MoodLineGraph = ({ entriesData }) => {
       }
     });
     
-    // Calculate average mood score per day
+    //! Calculate average mood score per day
     const moodData = dates.map(date => {
       return entriesByDate[date].totalScore / entriesByDate[date].count;
     });

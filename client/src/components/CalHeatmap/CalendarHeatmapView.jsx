@@ -1,18 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './CalendarHeatmapView.css';
-
 import CalHeatmap from 'cal-heatmap';
 import Tooltip from '@cal-heatmap/tooltip';
-
-
-
-
+import { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 
 const CalendarHeatmapView = ({ entriesData }) => {
   const calendarContainerRef = useRef(null);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [cal, setCal] = useState(null);
-  
+
   // Format date for display
   const formatMonthYear = (date) => {
     return date.toLocaleDateString('en-US', {
@@ -20,25 +17,21 @@ const CalendarHeatmapView = ({ entriesData }) => {
       month: 'long'
     });
   };
-  
-  const [displayDate, setDisplayDate] = useState(formatMonthYear(currentDate));
-  
-  useEffect(() => {
 
+  const [displayDate, setDisplayDate] = useState(formatMonthYear(currentDate));
+
+  useEffect(() => {
     const formattedData = entriesData.map(entry => ({
       date: new Date(entry.date),
       value: entry.count
     }));
-    
 
     if (calendarContainerRef.current) {
       calendarContainerRef.current.innerHTML = '';
     }
-    
-    try {
 
+    try {
       const newCal = new CalHeatmap();
-      
 
       newCal.paint({
         itemSelector: calendarContainerRef.current,
@@ -76,12 +69,25 @@ const CalendarHeatmapView = ({ entriesData }) => {
           highlight: [new Date()]
         }
       });
-      
+
+      // ✅ Add click handler here
+      newCal.on('click', (event, timestamp, value) => {
+        const clickedDate = new Date(timestamp);
+        const readableDate = clickedDate.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        });
+
+        const entryCount = value ?? 0;
+
+        toast.success(`You wrote ${entryCount} entr${entryCount === 1 ? 'y' : 'ies'} on ${readableDate}`);
+      });
+
       setCal(newCal);
     } catch (err) {
       console.error("Error initializing calendar:", err);
     }
-    
 
     return () => {
       if (calendarContainerRef.current) {
@@ -89,7 +95,7 @@ const CalendarHeatmapView = ({ entriesData }) => {
       }
     };
   }, [entriesData, currentDate]);
-  
+
   const handlePrevious = (e) => {
     e.preventDefault();
     const newDate = new Date(currentDate);
@@ -97,7 +103,7 @@ const CalendarHeatmapView = ({ entriesData }) => {
     setCurrentDate(newDate);
     setDisplayDate(formatMonthYear(newDate));
   };
-  
+
   const handleNext = (e) => {
     e.preventDefault();
     const newDate = new Date(currentDate);
@@ -105,7 +111,7 @@ const CalendarHeatmapView = ({ entriesData }) => {
     setCurrentDate(newDate);
     setDisplayDate(formatMonthYear(newDate));
   };
-  
+
   return (
     <div className="heatmap-widget">
       <div className="calendar-header">

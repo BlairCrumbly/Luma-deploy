@@ -5,6 +5,7 @@ import 'react-quill/dist/quill.snow.css';
 import { api } from '../../services/api';
 import './EntryEditor.css';
 import AiInput from '../AiInput/AiInput';
+import toast from 'react-hot-toast';
 
 const EntryEditor = () => {
   const { entryId } = useParams();
@@ -95,7 +96,12 @@ const EntryEditor = () => {
       console.log('Response from API:', response);
   
       setUnsavedChanges(false);
-      alert('Entry saved successfully!');
+      toast.success('Entry saved successfully!');
+      
+      //! ADd a slight delay before redirecting to ensure the toast is seen
+      setTimeout(() => {
+        navigate('/entries');
+      }, 700);
     } catch (err) {
       console.error('Error saving entry:', err);
       setError('Failed to save entry. Please try again.');

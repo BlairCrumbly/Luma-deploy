@@ -156,7 +156,7 @@ const MoodLineGraph = ({ entriesData }) => {
 
   return (
     <div className="mood-graph-container" >
-      <h3>Mood Trends</h3>
+      <h3>Your Mood Trends</h3>
       <Line data={chartData} options={options} />
     </div>
   );

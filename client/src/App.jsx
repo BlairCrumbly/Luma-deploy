@@ -13,6 +13,7 @@ import Navbar from './components/Navbar/Navbar'
 import EntriesList from './components/Entries/EntriesList';
 import EntryForm from './components/EntryForm/EntryForm';
 import EntryEditor from './components/EntryEditor/EntryEditor';
+import { Toaster } from 'react-hot-toast';
 
 
 
@@ -24,6 +25,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+      <Toaster position="top-right" />
         <Navbar /> {/* Include the Navbar component */}
         <div className="main-content">
           <Routes>

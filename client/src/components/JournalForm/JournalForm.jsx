@@ -4,6 +4,7 @@ import * as Yup from 'yup';
 import { api } from '../../services/api';
 import ColorPicker from './colorpicker';
 import './JournalForm.css';
+import toast from 'react-hot-toast';
 
 const JournalForm = ({ onJournalCreated }) => {
 
@@ -29,11 +30,10 @@ const JournalForm = ({ onJournalCreated }) => {
       if (onJournalCreated) {
         onJournalCreated(newJournal);
       }
-      
+      toast.success('Journal created successfully!');
       resetForm();
-      setStatus({ success: 'Journal created successfully!' });
     } catch (err) {
-      console.error('Error creating journal:', err);
+      toast.failed('Error creating journal :(');
       
       // Check if it's a unique constraint violation error
       if (err.message && err.message.includes('UNIQUE constraint failed: journals.title')) {

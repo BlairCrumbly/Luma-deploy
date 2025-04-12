@@ -62,7 +62,7 @@ const EntriesPage = () => {
       setDeleteConfirmation(null);
     } catch (err) {
       console.error('Error deleting entry:', err);
-      alert('Failed to delete entry. Please try again.');
+      toast.failed('Failed to delete entry. Please try again.');
     }
   };
 

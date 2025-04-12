@@ -1,13 +1,12 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom'; // To navigate after form submission
-import JournalForm from '../components/JournalForm/JournalForm';  // Import JournalForm
+import { useNavigate } from 'react-router-dom';
+import JournalForm from '../components/JournalForm/JournalForm'; 
 
 const JournalFormPage = () => {
-    const navigate = useNavigate(); // Used to navigate after the journal is saved
+    const navigate = useNavigate(); 
   
-    const handleJournalCreated = (newJournal) => {
-      console.log('New journal created:', newJournal);
-      navigate('/journals'); // After journal is created, navigate to the journals page
+    const handleJournalCreated = () => {
+      navigate('/journals');
     };
   
     return (

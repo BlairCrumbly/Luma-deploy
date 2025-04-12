@@ -4,6 +4,9 @@
   gap: 1rem;
   
 }
+.auth-title{
+  text-align: center;
+}
 
 .form-group {
   display: flex;
@@ -140,11 +143,11 @@ html, body {
     overflow-y: auto;
   }
   
-  .auth-title {
+  .auth-title h1{
     font-size: 1.5rem;
     margin-bottom: 1rem;
+    text-align: center !important; 
   }
-  
   .form-group label {
     margin-bottom: 0.35rem;
     font-size: 0.9rem;

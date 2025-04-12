@@ -5,6 +5,7 @@ import { api } from '../services/api';
 import JournalCard from '../components/JournalCard/JournalCard';
 import CalendarHeatmapView from '../components/CalHeatmap/CalendarHeatmapView';
 import MoodLineGraph from '../components/MoodGraph/MoodLineGraph';
+import TypingEffect from '../components/TypingEffect/TypingEffect';
 
 import 'react-calendar-heatmap/dist/styles.css';
 import '../styles/Homepage.css';
@@ -103,11 +104,14 @@ const HomePage = () => {
   const hasCalendarData = entriesHeatmap.length > 0;
 
   if (loading) return <div className="loading">Loading your dashboard...</div>;
+  const welcomeMessage = `Welcome, ${currentUser?.username || 'there'}!`;
 
   return (
     <div className="homepage-container">
       <div className="homepage-header">
-        <h1>Welcome, {currentUser?.username || 'there'}!</h1>
+      <h1 className="typing-welcome">
+          <TypingEffect text={welcomeMessage} speed={70} />
+        </h1>
         <p className="subtitle">Your journaling dashboard</p>
       </div>
 

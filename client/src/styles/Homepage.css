@@ -49,6 +49,7 @@
   gap: 20px;
   overflow-x: auto;
   padding: 10px 0;
+  scroll-behavior: smooth;
 }
 
 .add-journal-card {
@@ -64,6 +65,14 @@
   text-decoration: none;
   color: #666;
   transition: all 0.3s ease;
+}
+
+.journals-row::-webkit-scrollbar {
+  height: 8px;
+}
+.journals-row::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
 }
 
 .add-journal-card:hover {
@@ -412,4 +421,17 @@
 
 .step-button:hover {
   background-color: #426f54;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .homepage-container {
+    padding: 20px;
+  }
+  .section-header h2 {
+    font-size: 1.3rem;
+  }
+  .entries-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
 }

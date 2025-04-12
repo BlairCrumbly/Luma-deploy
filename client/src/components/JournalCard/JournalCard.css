@@ -9,17 +9,14 @@
 
 /* Individual journal card */
 .journal-card {
+  flex: 0 0 auto;
+  width: 100px;   
+  height: 150px;
   cursor: pointer;
   color: white;
   padding: 20px;
-  width: 100px;
-  height: 150px; 
-  border-radius: 20px 10px 10px 0px; 
+  border-radius: 20px 10px 10px 0px;
   background-color: var(--journal-color, #fff);
-  /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1),
-              inset 0 -20px 30px rgba(0, 0, 0, 0.15),
-              inset 0 5px 10px rgba(255, 255, 255, 0.3);
-  transition: transform 0.3s ease, box-shadow 0.3s ease; */
   display: flex;
   flex-direction: column;
   position: relative;
@@ -58,13 +55,13 @@
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
 }
 
-/* Curved spine effect with gradient and texture */
+/*spine*/
 .journal-card:before {
   content: '';
   position: absolute;
   top: 0;
   left: -3px;
-  width: 15px; /* Width of the spine */
+  width: 15px; 
   height: 100%;
   background: linear-gradient(to bottom, 
   rgba(0, 0, 0, 0.6), 
@@ -73,7 +70,7 @@
   box-shadow: inset -1px 0 2px rgba(255, 255, 255, 0.1);
 }
 
-/* Bookmark element */
+/* Bookmark */
 .journal-bookmark {
   position: absolute;
   top: -5px;
@@ -86,21 +83,18 @@
   z-index: 1;
 }
 
-/* Line pattern - simulates paper */
+/*!retro dot pattern */
 .journal-line-pattern {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: 
-    linear-gradient(
-      rgba(255, 255, 255, 0.05) 1px, 
-      transparent 1px
-    );
-  background-size: 100% 10px;
-  opacity: 0.3;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.219) 1px, transparent 1px);
+  background-size: 6px 6px;
+  opacity: 0.2;
   pointer-events: none;
+  z-index: 0;
 }
 
 /* Optional: Add an "worn corner" effect */

@@ -97,7 +97,7 @@
   z-index: 0;
 }
 
-/* Optional: Add an "worn corner" effect */
+
 .journal-card:after {
   content: '';
   position: absolute;

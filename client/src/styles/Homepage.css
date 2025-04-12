@@ -52,6 +52,7 @@
 }
 
 .add-journal-card {
+  margin-top: 22px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -68,6 +69,9 @@
 .add-journal-card:hover {
   border-color: #2D8FB6;
   color: #2D8FB6;
+}
+.new-journal-text{
+  text-align: center;
 }
 
 .add-icon {

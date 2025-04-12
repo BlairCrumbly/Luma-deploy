@@ -147,8 +147,8 @@
 }
 
 .calendar-nav-btn {
-  background: #f5f5f5;
-  border: 1px solid #ddd;
+  background: #ffffff00;
+  border: none;
   border-radius: 4px;
   padding: 8px 15px;
   cursor: pointer;

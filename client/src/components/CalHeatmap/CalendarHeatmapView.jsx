@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import './CalendarHeatmapView.css';
 import CalHeatmap from 'cal-heatmap';
 import Tooltip from '@cal-heatmap/tooltip';
@@ -122,18 +123,12 @@ const CalendarHeatmapView = ({ entriesData }) => {
         ref={calendarContainerRef}
       ></div>
       <div className="calendar-navigation">
-        <button
-          className="calendar-nav-btn"
-          onClick={handlePrevious}
-        >
-          ← Previous
-        </button>
-        <button
-          className="calendar-nav-btn"
-          onClick={handleNext}
-        >
-          Next →
-        </button>
+      <button className="calendar-nav-btn" onClick={handlePrevious} aria-label="Previous">
+          <ChevronLeft size={20} />
+      </button>
+      <button className="calendar-nav-btn" onClick={handleNext} aria-label="Next">
+        <ChevronRight size={20} />
+      </button>
       </div>
     </div>
   );

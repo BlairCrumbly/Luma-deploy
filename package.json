@@ -3,6 +3,7 @@
     "@cal-heatmap/tooltip": "^1.0.0-beta.0",
     "cal-heatmap": "^4.2.4",
     "js-cookie": "^3.0.5",
+    "lucide-react": "^0.487.0",
     "openai": "^4.93.0",
     "quill": "^2.0.3",
     "react": "^18.3.1",

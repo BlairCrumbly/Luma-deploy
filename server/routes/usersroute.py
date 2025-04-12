@@ -277,9 +277,9 @@ class DeleteUser(Resource):
             current_user_id = get_jwt_identity()
             user = User.query.get_or_404(current_user_id)
             
-            # other feature when del user is implemented: Delete related journals
-            # for journal in user.journals:
-            #     db.session.delete(journal)
+            
+            for journal in user.journals:
+                db.session.delete(journal)
             
             db.session.delete(user)
             db.session.commit()

@@ -3,6 +3,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 10px;
+  
 }
 
 .homepage-header {
@@ -423,6 +424,8 @@
   background-color: #426f54;
 }
 
+
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .homepage-container {
@@ -434,4 +437,13 @@
   .entries-grid {
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   }
+}
+
+@media (max-width: 1600px) {
+  .homepage-container {
+    padding: 20px;
+    margin-left: 20px;
+  }
+
+
 }

@@ -139,7 +139,7 @@ const HomePage = () => {
               ))}
               <Link to="/journals/new" className="add-journal-card">
                 <div className="add-icon">+</div>
-                <div className='new-journal-te'>New Journal</div>
+                <div className='new-journal-text'>New Journal</div>
               </Link>
             </>
           )}

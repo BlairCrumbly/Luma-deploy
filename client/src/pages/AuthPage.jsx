@@ -31,7 +31,9 @@ const AuthPage = () => {
       
       <div className="form-container">
       <div className="luma-container">
-      <h1>Luma
+      <h1>
+        Luma 
+        <img src="../../images/leaf-icon.svg" alt="Leaf Icon" className="leaf-icon" />
       </h1>
       </div>
         <h1 className="auth-title">{isLogin ? 'Welcome Back' : 'Create Account'}</h1>

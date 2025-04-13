@@ -18,6 +18,12 @@
     font-weight: lighter;
     color: #57886a;
 }
+.leaf-icon {
+  width: 40px; 
+  height: 50px;
+  vertical-align: middle; 
+  margin-left: 8px; 
+}
 
 
 .image-container {

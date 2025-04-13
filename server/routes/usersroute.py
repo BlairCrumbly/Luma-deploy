@@ -34,7 +34,7 @@ class Signup(Resource):
             db.session.add(new_user)
             db.session.commit()
             
-            access_token = create_access_token(identity=new_user.id)
+            access_token = create_access_token(identity=  str(new_user.id)   )
             response = make_response(new_user.to_dict(),201)
             set_access_cookies(response, access_token)
             return response
@@ -62,7 +62,7 @@ class Login(Resource):
             elif not user.check_password(data['password']):
                 return {"error": "Incorrect password"}, 401
             else:
-                access_token = create_access_token(identity=user.id)
+                access_token = create_access_token(identity=str(user.id))
                 response = make_response(user.to_dict(), 200)
                 set_access_cookies(response,access_token, )
                 return response
@@ -209,8 +209,8 @@ class GoogleAuthorize(Resource):
             
             db.session.commit()
             
-            access_token = create_access_token(identity=user.id)
-            refresh_token = create_refresh_token(identity=user.id)
+            access_token = create_access_token(identity=str(user.id))
+            refresh_token = create_refresh_token(identity=str(user.id))
 
             frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:5173')
             response = redirect(f"{frontend_url}/oauth-redirect")

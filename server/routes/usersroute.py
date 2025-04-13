@@ -34,10 +34,14 @@ class Signup(Resource):
             db.session.add(new_user)
             db.session.commit()
             
-            access_token = create_access_token(identity=  str(new_user.id)   )
+            access_token = create_access_token(identity=  str(new_user.id))
+            refresh_token = create_refresh_token(identity=str(new_user.id))
             response = make_response(new_user.to_dict(),201)
             set_access_cookies(response, access_token)
+            set_refresh_cookies(response, refresh_token)
+
             return response
+        
         
         except IntegrityError:
             #! catch duplicate email and provide a clear error message
@@ -63,8 +67,11 @@ class Login(Resource):
                 return {"error": "Incorrect password"}, 401
             else:
                 access_token = create_access_token(identity=str(user.id))
+                refresh_token = create_refresh_token(identity=str(user.id))
                 response = make_response(user.to_dict(), 200)
                 set_access_cookies(response,access_token, )
+                set_refresh_cookies(response, refresh_token)
+
                 return response
         except Exception as e:
             return {'error': f'Error logging in user: {str(e)}'}, 500

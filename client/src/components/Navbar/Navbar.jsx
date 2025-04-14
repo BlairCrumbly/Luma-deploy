@@ -55,6 +55,9 @@ const Navbar = () => {
           <Link to="/" onClick={handleLinkClick}>Home</Link>
         </li>
         <li className="nav-link">
+          <Link to="/profile" onClick={handleLinkClick}>My Profile</Link>
+        </li>
+        <li className="nav-link">
           <Link to="/journals" onClick={handleLinkClick}>Journals</Link>
         </li>
         <li className="nav-link">
@@ -66,9 +69,7 @@ const Navbar = () => {
         <li className="nav-link">
           <Link to="/journal/new-entry" onClick={handleLinkClick}>New Entry</Link>
         </li>
-        {/* <li className="nav-link">
-          <Link to="/profile" onClick={handleLinkClick}>My Profile</Link>
-        </li> */}
+
         <li className="nav-link">
           {/* Use a button for logout */}
           <button className="logout-btn" onClick={handleLogout}>

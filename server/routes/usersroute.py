@@ -1,16 +1,19 @@
 from flask import request, redirect, url_for, session, jsonify
 from flask_restful import Resource
 from config import app, db, api, google, oauth
-from models import User
+from models import User, Journal, Entry
 from flask_jwt_extended import create_access_token, set_access_cookies, jwt_required, get_jwt_identity, unset_jwt_cookies, create_refresh_token, set_refresh_cookies
 from flask import make_response
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import func, and_, or_
+from datetime import datetime, timedelta
 import secrets
 import re
 import requests
 import urllib.parse
 import os
 import time
+
 
 
 
@@ -260,24 +263,109 @@ class UserProfile(Resource):
         user = User.query.get_or_404(current_user_id)
         return user.to_dict(), 200
 
-
-# class DeleteUser(Resource):
-#     @jwt_required()
-#     def delete(self):
-#         try:
-#             current_user_id = get_jwt_identity()
-#             user = User.query.get_or_404(current_user_id)
-            
-            
-#             for journal in user.journals:
-#                 db.session.delete(journal)
-            
-#             db.session.delete(user)
-#             db.session.commit()
-            
-#             response = make_response({"message": "User account deleted successfully"}, 200)
-#             unset_jwt_cookies(response)
-#             return response
+class UserStats(Resource):
+    @jwt_required()
+    def get(self):
+        current_user_id = get_jwt_identity()
+        user = User.query.get_or_404(current_user_id)
         
-#         except Exception as e:
-#             return {"error": f"Error deleting user: {str(e)}"}, 500
+        #! Count journals
+        journal_count = Journal.query.filter_by(user_id=user.id).count()
+        
+        #! Count entries
+        entry_count = db.session.query(func.count(Entry.id)).join(Journal).filter(Journal.user_id == user.id).scalar() or 0
+        
+        #! Calculate streaks
+        streaks = self._calculate_streaks(user.id)
+        
+        return {
+            "journal_count": journal_count,
+            "entry_count": entry_count,
+            "longest_streak": streaks["longest_streak"],
+            "current_streak": streaks["current_streak"]
+        }, 200
+    
+    def _calculate_streaks(self, user_id):
+        entry_dates_query = db.session.query(
+            func.date(Entry.created_at).label('entry_date')
+        ).join(Journal).filter(
+            Journal.user_id == user_id
+        ).group_by(
+            func.date(Entry.created_at)
+        ).order_by(
+            func.date(Entry.created_at)
+        ).all()
+        
+        try:
+            entry_dates = [
+                datetime.strptime(row.entry_date, "%Y-%m-%d").date() 
+                for row in entry_dates_query
+            ]
+        except Exception as e:
+            app.logger.error(f"Error parsing entry dates: {e}")
+            return {"longest_streak": 0, "current_streak": 0}
+
+        if not entry_dates:
+            return {"longest_streak": 0, "current_streak": 0}
+        
+        #! Calculate longest streak
+        longest_streak = 1
+        current_streak = 1
+        streak_count = 1
+        
+        for i in range(1, len(entry_dates)):
+            if (entry_dates[i] - entry_dates[i-1]).days == 1:
+                streak_count += 1
+            else:
+                #! Reset streak if gap in dates
+                streak_count = 1
+            
+            longest_streak = max(longest_streak, streak_count)
+        
+        
+        today = datetime.now().date()
+        
+        
+        if entry_dates[-1] == today:
+            current_streak = 1
+            
+            for i in range(len(entry_dates) - 2, -1, -1):
+                if (entry_dates[i+1] - entry_dates[i]).days == 1:
+                    current_streak += 1
+                else:
+                    break
+        
+        elif entry_dates[-1] == (today - timedelta(days=1)):
+            current_streak = 1
+            
+            for i in range(len(entry_dates) - 2, -1, -1):
+                if (entry_dates[i+1] - entry_dates[i]).days == 1:
+                    current_streak += 1
+                else:
+                    break
+        else:
+            current_streak = 0
+        
+        return {
+            "longest_streak": longest_streak,
+            "current_streak": current_streak
+        }
+
+class DeleteUser(Resource):
+    @jwt_required()
+    def delete(self):
+        try:
+            current_user_id = get_jwt_identity()
+            user = User.query.get_or_404(current_user_id)
+            
+            
+            db.session.delete(user)
+            db.session.commit()
+            
+            response = make_response({"message": "User account deleted successfully"}, 200)
+            unset_jwt_cookies(response)
+            return response
+        
+        except Exception as e:
+            db.session.rollback()
+            return {"error": f"Error deleting user: {str(e)}"}, 500

@@ -1,0 +1,240 @@
+.profile-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+  
+  .profile-header {
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+  
+  .profile-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+  }
+  
+  .profile-subtitle {
+    color: #666;
+    font-size: 1.1rem;
+  }
+  
+  .profile-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  .profile-section {
+    background-color: #ffffff79;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+  
+  .profile-section h2 {
+    color: #444;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  /* Account Info Styles */
+  .info-item {
+    display: flex;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+  }
+  
+  .info-label {
+    font-weight: 600;
+    width: 120px;
+    color: #555;
+  }
+  
+  .info-value {
+    color: #333;
+  }
+  
+  /* Stats Grid Styles */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+  
+  .stat-card {
+    background: #f9f9f9;
+    border-radius: 10px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.07);
+  }
+  
+  .stat-content {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .stat-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #333;
+  }
+  
+  .stat-label {
+    font-size: 0.9rem;
+    color: #666;
+  }
+  
+  /* Danger Zone Styles */
+  .important {
+    border: 1px solid #ffcccc;
+  }
+  
+  .important h2 {
+    color: #d63031;
+  }
+  
+  .delete-account {
+    background: #fff7f7;
+    border-radius: 8px;
+    padding: 1rem;
+  }
+
+  
+  .delete-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .delete-info h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: #d63031;
+  }
+  
+  .delete-info p {
+    margin: 0.3rem 0 0;
+    font-size: 0.9rem;
+    color: #666;
+  }
+  
+  .delete-btn {
+    background-color: #d63031;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 0.05rem 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .delete-btn:hover {
+    background-color: #c0392b;
+  }
+  
+  .delete-confirmation {
+    background: #fff0f0;
+    border: 1px solid #ffcccc;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .delete-confirmation p {
+    margin: 0.7rem 0;
+    text-align: center;
+    font-size: 0.95rem;
+    color: #333;
+  }
+  
+  .confirm-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+  
+  .cancel-btn {
+    background-color: #f0f0f0;
+    color: #333;
+    border: none;
+    border-radius: 6px;
+    padding: 0.6rem 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  
+  .confirm-delete-btn {
+    background-color: #d63031;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 0.6rem 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  
+  .cancel-btn:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .confirm-delete-btn:hover {
+    background-color: #c0392b;
+  }
+  
+  .profile-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50vh;
+    font-size: 1.2rem;
+    color: #666;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .info-item {
+      flex-direction: column;
+      margin-bottom: 1.5rem;
+    }
+    
+    .info-label {
+      width: 100%;
+      margin-bottom: 0.2rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .delete-info {
+      flex-direction: column;
+      text-align: center;
+    }
+  }

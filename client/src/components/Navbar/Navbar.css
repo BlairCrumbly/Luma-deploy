@@ -1,141 +1,145 @@
 /* Navbar styles */
 .navbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 10%; /* Reduced width */
-    height: 100vh;
-    background-color: #57886afb;
-    color:  #f0e8d1;
-    padding-top: 20px;
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    padding-left: 10px;
-    transition: all 0.3s ease;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 10%;
+  height: 100vh;
+  background-color: rgba(87, 136, 106, 0.963); /* using rgba for transparency */
+  color: #f0e8d1;
+  padding-top: 1.25rem; /* 20px roughly */
+  padding-left: 0.625rem; /* 10px roughly */
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  transition: all 0.3s ease;
+}
+
+/* Logo styles - adjust font-size and centering if needed */
+.navbar .logo {
+  width: 100%;
+  text-align: center;
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 1.875rem; /* ~30px */
+  position: absolute;
+  top: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Nav Links styles */
+.nav-links {
+
+  margin-top: 10rem;
+  list-style: none;
+  padding: 0;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Each list item gets a margin for consistent spacing */
+.nav-links .nav-link {
+  margin-bottom: 1rem; 
+  width: 100%;
+}
+
+
+.nav-links .nav-link a {
+  display: block;
+  width: 100%;
+  color: #f0e8d1;
+  text-decoration: none;
+  font-size: 1.5rem;
+  padding: 1rem 1.2rem; 
+  text-align: left;
+}
+
+
+.nav-links .nav-link a:hover {
+  font-weight: bold;
+}
+
+
+button {
+  font-family: "Space Mono", monospace;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease, font-weight 0.3s ease, padding 0.3s ease;
+
+  padding: 0.625rem 0.9375rem;
+  font-size: 1.5rem;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+}
+
+.logout-btn {
+  background-color: transparent;
+  color: rgb(255, 156, 156);
+  margin-top: 1.875rem; 
+}
+
+
+.logout-btn:hover {
+  font-weight: bold;
+}
+
+
+.hamburger {
+  display: none;
+  flex-direction: column;
+  cursor: pointer;
+  padding: 0.625rem;
+  z-index: 99999;
+}
+
+.hamburger .bar {
+  width: 1.5625rem;  
+  height: 0.1875rem; 
+  margin: 0.25rem 0; 
+  background-color: white;
+}
+
+/* Mobile responsiveness - collapsible menu */
+@media (max-width: 1200px) {
+  .navbar {
+    width: 10%; 
+    padding-bottom: 1.25rem;
   }
-  
-  /* Logo styles - adjust font-size and centering if needed */
-  .navbar .logo {
-    width: 100%;
-    text-align: center;
-    font-size: 3em; /* Smaller font for a narrow sidebar */
-    font-weight: bold;
-    margin-bottom: 30px;
-    position: absolute;
-    top: 20px;
-    left: 45%;
-    transform: translateX(-50%);
-  }
-  
-  /* Nav Links styles */
-  .nav-links {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    margin-top: 80px; /* Push links below the logo */
-  }
-  
-  /* Instead of targeting the anchor, apply spacing to the list item */
-  .nav-links .nav-link {
-    margin-bottom: 10px; /* Space between links */
-    width: 100%;
-  }
-  
-  .nav-links .nav-link a {
-    display: block;             /* Ensure the link takes full width */
-    color:  #f0e8d1;
-    text-decoration: none;
-    font-size: 1em;             /* Slightly smaller font */
-    padding: 10px 15px;
-    text-align: left;
-    margin-top: 60px;
-  }
-  
-  .nav-links .nav-link a:hover {
-    font-weight: bold;
-  }
-  
-  /* Hamburger Icon (if using collapsible menu on mobile) */
+
   .hamburger {
+    display: flex;
+  }
+
+  .nav-links {
     display: none;
     flex-direction: column;
-    cursor: pointer;
-    padding: 10px;
-    z-index: 99999;
-  }
-  
-  .hamburger .bar {
-    width: 25px;
-    height: 3px;
-    margin: 4px 0;
-    background-color: white;
-  }
-
-  .logout-btn {
-    background-color: #57886a00;
-    font-family:"Space Mono", monospace;;
-    border: none;
-    color: rgb(255, 156, 156);
-    font-size: 2em;
-    padding: 10px 15px;
     width: 100%;
-    text-align: left;
-    cursor: pointer;
-    transition: background-color 0.3s ease, font-weight 0.3s ease;
-    margin-top: 50px;
+    margin-top: 1.25rem; 
   }
-  
-  /* On hover, change background color and make text bold */
-  .logout-btn:hover {
 
-    font-weight: bold;
+  .nav-links.active {
+    display: flex;
   }
-  
-  /* Mobile responsiveness - collapsible menu */
-  @media (max-width: 1200px) {
-    .navbar {
-      width: 10%; /* Keep same narrow width when collapsed */
-      /* Add bottom padding so content isn't flush with bottom */
-      padding-bottom: 20px;
 
-    }
-  
-    .hamburger {
-      display: flex;
-      
-      
-    }
-  
-    .nav-links {
-      display: none;
-      flex-direction: column;
-      width: 100%;
-      margin-top: 20px; /* Reduce margin-top to push links higher */
-    }
-  
-    .nav-links.active {
-      display: flex;
-    }
-  
-    .nav-links .nav-link {
-      font-size: 0.9em;
-      padding: 8px 12px;
-      margin-bottom: 10px; /* Adjust spacing as needed */
-    }
-  
-    .navbar.open {
-      width: 100%;
-      /* Ensure there’s some padding at the bottom when open */
-      padding-bottom: 20px;
-    }
-  
-    .navbar:not(.open) .logo {
-      display: none;
-      
-    }
+  .nav-links .nav-link {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.625rem; 
   }
+
+  .navbar.open {
+    width: 100%;
+    padding-bottom: 1.25rem;
+  }
+
+  .navbar:not(.open) .logo {
+    display: none;
+  }
+}
+
+

@@ -13,6 +13,8 @@ import Navbar from './components/Navbar/Navbar'
 import EntriesList from './components/Entries/EntriesList';
 import EntryForm from './components/EntryForm/EntryForm';
 import EntryEditor from './components/EntryEditor/EntryEditor';
+import UserProfile from './components/UserProfile/UserProfile'
+
 // import UserProfile from './components/UserProfile/UserProfile'
 import { Toaster } from 'react-hot-toast';
 
@@ -74,11 +76,11 @@ function App() {
                 <EntryEditor />
               </ProtectedRoute>
             } />
-            {/* <Route path="/profile" element={
+            <Route path="/profile" element={
               <ProtectedRoute>
                 <UserProfile />
               </ProtectedRoute>
-            } /> */}
+            } />
 
             {/* Redirect all other routes to home */}
             <Route path="*" element={<Navigate to="/" replace />} />

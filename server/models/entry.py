@@ -14,7 +14,7 @@ class Entry(db.Model, SerializerMixin):
     ai_prompt_used = db.Column(db.Boolean)
     #! Relationships
     journal = db.relationship("Journal", back_populates="entries")
-    moods = db.relationship("Mood", secondary="entry_moods", back_populates="entries")
+    moods = db.relationship("Mood", secondary="entry_moods", back_populates="entries", cascade="save-update, merge")
     #!Serializer
     serialize_rules = ('-journal', 'moods')
     #! Validations

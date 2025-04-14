@@ -1,5 +1,5 @@
 import React, { useEffect, useContext, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 
 const OAuthRedirectHandler = () => {
@@ -8,11 +8,12 @@ const OAuthRedirectHandler = () => {
   const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  
   useEffect(() => {
     const handleRedirect = async () => {
       try {
         console.log("Starting OAuth redirect handling...");
+        console.log("URL params:", location.search);
         
         // Check for error in URL parameters
         const urlParams = new URLSearchParams(location.search);
@@ -22,12 +23,7 @@ const OAuthRedirectHandler = () => {
           throw new Error(`Authentication error: ${errorParam}`);
         }
         
-        // Check for state parameter issues
-        if (urlParams.get('state') === null) {
-          throw new Error('Missing state parameter - possible CSRF issue');
-        }
-        
-        //! Try to get the current user with the new tokens
+        // Try to get the current user with the new tokens
         const userData = await handleGoogleRedirect();
         
         if (userData) {
@@ -45,10 +41,10 @@ const OAuthRedirectHandler = () => {
         setLoading(false);
       }
     };
-
+    
     handleRedirect();
   }, [handleGoogleRedirect, navigate, location]);
-
+  
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -59,7 +55,7 @@ const OAuthRedirectHandler = () => {
       </div>
     );
   }
-
+  
   if (error) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -71,7 +67,7 @@ const OAuthRedirectHandler = () => {
       </div>
     );
   }
-
+  
   return null;
 };
 

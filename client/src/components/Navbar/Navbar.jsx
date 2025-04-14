@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Navbar.css'
 import { useState, useContext } from 'react';
-import { AuthContext } from '../contexts/AuthContext';
+import  AuthContext  from '../contexts/AuthContext';
 
 const Navbar = () => {
   const { currentUser, logout } = useContext(AuthContext);
@@ -66,6 +66,9 @@ const Navbar = () => {
         <li className="nav-link">
           <Link to="/journal/new-entry" onClick={handleLinkClick}>New Entry</Link>
         </li>
+        {/* <li className="nav-link">
+          <Link to="/profile" onClick={handleLinkClick}>My Profile</Link>
+        </li> */}
         <li className="nav-link">
           {/* Use a button for logout */}
           <button className="logout-btn" onClick={handleLogout}>

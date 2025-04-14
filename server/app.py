@@ -1,6 +1,7 @@
 from config import app, api
 from models import *
 from routes import Signup, Login, Logout, UserProfile, GoogleLogin, GoogleAuthorize, TokenRefresh
+# DeleteUser
 from routes.journalsroute import JournalsResource
 from routes.entriesroute import EntryResource, AiPromptResource
 from routes.moodsroute import MoodsResource
@@ -11,6 +12,7 @@ api.add_resource(Logout, '/logout')
 api.add_resource(GoogleLogin, "/login/google")
 api.add_resource(GoogleAuthorize, "/authorize", endpoint="googleauthorize")
 api.add_resource(UserProfile, '/user/profile')
+# api.add_resource(DeleteUser, '/user/delete')
 api.add_resource(JournalsResource, '/journals')
 api.add_resource(EntryResource, '/entries', '/entries/<int:entry_id>')
 api.add_resource(AiPromptResource, '/ai-prompt')

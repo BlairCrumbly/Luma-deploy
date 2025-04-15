@@ -16,7 +16,7 @@ const JournalForm = ({ onJournalCreated }) => {
       .required('Year is required')
       .integer('Year must be a whole number')
       .min(1900, 'Year must be 1900 or later')
-      .max(new Date().getFullYear() + 10, 'Year cannot be too far in the future'),
+      .max(new Date().getFullYear() + 15, 'Year cannot be too far in the future'),
     color: Yup.string()
       .required('Color is required')
       .matches(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Must be a valid hex color')

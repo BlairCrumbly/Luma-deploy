@@ -63,7 +63,6 @@ const EntryForm = () => {
       //! Create the new entry
       const newEntry = await api.post('/entries', values);
   
-      
       if (!newEntry || !newEntry.id) {
         throw new Error('Failed to create entry. No entry ID returned.');
       }
@@ -72,7 +71,8 @@ const EntryForm = () => {
       navigate(`/entry/${newEntry.id}`, { 
         state: { 
           isNewEntry: true,
-          aiPrompt: values.ai_prompt_used
+          aiPrompt: values.ai_prompt_used,
+          entryTitle: values.title  // Pass the title to the EntryEditor
         } 
       });
   

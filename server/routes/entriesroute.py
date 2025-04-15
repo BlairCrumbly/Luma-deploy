@@ -123,6 +123,11 @@ class EntryResource(Resource):
             if 'main_text' in data:
                 entry.main_text = data['main_text']
                 entry.updated_at = datetime.now()
+                
+            # Add this to handle title updates
+            if 'title' in data:
+                entry.title = data['title']
+                entry.updated_at = datetime.now()
             
             db.session.commit()
             return entry.to_dict(), 200
@@ -135,23 +140,23 @@ class EntryResource(Resource):
     def delete(self, entry_id):
         try:
             current_user_id = get_jwt_identity()
-            
+                
             entry = (
                 Entry.query.join(Journal)
                 .filter(Entry.id == entry_id, Journal.user_id == current_user_id)
                 .first()
-            )
-            
+                )
+                
             if not entry:
                 return {"error": "Entry not found or access denied"}, 404
-            
+                
             EntryMood.query.filter_by(entry_id=entry_id).delete()
-            
+                
             db.session.delete(entry)
             db.session.commit()
-            
+                
             return {"message": "Entry deleted successfully"}, 200
-            
+                
         except Exception as e:
             db.session.rollback()
             return {"error": f"Error deleting entry: {str(e)}"}, 500

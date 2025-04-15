@@ -1,19 +1,64 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
 import './JournalCard.css';
+import useIsMobile from '../Mobile/useIsMobile';
 
-const JournalCard = ({ journal, onClick, isSelected }) => {
+const JournalCard = ({ journal, onEdit, onDelete }) => {
+  const isMobile = useIsMobile();
+  const [showActions, setShowActions] = useState(false);
+
+  const handleCardClick = () => {
+    if (isMobile) {
+      setShowActions(prev => !prev); // toggle visibility on mobile tap
+    }
+  };
+
+  const handleEditClick = (e) => {
+    e.stopPropagation();
+    onEdit && onEdit(journal, e);
+  };
+
+  const handleDeleteClick = (e) => {
+    e.stopPropagation();
+    onDelete && onDelete(journal, e);
+  };
+
   return (
     <div 
-      className={`journal-card ${isSelected ? 'selected' : ''}`}
-      style={{ '--journal-color': journal.color }}
-      onClick={() => onClick(journal.id)}
+      className="journal-card" 
+      style={{ '--journal-color': journal.color }} 
+      onClick={handleCardClick}
     >
       <div className="journal-bookmark"></div>
       <div className="journal-line-pattern"></div>
+
       <div className="journal-card-content">
         <h3>{journal.title}</h3>
         <div className="journal-year">{journal.year}</div>
       </div>
+
+      {/* Show actions on hover (desktop) or tap (mobile) */}
+      {(showActions || !isMobile) && (onEdit || onDelete) && (
+        <div className="journal-actions">
+          {onEdit && (
+            <button 
+              className="edit-button" 
+              onClick={handleEditClick}
+              aria-label="Edit journal"
+            >
+              Edit
+            </button>
+          )}
+          {onDelete && (
+            <button 
+              className="delete-button" 
+              onClick={handleDeleteClick}
+              aria-label="Delete journal"
+            >
+              Delete
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

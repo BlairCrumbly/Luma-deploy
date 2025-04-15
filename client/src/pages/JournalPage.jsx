@@ -7,7 +7,7 @@ import '../styles/JournalsPage.css';
 const JournalPage = () => {
     const [refreshFlag, setRefreshFlag] = useState(false);
   
-    const handleJournalCreated = () => {
+    const handleJournalUpdate = () => {
       setRefreshFlag(!refreshFlag);
     };
   
@@ -16,10 +16,8 @@ const JournalPage = () => {
         <div className="journals-header">
         <h1>My Journals</h1>
         </div>
-        
-        
-        <JournalsList/>
-      </div>
+        <JournalsList refreshFlag={refreshFlag} onJournalUpdate={handleJournalUpdate} />
+        </div>
     );
   };
   

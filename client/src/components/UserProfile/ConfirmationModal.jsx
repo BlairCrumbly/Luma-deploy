@@ -13,7 +13,7 @@ const ConfirmationModal = ({ message, onCancel, onConfirm, isOpen }) => {
             Cancel
           </button>
           <button type="button" className="confirm-delete-btn" onClick={onConfirm}>
-            Yes, Delete My Account
+            I understand, proceed
           </button>
         </div>
       </div>

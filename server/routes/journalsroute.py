@@ -50,4 +50,59 @@ class JournalsResource(Resource):
         except Exception as e:
             return {'error': f'Error creating Journal: {str(e)}'}, 500
 
-
+class JournalResource(Resource):
+    @jwt_required()
+    def get(self, journal_id):
+        try:
+            current_user_id = get_jwt_identity()
+            journal = Journal.query.filter_by(id=journal_id, user_id=current_user_id).first()
+            
+            if not journal:
+                return {"error": "Journal not found"}, 404
+            
+            return journal.to_dict(), 200
+        except Exception as e:
+            return {'error': f'An error occurred while fetching the journal: {str(e)}'}, 500
+    
+    @jwt_required()
+    def put(self, journal_id):
+        try:
+            current_user_id = get_jwt_identity()
+            journal = Journal.query.filter_by(id=journal_id, user_id=current_user_id).first()
+            
+            if not journal:
+                return {"error": "Journal not found"}, 404
+            
+            data = request.get_json()
+            
+            #! Update fields if they exist in the request
+            if 'title' in data:
+                journal.title = data['title']
+            if 'year' in data:
+                journal.year = data['year']
+            if 'color' in data:
+                journal.color = data['color']
+            
+            db.session.commit()
+            return journal.to_dict(), 200
+        
+        except Exception as e:
+            return {'error': f'Error updating journal: {str(e)}'}, 500
+    
+    @jwt_required()
+    def delete(self, journal_id):
+        try:
+            current_user_id = get_jwt_identity()
+            journal = Journal.query.filter_by(id=journal_id, user_id=current_user_id).first()
+            
+            if not journal:
+                return {"error": "Journal not found"}, 404
+            
+            
+            db.session.delete(journal)
+            db.session.commit()
+            
+            return {"message": "Journal deleted successfully"}, 200
+        
+        except Exception as e:
+            return {'error': f'Error deleting journal: {str(e)}'}, 500

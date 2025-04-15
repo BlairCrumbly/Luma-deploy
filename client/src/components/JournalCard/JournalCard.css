@@ -21,6 +21,57 @@
   position: relative;
   overflow: hidden;
   transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  position: relative; 
+}
+.journal-actions {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 10; /* Ensure buttons appear above other elements */
+}
+.journal-card:hover .journal-actions {
+  opacity: 1;
+}
+.edit-button, .delete-button {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: transform 0.2s, background-color 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+.edit-button:hover, .delete-button:hover {
+  transform: translateY(-2px);
+}
+
+.edit-button:active, .delete-button:active {
+  transform: translateY(0);
+}
+
+.edit-button {
+  background-color: var(--journal-color, #4a90e2);
+  color: white;
+}
+
+.edit-button:hover {
+  background-color: hsl(var(--journal-color-h, 210), var(--journal-color-s, 70%), calc(var(--journal-color-l, 60%) - 10%));
+}
+
+.delete-button {
+  background-color: #e25c5c;
+  color: white;
+}
+
+.delete-button:hover {
+  background-color: #d24a4a;
 }
 
 .journal-card:hover {
@@ -42,6 +93,11 @@
   margin: 0;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
   font-weight: 600;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  font-size: 1rem; /* explicitly set a normal size to prevent inheritance */
+  
 }
 
 .journal-year {

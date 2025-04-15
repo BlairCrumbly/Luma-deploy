@@ -202,6 +202,28 @@ class EntryResource(Resource):
         except Exception as e:
             db.session.rollback()
             return {"error": f"Error updating entry: {str(e)}"}, 500
+        
+
+class JournalEntriesResource(Resource):
+    @jwt_required()
+    def get(self, journal_id):
+        # Get the current user ID from the JWT
+        current_user_id = get_jwt_identity()
+
+        # Make sure the journal exists and belongs to the current user.
+        journal = Journal.query.filter_by(id=journal_id, user_id=current_user_id).first()
+        if not journal:
+            return {"error": "Journal not found"}, 404
+
+        # Query for entries that belong to the journal.
+        entries = Entry.query.filter_by(journal_id=journal_id).all()
+        if not entries:
+            return {"message": "No entries found for this journal"}, 404
+
+        # Convert each entry to a serializable dictionary
+        entries_data = [entry.to_dict() for entry in entries]
+        return {"entries": entries_data}, 200
+
 #!AI =============================================================== yay!
 
 class AiPromptResource(Resource):

@@ -45,12 +45,14 @@ const AuthPage = () => {
         
         <GoogleOAuthButton className="google-oauth-button" />
         
-        <p className="toggle-mode">
-          {isLogin ? "Don't have an account? " : "Already have an account? "}
-          <button onClick={toggleMode} className="link-button">
-            {isLogin ? 'Sign Up' : 'Log In'}
-          </button>
-        </p>
+        <div className="toggle-wrapper">
+  <p className="toggle-mode">
+    <span>{isLogin ? "Don't have an account?" : "Already have an account?"}</span>
+    <button type="button" onClick={toggleMode} className="link-button">
+      {isLogin ? 'Sign Up' : 'Log In'}
+    </button>
+  </p>
+</div>
       </div>
     </div>
   );

@@ -137,13 +137,15 @@
     border: none;
     border-radius: 6px;
     padding: 0.05rem 1rem;
-    font-weight: 600;
+    font-weight: 500;
+    font-size: 1rem;
     cursor: pointer;
     transition: background-color 0.2s;
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
+
   }
   
   .delete-btn:hover {

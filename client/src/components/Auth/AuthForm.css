@@ -66,11 +66,21 @@
   font-size: 0.9rem;
 }
 
+.toggle-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
 .toggle-mode {
-  text-align: center;
-  margin-top: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
   color: #666;
   font-size: 0.9rem;
+  margin-top: 1.25rem;
+  white-space: nowrap; 
 }
 
 .link-button {
@@ -81,7 +91,9 @@
   font-size: 0.9rem;
   font-weight: 500;
   padding: 0;
+  margin: 0;
   text-decoration: underline;
+  display: inline;
 }
 
 .link-button:hover {

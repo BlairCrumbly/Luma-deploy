@@ -1,6 +1,6 @@
 /* Homepage styles */
 .homepage-container {
-  max-width: 1200px;
+  max-width: 1700px;
   margin: 0 auto;
   padding: 10px;
   
@@ -91,11 +91,13 @@
 
 .entries-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); 
   gap: 20px;
 }
 
+
 .entry-card {
+  position: relative;
   border: 1px solid #e1e1e1;
   border-radius: 8px;
   padding: 15px;
@@ -105,6 +107,8 @@
   background: rgba(255, 255, 255, 0.29);
   display: flex;
   flex-direction: column;
+  width: 100%; 
+  max-width: 380px;
 }
 
 .entry-card:hover {
@@ -130,23 +134,56 @@
 
 .entry-footer {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; 
   align-items: center;
   font-size: 0.85rem;
   color: #888;
+  width: 100%;
 }
 
 .entry-date {
   font-style: italic;
+  
 }
+
+
 
 .entry-moods {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 5px;
+
+  font-size: 0.1rem;
 }
 
 .mood-emoji {
   font-size: 1.2rem;
+  cursor: default;
+}
+
+.more-moods-btn, .collapse-moods-btn {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.1);
+  justify-content: center;
+  border: none;
+  border-radius: 12px;
+  padding: 2px 6px;
+  margin-left: 4px;
+  font-size: 0.7rem;
+  cursor: pointer;
+  color: #555;
+  transition: background-color 0.2s;
+  min-width: 20px;
+}
+
+.more-moods-btn:hover, .collapse-moods-btn:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.more-moods-btn svg, .collapse-moods-btn svg {
+  margin-left: 2px;
 }
 
 /* Calendar and heatmap styles */
@@ -190,13 +227,13 @@
   position: relative;
 }
 
-/* Control the overall size of the calendar */
+
 .react-calendar-heatmap {
   width: 100%;
   height: auto;
 }
 
-/* Make the heatmap boxes smaller */
+
 .react-calendar-heatmap .react-calendar-heatmap-all-weeks .react-calendar-heatmap-week .react-calendar-heatmap-day rect {
   width: 12px;
   height: 12px;
@@ -209,7 +246,7 @@
   fill: #767676;
 }
 
-/* Adjust spacing between columns */
+
 .react-calendar-heatmap .react-calendar-heatmap-all-weeks .react-calendar-heatmap-week {
   height: 16px;
 }
@@ -237,7 +274,7 @@
   fill: #2d7b4f;
 }
 
-/* No data message styles */
+
 .no-data-message {
   text-align: center;
   padding: 30px;
@@ -344,7 +381,7 @@
   background-color: #f0f8fb;
 }
 
-/* Getting started section */
+
 .getting-started-section {
   margin: 40px 0;
   padding: 30px;
@@ -413,7 +450,7 @@
 }
 
 .icon-container{
-  width: 50px; /* Adjust size as needed */
+  width: 50px; 
   height: 50px;
   
   align-items: center;
@@ -431,11 +468,19 @@
   .homepage-container {
     padding: 20px;
   }
+
   .section-header h2 {
     font-size: 1.3rem;
   }
+
   .entries-grid {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+    gap: 15px;
+  }
+  
+
+  .entry-card {
+    min-width: 260px;
   }
 }
 
@@ -445,5 +490,27 @@
     margin-left: 20px;
   }
 
+  .entries-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+    gap: 20px;
+  }
+  
 
+  .entry-card {
+    min-width: 280px;
+  }
+}
+
+
+@media (max-width: 350px) {
+  .entry-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .entry-moods {
+    width: 100%;
+    justify-content: flex-end;
+  }
 }

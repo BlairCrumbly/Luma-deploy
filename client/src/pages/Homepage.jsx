@@ -6,6 +6,7 @@ import JournalCard from '../components/JournalCard/JournalCard';
 import CalendarHeatmapView from '../components/CalHeatmap/CalendarHeatmapView';
 import MoodLineGraph from '../components/MoodGraph/MoodLineGraph';
 import TypingEffect from '../components/TypingEffect/TypingEffect';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 import 'react-calendar-heatmap/dist/styles.css';
 import '../styles/Homepage.css';
@@ -18,6 +19,7 @@ const HomePage = () => {
   const [entriesHeatmap, setEntriesHeatmap] = useState([]);
   const [entriesWithMoods, setEntriesWithMoods] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [expandedMoods, setExpandedMoods] = useState({});
   
   // State for current month view
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -93,10 +95,17 @@ const HomePage = () => {
   };
 
   const handleJournalClick = (journalId) => {
-    
     window.location.href = `/journal/${journalId}/entries`;
   };
 
+  const toggleMoodExpansion = (entryId, e) => {
+    e.preventDefault(); // Prevent navigation when clicking the toggle button
+    e.stopPropagation(); // Stop event from bubbling to parent elements
+    setExpandedMoods(prev => ({
+      ...prev,
+      [entryId]: !prev[entryId]
+    }));
+  };
   
   const formatMonthYear = (date) => {
     return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
@@ -171,9 +180,38 @@ const HomePage = () => {
                 <div className="entry-footer">
                   <span className="entry-date">{formatDate(entry.created_at)}</span>
                   <div className="entry-moods">
-                    {entry.moods && entry.moods.map(mood => (
-                      <span key={mood.id} className="mood-emoji">{mood.emoji}</span>
-                    ))}
+                    {entry.moods && entry.moods.length > 0 && (
+                      <>
+                        {/* Show the first 3 moods, or all if expanded */}
+                        {(expandedMoods[entry.id] ? entry.moods : entry.moods.slice(0, 4)).map(mood => (
+                          <span key={mood.id} className="mood-emoji" title={mood.name}>
+                            {mood.emoji}
+                          </span>
+                        ))}
+                        
+                        {/* Show +X more if there are more than 3 moods and not expanded */}
+                        {entry.moods.length > 4 && !expandedMoods[entry.id] && (
+                          <button 
+                            className="more-moods-btn" 
+                            onClick={(e) => toggleMoodExpansion(entry.id, e)}
+                            title="Show more moods"
+                          >
+                            +{entry.moods.length - 4} <ChevronDown size={12} />
+                          </button>
+                        )}
+                        
+                        {/* Show collapse button if expanded */}
+                        {entry.moods.length > 4 && expandedMoods[entry.id] && (
+                          <button 
+                            className="collapse-moods-btn" 
+                            onClick={(e) => toggleMoodExpansion(entry.id, e)}
+                            title="Collapse moods"
+                          >
+                            <ChevronUp size={12} />
+                          </button>
+                        )}
+                      </>
+                    )}
                   </div>
                 </div>
               </Link>

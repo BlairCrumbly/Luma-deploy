@@ -139,10 +139,11 @@
     align-items: center;
     max-width: 70%; /* Limit width to prevent overflow */
     overflow: hidden;
+    font-size: 0.1rem;
   }
   
   .mood-emoji {
-    font-size: 1.2rem;
+    font-size: 1rem;
     cursor: default;
   }
   .more-moods-btn, .collapse-moods-btn {

@@ -19,7 +19,7 @@ body {
   
 
   body:not(.auth-page-active) .main-content {
-    margin-left: 15%;
+    margin-left: 10%;
     padding: 15px;
   }
 

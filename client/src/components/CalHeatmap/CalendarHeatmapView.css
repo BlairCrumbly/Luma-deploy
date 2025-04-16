@@ -2,7 +2,7 @@
 .activity-dashboard {
     display: flex;
     flex-direction: row;
-    gap: 20px;
+    gap: 10px;
     margin-top: 20px;
   }
 

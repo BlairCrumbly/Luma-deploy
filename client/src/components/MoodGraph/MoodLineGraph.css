@@ -1,6 +1,6 @@
 /* MoodLineGraph.css */
 .mood-graph-container {
-    max-width: 560px;
+    max-width: 960px;
     height: 330px; /* Set an explicit height */
     background-color: #ffffff45;
     border-radius: 10px;

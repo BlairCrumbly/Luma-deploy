@@ -1,6 +1,4 @@
-/* EntryEditor.css - Cozier version */
 
-/* Container for the whole editor */
 .entry-editor-container {
   display: flex;
   flex-direction: column;

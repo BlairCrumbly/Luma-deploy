@@ -1,10 +1,10 @@
 /* Cal-Heatmap Styles and Activity Dashboard Layout */
 .activity-dashboard {
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-    margin-top: 20px;
-  }
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  margin-top: 20px;
+}
 
 .activity-content .no-data-message,
 .activity-calendar .no-data-message {
@@ -13,134 +13,149 @@
   height: 100%;
   margin: 0;
   box-sizing: border-box;
-  
-  
 }
+
 .activity-calendar.has-data {
-    padding: 5px; /* Only apply padding when there is actual data */
-  }
-  
-  .activity-content {
-    flex: 1;
-    min-width: 0;
-    
-  }
-  /* overall calendar */
-  .activity-calendar { 
-    flex: 2;
-    min-width: 0;
-    max-width: 580px; 
-    max-height: 350px; 
-    
-    background: #ffffff45; 
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    border: 1px solid #e1e1e1;
-  }
-  
-  .activity-stats {
-    padding: 20px;
-    background: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    height: 100%;
-  }
-  
-  .activity-stats h3 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    text-align: center;
-    font-size: 1.2rem;
-    color: #333;
-  }
-  
-  .stats-container {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-  
-  .stat-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 12px;
-    border-radius: 6px;
-    background: white;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  }
-  
-  .stat-value {
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: #57886a;
-    margin-bottom: 5px;
-  }
-  
-  .stat-label {
-    font-size: 0.85rem;
-    color: #666;
-  }
-  
-  .heatmap-widget {
-    display: flex;
-    flex-direction: column;
-    background-color: none;
-    width: 100%;
-    max-width: 600px;   /* Limits the maximum width */
-    margin: 0 auto;     /* Centers the widget horizontally */
-  }
-  
-  
-  .calendar-navigation {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 15px;
-  }
-  
+  padding: 5px; 
+}
 
-  
-  
+.activity-content {
+  flex: 1;
+  min-width: 0;
+}
 
-  .cal-heatmap-container { 
-    width: 100% !important; 
-  }
-  
-  .ch-domain-bg {
-    background-color: white;
-  }
-  
-  .ch-domain {
-    stroke: #eaeaea !important;
-    stroke-width: 1px;
-    border-radius: 4px; 
-    fill: #ffffff !important; 
-    padding: 10px;  
-  }
-  
+/* overall calendar */
+.activity-calendar { 
+  flex: 2;
+  min-width: 0;
+  width: 100%; 
+  max-width: 900px; 
+  max-height: 350px; 
+  background: #ffffff45; 
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e1e1e1;
+   
+}
 
-  .ch-domain-text {
-    display: none;
-  }
-  
-  .ch-subdomain-text {
-    font-size: 12px !important;
-    fill: #000000 !important;  
-    font-weight: lighter;
-    
-    stroke: none !important;
-  }
-  
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
-    .activity-dashboard {
+.activity-stats {
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  height: 100%;
+}
+
+.activity-stats h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.stats-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  border-radius: 6px;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #57886a;
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.heatmap-widget {
+  display: flex;
+  flex-direction: column;
+  background-color: none;
+  width: 100%; 
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.calendar-navigation {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.cal-heatmap-container { 
+  width: 100% !important; 
+  max-width: 100% !important; 
+}
+
+.ch-domain-bg {
+  background-color: white;
+}
+
+.ch-domain {
+  stroke: #eaeaea !important;
+  stroke-width: 1px;
+  border-radius: 4px; 
+  fill: #ffffff !important; 
+  padding: 10px;  
+}
+
+.ch-domain-text {
+  display: none;
+}
+
+.ch-subdomain-text {
+  font-size: 12px !important;
+  fill: #000000 !important;  
+  font-weight: lighter;
+  stroke: none !important;
+}
+
+
+@media (max-width: 768px) {
+  .activity-dashboard {
       flex-direction: column;
-    }
-  
-    .activity-calendar,
-    .activity-content {
+  }
+
+  .activity-calendar,
+  .activity-content {
       width: 100%;
-    }
+      max-width: 100%;
   }
   
+
+  .ch-subdomain-text {
+      font-size: 10px !important;
+  }
+  
+
+  .heatmap-widget {
+      width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .ch-subdomain-text {
+      font-size: 8px !important;
+  }
+  
+
+  .activity-calendar {
+      padding: 2px;
+  }
+}

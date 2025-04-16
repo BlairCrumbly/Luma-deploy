@@ -5,10 +5,10 @@
   left: 0;
   width: 10%;
   height: 100vh;
-  background-color: rgba(87, 136, 106, 0.963); /* using rgba for transparency */
+  background-color: rgba(87, 136, 106, 0.963);
   color: #f0e8d1;
-  padding-top: 1.25rem; /* 20px roughly */
-  padding-left: 0.625rem; /* 10px roughly */
+  padding-top: 1.25rem; 
+  padding-left: 0.625rem; 
   z-index: 1000;
   display: flex;
   flex-direction: column;
@@ -16,7 +16,6 @@
   transition: all 0.3s ease;
 }
 
-/* Logo styles - adjust font-size and centering if needed */
 .navbar .logo {
   width: 100%;
   text-align: center;
@@ -29,9 +28,7 @@
   transform: translateX(-50%);
 }
 
-/* Nav Links styles */
 .nav-links {
-
   margin-top: 10rem;
   list-style: none;
   padding: 0;
@@ -41,53 +38,63 @@
   width: 100%;
 }
 
-/* Each list item gets a margin for consistent spacing */
 .nav-links .nav-link {
   margin-bottom: 1rem; 
   width: 100%;
 }
 
-
 .nav-links .nav-link a {
   display: block;
-  width: 100%;
+  width: 90%;
   color: #f0e8d1;
   text-decoration: none;
   font-size: 1.5rem;
   padding: 1rem 1.2rem; 
   text-align: left;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 0.25rem;
 }
-
 
 .nav-links .nav-link a:hover {
   font-weight: bold;
+  background-color: rgba(255, 255, 255, 0.1); 
 }
 
+
+.logout-container {
+  width: 100%;
+  margin-top: auto; 
+  margin-bottom: 2rem; 
+  list-style: none;
+  padding: 0;
+}
 
 button {
   font-family: "Space Mono", monospace;
   border: none;
   cursor: pointer;
   transition: background-color 0.3s ease, font-weight 0.3s ease, padding 0.3s ease;
-
-  padding: 0.625rem 0.9375rem;
   font-size: 1.5rem;
-  width: 100%;
-  text-align: left;
   background: transparent;
 }
 
 .logout-btn {
-  background-color: transparent;
+  display: block;
+  width: 90%;
   color: rgb(255, 156, 156);
-  margin-top: 1.875rem; 
+  padding: 1rem 1.2rem; 
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
+  border-radius: 0.25rem;
+  font-size: 1.5rem; 
 }
-
 
 .logout-btn:hover {
   font-weight: bold;
+  background-color: rgba(255, 156, 156, 0.1); 
 }
-
 
 .hamburger {
   display: none;
@@ -105,7 +112,7 @@ button {
 }
 
 /* Mobile responsiveness - collapsible menu */
-@media (max-width: 1200px) {
+@media (max-width: 1300px) {
   .navbar {
     width: 10%; 
     padding-bottom: 1.25rem;
@@ -132,6 +139,10 @@ button {
     margin-bottom: 0.625rem; 
   }
 
+  .nav-links .nav-link a {
+    width: 85%; 
+  }
+
   .navbar.open {
     width: 100%;
     padding-bottom: 1.25rem;
@@ -140,6 +151,17 @@ button {
   .navbar:not(.open) .logo {
     display: none;
   }
+  
+  .logout-btn {
+    width: 85%; 
+  }
+  
+
+  .navbar.open .logout-container {
+    display: block;
+  }
+
+  .navbar:not(.open) .logout-container {
+    display: none;
+  }
 }
-
-

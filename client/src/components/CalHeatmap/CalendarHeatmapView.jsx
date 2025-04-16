@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import './CalendarHeatmapView.css';
 import CalHeatmap from 'cal-heatmap';
 import Tooltip from '@cal-heatmap/tooltip';
-import { Toaster } from 'react-hot-toast';
+
 import toast from 'react-hot-toast';
 
 const CalendarHeatmapView = ({ entriesData }) => {
@@ -47,8 +47,8 @@ const CalendarHeatmapView = ({ entriesData }) => {
         },
         subDomain: {
           type: 'day',
-          width: 50,
-          height: 25,
+          width: 70,
+          height: 35,
           label: 'D',
           radius: 5,
         },
@@ -71,7 +71,6 @@ const CalendarHeatmapView = ({ entriesData }) => {
         }
       });
 
-      // ✅ Add click handler here
       newCal.on('click', (event, timestamp, value) => {
         const clickedDate = new Date(timestamp);
         const readableDate = clickedDate.toLocaleDateString('en-US', {

@@ -29,22 +29,48 @@ const MoodLineGraph = ({ entriesData }) => {
   const [chartData, setChartData] = useState(null);
 
   useEffect(() => {
-    if (!entriesData || entriesData.length === 0) return;
-
-    const processedData = processEntriesForMoodGraph(entriesData);
+    const processedData = processEntriesForMoodGraph(entriesData || []);
     setChartData(processedData);
   }, [entriesData]);
 
   const processEntriesForMoodGraph = (entries) => {
-    // Create exactly 7 days of data
+
+    const today = new Date();
+    
+
     const dateLabels = [];
     const moodDataPoints = [];
     
-    // Generate dates for the last 7 days
-    const today = new Date();
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(today.getDate() - i);
+    let startDate;
+    
+    if (entries.length === 0) {
+
+      startDate = today;
+    } else {
+
+      const sortedEntries = [...entries].sort((a, b) => 
+        new Date(a.created_at) - new Date(b.created_at)
+      );
+      
+      const firstEntryDate = new Date(sortedEntries[0].created_at);
+      const daysSinceFirstEntry = Math.ceil(
+        (today - firstEntryDate) / (1000 * 60 * 60 * 24)
+      );
+      
+      //! If they have less than 7 days of history, adjust the start date
+      if (daysSinceFirstEntry < 6) {
+        startDate = firstEntryDate;
+      } else {
+        //! If they have more than 7 days, show the most recent 6 days plus today
+        startDate = new Date(today);
+        startDate.setDate(today.getDate() - 6);
+      }
+    }
+    
+    //! Generate 7 days of data starting from startDate
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
       
       const dateStr = date.toLocaleDateString('en-US', { 
         month: 'short',
@@ -53,7 +79,6 @@ const MoodLineGraph = ({ entriesData }) => {
       
       dateLabels.push(dateStr);
       
-      // Find entries for this date
       const dayEntries = entries.filter(entry => {
         const entryDate = new Date(entry.created_at);
         return entryDate.getDate() === date.getDate() && 
@@ -61,7 +86,7 @@ const MoodLineGraph = ({ entriesData }) => {
                entryDate.getFullYear() === date.getFullYear();
       });
       
-      // Calculate average mood for the day
+      //! Calculate average mood for the day IF entries exist
       let dayMoodScore = null;
       if (dayEntries.length > 0) {
         let totalScore = 0;
@@ -100,7 +125,7 @@ const MoodLineGraph = ({ entriesData }) => {
           tension: 0.4,
           pointRadius: 4,
           pointBackgroundColor: '#57886a',
-          spanGaps: true, // This connects the line across null values
+          spanGaps: true, //! connect the line across null values
         },
       ],
     };
@@ -162,7 +187,7 @@ const MoodLineGraph = ({ entriesData }) => {
 
   return (
     <div className="mood-graph-container" >
-      <h3>Your Weekly Mood Trends</h3>
+      <h3>Your Mood Trends</h3>
       <Line data={chartData} options={options} />
     </div>
   );

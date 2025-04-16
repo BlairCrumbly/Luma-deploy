@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import '../styles/EntriesPage.css';
+import { Pencil, Trash2 } from 'lucide-react';
 
 const EntriesPage = () => {
   const [entries, setEntries] = useState([]);
@@ -150,7 +151,7 @@ const EntriesPage = () => {
                   </div>
                   <div className="entry-actions">
                     <Link to={`/entry/${entry.id}`} className="edit-entry-btn">
-                      Edit
+                    <Pencil size={14.5} />
                     </Link>
                     {deleteConfirmation === entry.id ? (
                       <div className="delete-confirmation">
@@ -175,7 +176,7 @@ const EntriesPage = () => {
                         onClick={() => confirmDelete(entry.id)}
                         className="delete-entry-btn"
                       >
-                        Delete
+                        <Trash2 size={14.5} />
                       </button>
                     )}
                   </div>

@@ -23,10 +23,12 @@
   transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
   position: relative; 
 }
+/* Repositioned to center */
 .journal-actions {
   position: absolute;
-  bottom: 10px;
-  right: 10px;
+  top: 60%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   gap: 8px;
   opacity: 0;
@@ -45,7 +47,7 @@
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  transition: transform 0.2s, background-color 0.2s;
+  
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 .edit-button:hover, .delete-button:hover {
@@ -57,21 +59,21 @@
 }
 
 .edit-button {
-  background-color: var(--journal-color, #4a90e2);
+  background-color: var(--journal-color,);
   color: white;
 }
 
 .edit-button:hover {
-  background-color: hsl(var(--journal-color-h, 210), var(--journal-color-s, 70%), calc(var(--journal-color-l, 60%) - 10%));
+  background-color: rgba(255, 255, 255, 0.24);
 }
 
 .delete-button {
-  background-color: #e25c5c;
+  background-color: #fc304b;
   color: white;
 }
 
 .delete-button:hover {
-  background-color: #d24a4a;
+  background-color: #b42538;
 }
 
 .journal-card:hover {

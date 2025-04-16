@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { Pencil, Trash2 } from 'lucide-react';
 import './JournalCard.css';
 import useIsMobile from '../Mobile/useIsMobile';
 
@@ -8,7 +9,7 @@ const JournalCard = ({ journal, onEdit, onDelete }) => {
 
   const handleCardClick = () => {
     if (isMobile) {
-      setShowActions(prev => !prev); // toggle visibility on mobile tap
+      setShowActions(prev => !prev); //! toggle visibility on mobile tap
     }
   };
 
@@ -45,7 +46,7 @@ const JournalCard = ({ journal, onEdit, onDelete }) => {
               onClick={handleEditClick}
               aria-label="Edit journal"
             >
-              Edit
+              <Pencil size={14.5} />
             </button>
           )}
           {onDelete && (
@@ -54,7 +55,7 @@ const JournalCard = ({ journal, onEdit, onDelete }) => {
               onClick={handleDeleteClick}
               aria-label="Delete journal"
             >
-              Delete
+              <Trash2 size={14.5} />
             </button>
           )}
         </div>

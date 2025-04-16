@@ -58,6 +58,198 @@
     border-top-color: #fff;
     animation: ai-spin 1s ease-in-out infinite;
   }
+
+  .ai-input-container {
+    margin-top: 8px;
+    flex-grow: 1;
+  }
+  
+  /* Base button styles */
+  .toggle-input-button,
+  .generate-button {
+    position: relative;
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    z-index: 1;
+  }
+  
+  /* Customize Prompt button */
+  .toggle-input-button {
+    background-color: rgba(72, 49, 120, 0.8);
+    border: 1px solid rgba(137, 101, 226, 0.5);
+    color: white;
+    box-shadow: 0 0 15px rgba(118, 78, 222, 0.4);
+  }
+  
+  .toggle-input-button:hover {
+    background-color: rgba(87, 61, 141, 0.9);
+    box-shadow: 0 0 20px rgba(118, 78, 222, 0.6);
+  }
+  
+  /* Generate button */
+  .generate-button {
+    background-color: rgba(25, 91, 184, 0.8);
+    border: 1px solid rgba(86, 142, 255, 0.5);
+    color: white;
+    box-shadow: 0 0 15px rgba(66, 133, 244, 0.4);
+  }
+  
+  .generate-button:hover:not(:disabled) {
+    background-color: rgba(35, 100, 200, 0.9);
+    box-shadow: 0 0 20px rgba(66, 133, 244, 0.6);
+  }
+  
+  .generate-button:disabled {
+    background-color: rgba(25, 91, 184, 0.4);
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  
+  /* Crystal ball inner sparkles effect */
+  .glowing-button::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.8) 1px, transparent 2px),
+      radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.7) 1px, transparent 2px),
+      radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.9) 1px, transparent 2px),
+      radial-gradient(circle at 80% 10%, rgba(255, 255, 255, 0.7) 1px, transparent 2px),
+      radial-gradient(circle at 60% 30%, rgba(255, 255, 255, 0.8) 1px, transparent 2px),
+      radial-gradient(circle at 20% 70%, rgba(255, 255, 255, 0.7) 1px, transparent 2px);
+    opacity: 0;
+    z-index: -1;
+    animation: sparkle 5s infinite;
+  }
+  
+  /* Crystal ball glow effect */
+  .glowing-button::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(
+      45deg, 
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.3) 50%,
+      rgba(255, 255, 255, 0.1) 100%
+    );
+    border-radius: 6px;
+    z-index: -2;
+    filter: blur(2px);
+    opacity: 0.7;
+    animation: glow 3s infinite alternate;
+  }
+  
+
+  @keyframes sparkle {
+    0%, 100% {
+      opacity: 0.1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.7;
+      transform: scale(1.05);
+    }
+  }
+  
+  /* Outer glow animation */
+  @keyframes glow {
+    0% {
+      opacity: 0.4;
+      filter: blur(2px);
+    }
+    100% {
+      opacity: 0.7;
+      filter: blur(4px);
+    }
+  }
+  
+  /*customize button */
+  .toggle-input-button.glowing-button::before {
+    background: linear-gradient(
+      45deg, 
+      rgba(11, 11, 190, 0.419) 0%,
+      rgb(236, 24, 247) 50%,
+      rgba(180, 134, 255, 0.777) 100%
+    );
+  }
+  
+  /* generate button */
+  .generate-button.glowing-button::before {
+    background: linear-gradient(
+      45deg, 
+      rgba(11, 11, 190, 0.419) 0%,
+      rgb(236, 24, 247) 50%,
+      rgba(180, 134, 255, 0.777) 100%
+    );
+  }
+
+  
+  /* Crystal texture overlay */
+  .glowing-button {
+    background-image: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.05) 25%,
+      transparent 25%,
+      transparent 50%,
+      rgba(255, 255, 255, 0.05) 50%,
+      rgba(255, 255, 255, 0.05) 75%,
+      transparent 75%,
+      transparent
+    );
+    background-size: 20px 20px;
+  }
+  
+  /*input styles */
+  .custom-prompt-input {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+  
+  .custom-prompt-input input {
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 45, 255, 0.3);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 8px rgba(118, 78, 222, 0.2);
+  }
+  
+  .input-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+  
+  .cancel-button {
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: rgba(200, 200, 200, 0.8);
+    border: 1px solid rgba(150, 150, 150, 0.5);
+  }
+  
+  .cancel-button:hover {
+    background-color: rgba(180, 180, 180, 0.9);
+  }
+
+
+
   
   @keyframes ai-spin {
     to { transform: rotate(360deg); }

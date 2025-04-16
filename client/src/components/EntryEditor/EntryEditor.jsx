@@ -85,12 +85,6 @@ const EntryEditor = () => {
     }
   };
 
-  
-  const handlePromptGenerated = (prompt) => {
-    setAiPrompt(prompt);
-  };
-
-  
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
       
@@ -174,26 +168,28 @@ const EntryEditor = () => {
                 <div className="ai-prompt">
                   <div className="ai-prompt-header">
                     <h3>Writing Prompt</h3>
-                    <button
-                      type="button"
-                      className="refresh-prompt-button"
-                      onClick={refreshAiPrompt}
-                      disabled={aiLoading}
-                    >
-                      {aiLoading ? (
-                        <span className="ai-prompt-loading"></span>
-                      ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38" />
-                        </svg>
-                      )}
-                    </button>
+                    <div className="ai-prompt-actions">
+                      <AiInput 
+                        onPromptGenerated={(prompt) => setAiPrompt(prompt)} 
+                        setLoading={setAiLoading} 
+                      />
+                      <button
+                        type="button"
+                        className="refresh-prompt-button"
+                        onClick={refreshAiPrompt}
+                        disabled={aiLoading}
+                      >
+                        {aiLoading ? (
+                          <span className="ai-prompt-loading"></span>
+                        ) : (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
                   </div>
                   <p>{aiLoading ? "Generating prompt..." : aiPrompt}</p>
-                  <AiInput 
-                    onPromptGenerated={handlePromptGenerated}
-                    setLoading={setAiLoading}
-                  />
                 </div>
               )}
             </div>

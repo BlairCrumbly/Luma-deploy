@@ -232,18 +232,18 @@ class AiPromptResource(Resource):
         try:
             current_user_id = get_jwt_identity()
             
-            # Get OpenRouter API config from environment variables
-            api_key = os.getenv("MOONSHOT_API_KEY")
-            api_url = os.getenv("MOONSHOT_API_URL") or "https://openrouter.ai/api/v1"
+            # Get Writecream API config
+            api_key = os.getenv("api_key")
+            tool_id = os.getenv("tool_id")
+            api_url = os.getenv("api_url")
             
             # Validate that API key is available
-            if not api_key:
-                app.logger.error("OpenRouter API key missing")
+            if not api_key or not tool_id:
+                app.logger.error("Writecream API configuration missing")
                 return {"prompt": random.choice(FALLBACK_PROMPTS), 
                         "note": "Using fallback prompt due to missing API configuration"}, 200
             
-            # Check rate limiting
-            # Store usage in a simple text file
+            # Check rate limiting - keep this functionality
             usage_file = "ai_prompt_usage.json"
             today = date.today().isoformat()
             
@@ -258,9 +258,9 @@ class AiPromptResource(Resource):
                 if usage_data["date"] != today:
                     usage_data = {"date": today, "count": 0}
                     
-                # Check if we've hit the limit (conservative 45 requests per day)
+                # Check if we've hit the limit (45 requests per day)
                 if usage_data["count"] >= 45:
-                    app.logger.warning("Daily OpenRouter API limit reached")
+                    app.logger.warning("Daily API limit reached")
                     return {"prompt": random.choice(FALLBACK_PROMPTS),
                             "note": "Using fallback prompt due to daily limit reached"}, 200
                             
@@ -275,7 +275,7 @@ class AiPromptResource(Resource):
                 app.logger.error(f"Error handling usage tracking: {str(e)}")
                 # Continue execution even if tracking fails
             
-            # Get user's recent entries to generate a more personalized prompt
+            # Get user's recent entries to generate contextual prompt
             user_entries = (
                 Entry.query.join(Journal)
                 .filter(Journal.user_id == current_user_id)
@@ -284,9 +284,8 @@ class AiPromptResource(Resource):
                 .all()
             )
             
-            # Generate context for the API based on user's moods if available
-            system_prompt = "You are a thoughtful journaling assistant. Generate a single, insightful journaling prompt that encourages self-reflection."
-            user_prompt = "Create a journal prompt for today."
+            # Start with a strong base prompt
+            tool_input = "Give me a thought-provoking journaling prompt that encourages deep reflection"
             
             # Add mood context if entries exist
             if user_entries:
@@ -300,38 +299,26 @@ class AiPromptResource(Resource):
                     unique_moods = list(set(moods))
                     if len(unique_moods) > 0:
                         mood_text = ", ".join(unique_moods[:3])  # Use up to 3 recent moods
-                        user_prompt = f"Create a journal prompt for someone feeling {mood_text}."
+                        tool_input = f"Give me a thought-provoking journaling prompt for someone feeling {mood_text} that encourages deep reflection"
             
-            app.logger.info(f"Making OpenRouter API request with context: {user_prompt}")
+            app.logger.info(f"Making Writecream API request with input: {tool_input}")
             
-            # Make API request to OpenRouter
+            # Make API request to Writecream
             headers = {
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-                "HTTP-Referer": request.headers.get("Origin", "http://localhost:5173"),
-                "X-Title": "Luma"
+                "Content-Type": "application/json"
             }
             
             payload = {
-                "model": "moonshotai/kimi-vl-a3b-thinking:free",
-                "messages": [
-                    {
-                        "role": "system",
-                        "content": system_prompt
-                    },
-                    {
-                        "role": "user",
-                        "content": user_prompt
-                    }
-                ],
-                "max_tokens": 80  # Keep responses short
+                "key": api_key,
+                "tool_id": tool_id,
+                "tool_input": tool_input
             }
             
             response = requests.post(
-                f"{api_url}/chat/completions",
+                api_url,
                 headers=headers,
                 json=payload,
-                timeout=5  # Set a timeout to prevent hanging requests
+                timeout=10  # Set a timeout to prevent hanging requests
             )
             
             # Check if request was successful
@@ -340,9 +327,41 @@ class AiPromptResource(Resource):
                 app.logger.info(f"Received API response: {prompt_data}")
                 
                 try:
-                    prompt = prompt_data["choices"][0]["message"]["content"].strip()
+                    # Extract the prompt from the response based on structure
+                    prompt = None
+                    
+                    # Try different ways to extract the prompt based on possible response formats
+                    if isinstance(prompt_data, str):
+                        prompt = prompt_data.strip()
+                    elif isinstance(prompt_data, dict):
+                        if "output" in prompt_data:
+                            prompt = prompt_data["output"].strip()
+                        elif "result" in prompt_data:
+                            prompt = prompt_data["result"].strip()
+                        elif "prompt" in prompt_data:
+                            prompt = prompt_data["prompt"].strip()
+                        elif "content" in prompt_data:
+                            prompt = prompt_data["content"].strip()
+                        elif "text" in prompt_data:
+                            prompt = prompt_data["text"].strip()
+                        # If none of the above keys exist, try to use the whole response
+                        else:
+                            prompt = str(prompt_data).strip()
+                    else:
+                        prompt = str(prompt_data).strip()
+                    
+                    # If we couldn't extract a prompt or it's too short, use a fallback
+                    if not prompt or len(prompt) < 10:
+                        app.logger.warning("Received empty or very short prompt from API")
+                        prompt = random.choice(FALLBACK_PROMPTS)
+                    
+                    # Ensure the prompt doesn't contain the default "What would you like to write about today?"
+                    if "what would you like to write about today" in prompt.lower():
+                        app.logger.warning("Received default prompt from API, using fallback")
+                        prompt = random.choice(FALLBACK_PROMPTS)
+                    
                     return {"prompt": prompt}, 200
-                except (KeyError, IndexError) as e:
+                except Exception as e:
                     app.logger.error(f"Error parsing API response: {str(e)}")
                     prompt = random.choice(FALLBACK_PROMPTS)
                     return {"prompt": prompt, "note": "Error parsing API response"}, 200
@@ -354,10 +373,146 @@ class AiPromptResource(Resource):
                         "note": f"Using fallback prompt due to API response: {response.status_code}"}, 200
                 
         except requests.exceptions.RequestException as e:
-            app.logger.error(f"Request exception when calling OpenRouter API: {str(e)}")
+            app.logger.error(f"Request exception when calling Writecream API: {str(e)}")
             prompt = random.choice(FALLBACK_PROMPTS)
             return {"prompt": prompt, "note": "Using fallback prompt due to API connectivity issues"}, 200
         except Exception as e:
             app.logger.error(f"Error in AI Prompt generation: {str(e)}")
+            prompt = random.choice(FALLBACK_PROMPTS)
+            return {"prompt": prompt, "note": "Using fallback prompt due to an error"}, 200
+
+
+
+
+class CustomAiPromptResource(Resource):
+    @jwt_required()
+    def post(self):
+        try:
+            current_user_id = get_jwt_identity()
+            
+            # Get the request data
+            request_data = request.get_json()
+            if not request_data or 'customInput' not in request_data:
+                return {"error": "Custom input is required"}, 400
+                
+            custom_input = request_data['customInput']
+            
+            
+            api_key = os.getenv("api_key")
+            tool_id = os.getenv("tool_id")
+            api_url = os.getenv("api_url")
+            
+
+            if not api_key or not tool_id:
+                app.logger.error("Writecream API configuration missing")
+                return {"prompt": random.choice(FALLBACK_PROMPTS), 
+                        "note": "Using fallback prompt due to missing API configuration"}, 200
+            
+            usage_file = "ai_prompt_usage.json"
+            today = date.today().isoformat()
+            
+            try:
+                if os.path.exists(usage_file):
+                    with open(usage_file, "r") as f:
+                        usage_data = json.load(f)
+                else:
+                    usage_data = {"date": today, "count": 0}
+                    
+
+                if usage_data["date"] != today:
+                    usage_data = {"date": today, "count": 0}
+                    
+
+                if usage_data["count"] >= 45:
+                    app.logger.warning("Daily API limit reached")
+                    return {"prompt": random.choice(FALLBACK_PROMPTS),
+                            "note": "Using fallback prompt due to daily limit reached"}, 200
+                            
+
+                usage_data["count"] += 1
+
+                with open(usage_file, "w") as f:
+                    json.dump(usage_data, f)
+                    
+            except Exception as e:
+                app.logger.error(f"Error handling usage tracking: {str(e)}")
+
+            
+ 
+            tool_input = f"Give me a thought-provoking journaling prompt about {custom_input} that encourages deep reflection"
+            
+            app.logger.info(f"Making Writecream API request with custom input: {tool_input}")
+            
+
+            headers = {
+                "Content-Type": "application/json"
+            }
+            
+            payload = {
+                "key": api_key,
+                "tool_id": tool_id,
+                "tool_input": tool_input
+            }
+            
+            response = requests.post(
+                api_url,
+                headers=headers,
+                json=payload,
+                timeout=10  
+            )
+            
+
+            if response.status_code == 200:
+                prompt_data = response.json()
+                app.logger.info(f"Received API response: {prompt_data}")
+                
+                try:
+                    prompt = None
+                    
+                    if isinstance(prompt_data, str):
+                        prompt = prompt_data.strip()
+                    elif isinstance(prompt_data, dict):
+                        if "output" in prompt_data:
+                            prompt = prompt_data["output"].strip()
+                        elif "result" in prompt_data:
+                            prompt = prompt_data["result"].strip()
+                        elif "prompt" in prompt_data:
+                            prompt = prompt_data["prompt"].strip()
+                        elif "content" in prompt_data:
+                            prompt = prompt_data["content"].strip()
+                        elif "text" in prompt_data:
+                            prompt = prompt_data["text"].strip()
+                        else:
+                            prompt = str(prompt_data).strip()
+                    else:
+                        prompt = str(prompt_data).strip()
+                    
+
+                    if not prompt or len(prompt) < 10:
+                        app.logger.warning("Received empty or very short prompt from API")
+                        prompt = random.choice(FALLBACK_PROMPTS)
+                    
+                    if "what would you like to write about today" in prompt.lower():
+                        app.logger.warning("Received default prompt from API, using fallback")
+                        prompt = random.choice(FALLBACK_PROMPTS)
+                    
+                    return {"prompt": prompt}, 200
+                except Exception as e:
+                    app.logger.error(f"Error parsing API response: {str(e)}")
+                    prompt = random.choice(FALLBACK_PROMPTS)
+                    return {"prompt": prompt, "note": "Error parsing API response"}, 200
+            else:
+                #! If API call fails, use a fallback prompt
+                app.logger.warning(f"API returned status code {response.status_code}")
+                prompt = random.choice(FALLBACK_PROMPTS)
+                return {"prompt": prompt, 
+                        "note": f"Using fallback prompt due to API response: {response.status_code}"}, 200
+                
+        except requests.exceptions.RequestException as e:
+            app.logger.error(f"Request exception when calling Writecream API: {str(e)}")
+            prompt = random.choice(FALLBACK_PROMPTS)
+            return {"prompt": prompt, "note": "Using fallback prompt due to API connectivity issues"}, 200
+        except Exception as e:
+            app.logger.error(f"Error in Custom AI Prompt generation: {str(e)}")
             prompt = random.choice(FALLBACK_PROMPTS)
             return {"prompt": prompt, "note": "Using fallback prompt due to an error"}, 200

@@ -104,7 +104,7 @@
 }
 
 .refresh-prompt-button {
-  background: rgba(87, 136, 106, 0.1);
+  
   border: none;
   color: #57886a;
   cursor: pointer;
@@ -113,17 +113,15 @@
   justify-content: center;
   padding: 8px;
   border-radius: 50%;
-  transition: all 0.2s;
+  transition: transform 0.2s ease;
 }
 
 .refresh-prompt-button:hover {
-  background-color: rgba(87, 136, 106, 0.2);
-  transform: rotate(15deg);
+  transform: rotate(90deg);
 }
 
 .refresh-prompt-button:disabled {
-  color: #ccc;
-  background-color: rgba(0, 0, 0, 0.05);
+  color:  rgba(0, 0, 0, 0.05);
   cursor: not-allowed;
 }
 
@@ -134,11 +132,13 @@
   border: 2px solid rgba(87, 136, 106, 0.3);
   border-radius: 50%;
   border-top-color: #57886a;
+  background-color: #57886a;
   animation: ai-spin 1s ease-in-out infinite;
 }
 
 @keyframes ai-spin {
   to { transform: rotate(360deg); }
+  
 }
 
 .editor-wrapper {

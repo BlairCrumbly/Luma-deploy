@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import '../styles/EntriesPage.css';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, ChevronDown, ChevronUp  } from 'lucide-react';
 
 const EntriesPage = () => {
   const [entries, setEntries] = useState([]);
@@ -11,21 +11,22 @@ const EntriesPage = () => {
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [filterJournal, setFilterJournal] = useState('all');
   const [journals, setJournals] = useState([]);
+  const [expandedMoods, setExpandedMoods] = useState({});
   
   // Fetch entries and journals data
   const fetchData = async () => {
     try {
       setLoading(true);
       
-      // Fetch entries
+      
       const entriesData = await api.get('/entries');
-      // Sort by creation date (newest first)
+      
       const sortedEntries = entriesData.sort((a, b) => 
         new Date(b.created_at) - new Date(a.created_at)
       );
       setEntries(sortedEntries);
       
-      // Fetch journals for filter dropdown
+      
       const journalsData = await api.get('/journals');
       setJournals(journalsData);
       
@@ -41,7 +42,7 @@ const EntriesPage = () => {
     fetchData();
   }, []);
 
-  // Format date 
+  //! Format date 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
@@ -53,13 +54,13 @@ const EntriesPage = () => {
     });
   };
 
-  // Delete entry handler
+
   const handleDeleteEntry = async (entryId) => {
     try {
       await api.delete(`/entries/${entryId}`);
-      // Remove entry from state
+
       setEntries(prevEntries => prevEntries.filter(entry => entry.id !== entryId));
-      // Clear confirmation
+
       setDeleteConfirmation(null);
     } catch (err) {
       console.error('Error deleting entry:', err);
@@ -67,22 +68,28 @@ const EntriesPage = () => {
     }
   };
 
-  // Function to confirm deletion
+
   const confirmDelete = (entryId) => {
     setDeleteConfirmation(entryId);
   };
 
-  // Function to cancel deletion
   const cancelDelete = () => {
     setDeleteConfirmation(null);
   };
 
-  // Handle filter change
+
+  const toggleMoodExpansion = (entryId) => {
+    setExpandedMoods(prev => ({
+      ...prev,
+      [entryId]: !prev[entryId]
+    }));
+  };
+
   const handleFilterChange = (e) => {
     setFilterJournal(e.target.value);
   };
 
-  // Filter entries based on selected journal
+
   const filteredEntries = filterJournal === 'all' 
     ? entries 
     : entries.filter(entry => entry.journal_id === parseInt(filterJournal));
@@ -143,15 +150,48 @@ const EntriesPage = () => {
                 </div>
                 <div className="entry-footer">
                   <div className="entry-moods">
-                    {entry.moods && entry.moods.map(mood => (
-                      <span key={mood.id} className="mood-emoji" title={mood.name}>
-                        {mood.emoji}
-                      </span>
-                    ))}
+                    {entry.moods && entry.moods.length > 0 && (
+                      <>
+                        {/* Show the first 4 moods, or all if expanded */}
+                        {(expandedMoods[entry.id] ? entry.moods : entry.moods.slice(0, 4)).map(mood => (
+                          <span key={mood.id} className="mood-emoji" title={mood.name}>
+                            {mood.emoji}
+                          </span>
+                        ))}
+                        
+                        {/* Show +X more if there are more than 4 moods and not expanded */}
+                        {entry.moods.length > 4 && !expandedMoods[entry.id] && (
+                          <button 
+                            className="more-moods-btn" 
+                            onClick={(e) => {
+                              e.preventDefault();
+                              toggleMoodExpansion(entry.id);
+                            }}
+                            title="Show more moods"
+                          >
+                            +{entry.moods.length - 4} <ChevronDown size={12} />
+                          </button>
+                        )}
+                        
+                        {/* Show collapse button if expanded */}
+                        {entry.moods.length > 4 && expandedMoods[entry.id] && (
+                          <button 
+                            className="collapse-moods-btn" 
+                            onClick={(e) => {
+                              e.preventDefault();
+                              toggleMoodExpansion(entry.id);
+                            }}
+                            title="Collapse moods"
+                          >
+                            <ChevronUp size={12} />
+                          </button>
+                        )}
+                      </>
+                    )}
                   </div>
                   <div className="entry-actions">
                     <Link to={`/entry/${entry.id}`} className="edit-entry-btn">
-                    <Pencil size={14.5} />
+                      <Pencil size={14.5} />
                     </Link>
                     {deleteConfirmation === entry.id ? (
                       <div className="delete-confirmation">

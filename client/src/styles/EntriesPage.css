@@ -127,6 +127,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
     margin-top: 0px;
     padding-top: 15px;
     border-top: 1px solid #f0f0f000;
@@ -134,13 +135,37 @@
   
   .entry-moods {
     display: flex;
-    gap: 5px;
+    flex-wrap: wrap;
+    align-items: center;
+    max-width: 70%; /* Limit width to prevent overflow */
+    overflow: hidden;
   }
   
   .mood-emoji {
     font-size: 1.2rem;
     cursor: default;
   }
+  .more-moods-btn, .collapse-moods-btn {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.1);
+    border: none;
+    border-radius: 12px;
+    padding: 2px 6px;
+    margin-left: 4px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    color: #555;
+    transition: background-color 0.2s;
+  }
+  .more-moods-btn:hover, .collapse-moods-btn:hover {
+    background: rgba(0, 0, 0, 0.2);
+  }
+  
+  .more-moods-btn svg, .collapse-moods-btn svg {
+    margin-left: 2px;
+  }
+
   
   .entry-actions {
     display: flex;

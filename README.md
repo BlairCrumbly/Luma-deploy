@@ -5,7 +5,7 @@ Luma is a **guided journaling app** designed to help users find clarity through 
 
 ## Features
 
-- **User Authentication**: Secure sign-up, login, and logout functionality also available through Google
+- **User Authentication**: Secure sign-up, login, and logout functionality also available through **Google Oauth**
 - **AI-generated Prompts**: Get writing prompts based on AI when users are unsure of what to write about.
 - **Create & Manage Journals**: Users can create, update, and delete journals to organize their writing.
 - **Journal Entries**: Create, view, edit, and delete journal entries with customizable titles and main text.

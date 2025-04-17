@@ -5,27 +5,27 @@ Luma is a **guided journaling app** designed to help users find clarity through 
 
 ## Features
 
-- **User Authentication**: Secure sign-up, login, and logout functionality also available through Google"
+- **User Authentication**: Secure sign-up, login, and logout functionality also available through Google
+- **AI-generated Prompts**: Get writing prompts based on AI when users are unsure of what to write about.
 - **Create & Manage Journals**: Users can create, update, and delete journals to organize their writing.
 - **Journal Entries**: Create, view, edit, and delete journal entries with customizable titles and main text.
 - **Mood Tracking**: Assign moods to journal entries using clickable emoji buttons and see your weekly mood trends.
-- **AI-generated Prompts**: Get writing prompts based on AI when users are unsure of what to write about.
 - **Time Stamping**: Each journal entry is timestamped when saved to track writing over time.
 - **Responsive Design**: Mobile-friendly layout for users to access the app on any device.
 
 ## Demo
 
-![Demo GIF](link-to-your-demo.gif)  
-*Coming Soon...*
+![Demo GIF](Luma-showcase.gif)  
+
 
 ## Technologies Used
 
 - **Backend**: Flask, SQLAlchemy, Flask-JWT-Extended
 - **Frontend**: React, React Router, Context API
-- **Database**: PostgreSQL
-- **Styling**: CSS, Styled Components
+- **Database**: SQLite3
+- **Styling**: CSS, Styled Components, lucide
 - **Authentication**: JWT tokens for secure login and user sessions
-- **AI Integration**: Using AI prompts for journaling suggestions
+- **AI Integration**: Using AI prompts for thought provoking journaling suggestions
 
 ## Installation
 
@@ -38,7 +38,7 @@ cd Luma
 ### 2. Set up the backend
 1. Navigate to the backend directory:
    ```bash
-   cd backend
+   cd server
    ```
 2. Install dependencies:
    ```bash
@@ -56,13 +56,13 @@ cd Luma
    ```
 5. Run the Flask backend server:
    ```bash
-   flask run
+   python app.py
    ```
 
 ### 3. Set up the frontend
 1. Navigate to the frontend directory:
    ```bash
-   cd frontend
+   cd client
    ```
 2. Install dependencies:
    ```bash
@@ -70,15 +70,16 @@ cd Luma
    ```
 3. Run the React development server:
    ```bash
-   npm start
+   npm run dev
    ```
 
 ## Stretch Goals
 
-1. **HeatMap Calendar View** – Visualize user data over time, with color-coded intensity to highlight trends and patterns.
-2. **Mood Trend Graph** – Track mood patterns over time, showing highs & lows.
-3. **Voice Entry Option** – Allow users to dictate their journal entries.
-4. **Tagging System** – Users can tag entries with custom labels.
+1. **Voice Entry Option** – Allow users to dictate their journal entries.
+2. **More to add in editor** – Allow users to add music clips, pictures, etc.
+3. **Social** – Public/Private journals and entries. Follower/Following relationships!
+4. **Theme customization** - Customize your website theme
+ 
 
 ## External Packages
 
@@ -87,11 +88,12 @@ cd Luma
 - **Flask-JWT-Extended** – User authentication with JWT tokens
 - **React Router** – Frontend routing
 - **React Context API** – State management
-- **Fetch API** – Handling HTTP requests (instead of Axios)
-- **Chart.js** – Mood trend visualization (stretch goal)
+- **Fetch API** – Handling HTTP requests 
+- **Chart.js** – Mood trend visualization
 - **Date-fns** – Date formatting in frontend
-- **better-profanity** – Profanity filtering
 - **React Quill** – Rich text editor for user input
+- **Toaster** - Cleaner notifications
+- **Lucide** - Icons
 
 
 ## Contributing
@@ -119,7 +121,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-- **OpenAI GPT-3** for providing AI-powered prompts
+- **WriteCream** for providing AI-powered prompts
 - **Flask Documentation** and **React Docs** for guidance throughout development
-- **Mental Health Community** for inspiring this project <3
+- **Mental Health Community** for inspiring this project 💕
 

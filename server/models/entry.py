@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import validates
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy import DateTime
+
 class Entry(db.Model, SerializerMixin):
     __tablename__ = 'entries'
     id = db.Column(db.Integer, primary_key=True)

@@ -9,6 +9,7 @@ class JournalsResource(Resource):
     def get(self):
         try:
             current_user_id = get_jwt_identity()
+            
             journals = Journal.query.filter_by(user_id=current_user_id).all()
             if not journals:
                 return {"message":'no journals found'}, 404

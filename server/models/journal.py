@@ -20,6 +20,8 @@ class Journal(db.Model,SerializerMixin):
     serialize_rules = ('-user', 'entries')
 
     #! Validations 
+
+
     @validates("title")
     def validate_title(self, key, value):
         if not value or len(value.strip()) == 0:

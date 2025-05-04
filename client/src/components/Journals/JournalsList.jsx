@@ -4,7 +4,7 @@ import { api } from '../../services/api';
 import JournalCard from '../JournalCard/JournalCard';
 import EntriesList from '../Entries/EntriesList';
 import JournalEditForm from '../JournalEditForm/JournalEditForm';
-import ConfirmationModal from '../UserProfile/ConfirmationModal'; // Make sure your modal is imported
+import ConfirmationModal from '../UserProfile/ConfirmationModal'; 
 import { Link } from 'react-router-dom';
 
 const JournalsList = ({ refreshFlag, onJournalUpdate }) => {
@@ -98,7 +98,7 @@ const JournalsList = ({ refreshFlag, onJournalUpdate }) => {
         ) : (
           <div className="card-container">
             {journals.map((journal) => (
-              <JournalCard 
+              <JournalCard
                 key={journal.id} 
                 journal={journal} 
                 onClick={handleCardClick}

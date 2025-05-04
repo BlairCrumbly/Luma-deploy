@@ -17,6 +17,7 @@ api.add_resource(DeleteUser, '/user/delete')
 
 api.add_resource(JournalsResource, '/journals')
 api.add_resource(JournalResource, '/journals/<int:journal_id>')
+
 api.add_resource(EntryResource, '/entries', '/entries/<int:entry_id>')
 api.add_resource(JournalEntriesResource, '/journals/<int:journal_id>/entries')
 

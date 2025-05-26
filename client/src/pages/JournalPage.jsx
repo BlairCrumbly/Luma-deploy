@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import JournalForm from '../components/JournalForm/JournalForm';
-import JournalsList from '../components/Journals/JournalsList'; // Assuming you have this component
+import JournalsList from '../components/Journals/JournalsList'; 
 import { api } from '../services/api';
 import '../styles/JournalsPage.css';
 //! reflag is forcing journal list to re fetch (refresh) its data 

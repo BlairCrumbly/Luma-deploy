@@ -25,13 +25,21 @@ class Signup(Resource):
         data = request.get_json()
         if not data:
             return {"error": "Invalid JSON"}, 400
-        username = data.get("username", "")
-        email = data.get("email", "")
+        username = data.get("username", "").strip()
+        email = data.get("email", "").strip().lower()
         password = data.get("password", "")
 
         if not username or not email or not password:
             return {"error": "All fields are required"}, 400
+        existing_user_email = User.query.filter_by(email=email).first()
+        if existing_user_email:
+            return {"error": "Email is already in use"}, 400
         
+        existing_user_username = User.query.filter_by(username=username).first()
+        if existing_user_username:
+            return {"error": "Username is already in use"}, 400
+
+
         try:
             
             new_user = User(username=data['username'], email=data['email'])

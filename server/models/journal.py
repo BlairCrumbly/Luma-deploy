@@ -19,7 +19,7 @@ class Journal(db.Model,SerializerMixin):
     #! Serializer
     serialize_rules = ('-user', 'entries')
 
-    #! Validations 
+    #! Validations
 
 
     @validates("title")

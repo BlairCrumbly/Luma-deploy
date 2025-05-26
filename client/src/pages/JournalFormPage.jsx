@@ -11,8 +11,6 @@ const JournalFormPage = () => {
   
     return (
       <div>
-        
-
         <JournalForm onJournalCreated={handleJournalCreated} />
       </div>
     );

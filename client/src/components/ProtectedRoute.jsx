@@ -7,7 +7,7 @@ const ProtectedRoute = ({ children }) => {
 
   if (!context) {
     console.error("AuthContext is undefined. Are you missing the AuthProvider?");
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/api/login" replace />;
   }
 
   const { currentUser, loading } = context;

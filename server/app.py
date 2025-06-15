@@ -62,9 +62,6 @@ api.add_resource(TokenRefresh, '/api/refresh-token', endpoint="token_refresh_api
 
 
 if __name__ == "__main__":
-    with app.app_context():
-      from seed import seed_moods
-      seed_moods()
     app.run(port=5555, debug=True)
   
 

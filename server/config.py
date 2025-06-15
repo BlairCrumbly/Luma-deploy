@@ -39,10 +39,10 @@ app = Flask(
 )
 
 
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def index(path):
-    return render_template("index.html")
+# @app.route('/', defaults={'path': ''})
+# @app.route('/<path:path>')
+# def index(path):
+#     return render_template("index.html")
 
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "super-secret-key")
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URI")

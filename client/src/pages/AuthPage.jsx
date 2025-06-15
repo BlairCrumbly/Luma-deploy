@@ -12,9 +12,6 @@ const AuthPage = () => {
     };
   }, []);
   
- 
-
-  
   const toggleMode = () => {
     setIsLogin(!isLogin);
   };
@@ -30,29 +27,31 @@ const AuthPage = () => {
       </div>
       
       <div className="form-container">
-      <div className="luma-container">
-      <h1>
-        Luma 
-        <img src="/images/leaf-icon.svg" alt="Leaf Icon" className="leaf-icon" />
-      </h1>
-      </div>
-        <h1 className="auth-title">{isLogin ? 'Welcome Back' : 'Create Account'}</h1>
-        <AuthForm isLogin={isLogin} />
-        
-        <div className="divider">
-          <span>OR</span>
+        <div className="form-wrapper">
+          <div className="luma-container">
+            <h1>
+              Luma 
+              <img src="/images/leaf-icon.svg" alt="Leaf Icon" className="leaf-icon" />
+            </h1>
+          </div>
+          <h1 className="auth-title">{isLogin ? 'Welcome Back' : 'Create Account'}</h1>
+          <AuthForm isLogin={isLogin} />
+          
+          <div className="divider">
+            <span>OR</span>
+          </div>
+          
+          <GoogleOAuthButton className="google-oauth-button" />
+          
+          <div className="toggle-wrapper">
+            <p className="toggle-mode">
+              <span>{isLogin ? "Don't have an account?" : "Already have an account?"}</span>
+              <button type="button" onClick={toggleMode} className="link-button">
+                {isLogin ? 'Sign Up' : 'Log In'}
+              </button>
+            </p>
+          </div>
         </div>
-        
-        <GoogleOAuthButton className="google-oauth-button" />
-        
-        <div className="toggle-wrapper">
-  <p className="toggle-mode">
-    <span>{isLogin ? "Don't have an account?" : "Already have an account?"}</span>
-    <button type="button" onClick={toggleMode} className="link-button">
-      {isLogin ? 'Sign Up' : 'Log In'}
-    </button>
-  </p>
-</div>
       </div>
     </div>
   );

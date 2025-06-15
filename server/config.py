@@ -84,12 +84,13 @@ api = Api(app=app)
 CORS(app,supports_credentials=True)
 
 oauth = OAuth(app)
+
 google = oauth.register(
     name='google',
     client_id=os.getenv("CLIENT_ID"),
     client_secret=os.getenv("CLIENT_SECRET"),
     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
-    redirect_uri="http://localhost:5555/authorize", 
+    redirect_uri=os.getenv("PROD_REDIRECT_URI"), 
     client_kwargs={"scope": "openid email profile"}
 )
 

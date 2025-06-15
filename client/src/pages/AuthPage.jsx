@@ -24,7 +24,7 @@ const AuthPage = () => {
       <div className="image-container">
         {/* Full page image on the left */}
         <img 
-          src="../../images/kimia-kazemi-i3tXuyobvQs-unsplash.jpg" 
+          src="/images/kimia-kazemi-i3tXuyobvQs-unsplash.jpg" 
           alt="Login visual" 
         />
       </div>
@@ -33,7 +33,7 @@ const AuthPage = () => {
       <div className="luma-container">
       <h1>
         Luma 
-        <img src="../../images/leaf-icon.svg" alt="Leaf Icon" className="leaf-icon" />
+        <img src="/images/leaf-icon.svg" alt="Leaf Icon" className="leaf-icon" />
       </h1>
       </div>
         <h1 className="auth-title">{isLogin ? 'Welcome Back' : 'Create Account'}</h1>

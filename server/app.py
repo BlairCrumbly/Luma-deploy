@@ -6,6 +6,7 @@ from routes import Signup, Login, Logout, UserProfile, GoogleLogin, GoogleAuthor
 from routes.journalsroute import JournalsResource, JournalResource
 from routes.entriesroute import EntryResource, AiPromptResource,CustomAiPromptResource, JournalEntriesResource
 from routes.moodsroute import MoodsResource
+import os
 
 api.add_resource(Signup, '/api/signup', endpoint="signup_api")
 api.add_resource(Login, '/api/login', endpoint="login_api")
@@ -32,7 +33,8 @@ api.add_resource(TokenRefresh, '/api/refresh-token', endpoint="token_refresh_api
 
 
 if __name__ == "__main__":
-    app.run(port=5555, debug=True)
+    port = int(os.environ.get("PORT", 5555))
+    app.run(host="0.0.0.0", port=port)
   
 
   

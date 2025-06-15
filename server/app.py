@@ -8,6 +8,10 @@ from routes.entriesroute import EntryResource, AiPromptResource,CustomAiPromptRe
 from routes.moodsroute import MoodsResource
 import os
 
+@app.route("/")
+def index():
+    return {"message": "Luma backend is running!"}
+
 api.add_resource(Signup, '/api/signup', endpoint="signup_api")
 api.add_resource(Login, '/api/login', endpoint="login_api")
 api.add_resource(Logout, '/api/logout', endpoint="logout_api")

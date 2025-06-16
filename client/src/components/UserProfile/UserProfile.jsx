@@ -141,13 +141,6 @@ const UserProfile = () => {
             </div>
           </div>
           
-          {userData.stats.journalCount === 0 && userData.stats.entryCount === 0 && (
-            <div className="no-data-message">
-              <p>No journaling activity to display yet.</p>
-              <p>Start your journaling journey to see your progress here!</p>
-              <Link to="/journal/new-entry" className="create-button">Start Writing Today</Link>
-            </div>
-          )}
         </div>
 
         <div className="profile-section important">

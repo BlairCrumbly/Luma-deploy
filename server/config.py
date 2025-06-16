@@ -81,7 +81,10 @@ bcrypt = Bcrypt(app=app)
 
 api = Api(app=app)
 
-CORS(app,supports_credentials=True)
+CORS(app, supports_credentials=True, origins=[
+    "http://localhost:5173",
+    "https://luma-deploy-frontend.onrender.com"
+])
 
 oauth = OAuth(app)
 

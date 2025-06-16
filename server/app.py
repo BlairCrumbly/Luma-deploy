@@ -1,4 +1,4 @@
-from seed import seed_moods_if_empty
+
 from config import app, api
 from models import *
 from routes import Signup, Login, Logout, UserProfile, GoogleLogin, GoogleAuthorize, TokenRefresh, DeleteUser, UserStats
@@ -33,6 +33,7 @@ api.add_resource(CustomAiPromptResource, '/api/ai-prompt/custom', endpoint="cust
 api.add_resource(MoodsResource, '/api/moods', endpoint="moods_api")
 api.add_resource(TokenRefresh, '/api/refresh-token', endpoint="token_refresh_api")
 
+from seed import seed_moods_if_empty
 
 with app.app_context():
     db.create_all()

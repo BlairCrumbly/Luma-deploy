@@ -1,4 +1,5 @@
 // API service wrapper for making HTTP requests
+const BASE = import.meta.env.VITE_API_URL || '';
 
 export const api = {
   // GET request
@@ -9,7 +10,7 @@ export const api = {
         .find(row => row.startsWith('csrf_access_token'))
         ?.split('=')[1]; // Get CSRF token from cookie
       
-      const response = await fetch(`/api${endpoint}`, {
+      const response = await fetch(`${BASE}/api${endpoint}`, {
         method: 'GET',
         credentials: 'include', // Important for cookies/JWT
         headers: {
@@ -44,7 +45,7 @@ export const api = {
         .find(row => row.startsWith('csrf_access_token'))
         ?.split('=')[1];
 
-      const response = await fetch(`/api${endpoint}`, {
+      const response = await fetch(`${BASE}/api${endpoint}`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -73,7 +74,7 @@ export const api = {
         .find(row => row.startsWith('csrf_access_token'))
         ?.split('=')[1]; // Get CSRF token from cookie
   
-      const response = await fetch(`/api${endpoint}`, {
+      const response = await fetch(`${BASE}/api${endpoint}`, {
         method: 'PUT',
         credentials: 'include',
         headers: {
@@ -103,7 +104,7 @@ export const api = {
         .find(row => row.startsWith('csrf_access_token'))
         ?.split('=')[1]; // Get CSRF token from cookie
 
-      const response = await fetch(`/api${endpoint}`, {
+      const response = await fetch(`${BASE}/api${endpoint}`, {
         method: 'PATCH',
         credentials: 'include',
         headers: {
@@ -142,7 +143,7 @@ export const api = {
         },
       };
   
-      const apiUrl = `/api${endpoint}`;
+      const apiUrl = `${BASE}/api${endpoint}`;
       const response = await fetch(apiUrl, options);
   
       if (!response.ok) {

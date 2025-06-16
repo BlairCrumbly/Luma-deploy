@@ -3,6 +3,7 @@ import Cookies from 'js-cookie';
 
 
 export const AuthContext = createContext();
+const API_URL = import.meta.env.VITE_API_URL;
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -22,7 +23,7 @@ export const AuthProvider = ({ children }) => {
         return false;
       }
       
-      const response = await fetch('/api/refresh-token', {
+      const response = await fetch(`${API_URL}/api/refresh-token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -48,7 +49,7 @@ export const AuthProvider = ({ children }) => {
   // Function to fetch user profile with auto-refresh capability
   const fetchCurrentUser = useCallback(async () => {
     try {
-      const response = await fetch('/api/user/profile', {
+      const response = await fetch(`${API_URL}/api/user/profile`, {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -112,7 +113,7 @@ export const AuthProvider = ({ children }) => {
   // LOGIN
   const login = async (username, password) => {
     try {
-      const response = await fetch('/api/login', {
+      const response = await fetch(`${API_URL}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
@@ -136,7 +137,7 @@ export const AuthProvider = ({ children }) => {
   // SIGNUP
   const signup = async (username, email, password) => {
     try {
-      const response = await fetch('/api/signup', {
+      const response = await fetch(`${API_URL}/api/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, email, password }),
@@ -179,7 +180,7 @@ export const AuthProvider = ({ children }) => {
         return;
       }
       
-      const response = await fetch('/api/logout', {
+      const response = await fetch(`${API_URL}/api/logout`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

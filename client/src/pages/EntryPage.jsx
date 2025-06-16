@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import '../styles/EntriesPage.css';
-import { Pencil, Trash2, ChevronDown, ChevronUp  } from 'lucide-react';
+import { Pencil, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 
 const EntriesPage = () => {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [filterJournal, setFilterJournal] = useState('all');
   const [journals, setJournals] = useState([]);
@@ -18,22 +17,33 @@ const EntriesPage = () => {
     try {
       setLoading(true);
       
+      // Fetch entries - handle 404 or other errors gracefully
+      try {
+        const entriesData = await api.get('/entries');
+        const sortedEntries = entriesData.sort((a, b) => 
+          new Date(b.created_at) - new Date(a.created_at)
+        );
+        setEntries(sortedEntries);
+      } catch (entriesErr) {
+        console.log('Could not load entries, possibly a new user', entriesErr);
+        setEntries([]);
+      }
       
-      const entriesData = await api.get('/entries');
+      // Fetch journals - handle 404 or other errors gracefully
+      try {
+        const journalsData = await api.get('/journals');
+        setJournals(journalsData);
+      } catch (journalsErr) {
+        console.log('Could not load journals, possibly a new user', journalsErr);
+        setJournals([]);
+      }
       
-      const sortedEntries = entriesData.sort((a, b) => 
-        new Date(b.created_at) - new Date(a.created_at)
-      );
-      setEntries(sortedEntries);
-      
-      
-      const journalsData = await api.get('/journals');
-      setJournals(journalsData);
-      
-      setLoading(false);
     } catch (err) {
-      console.error('Error fetching entries data:', err);
-      setError(err.message);
+      console.error('Error in fetchData:', err);
+      // Set empty arrays to ensure the page still renders
+      setEntries([]);
+      setJournals([]);
+    } finally {
       setLoading(false);
     }
   };
@@ -54,20 +64,17 @@ const EntriesPage = () => {
     });
   };
 
-
   const handleDeleteEntry = async (entryId) => {
     try {
       await api.delete(`/entries/${entryId}`);
-
       setEntries(prevEntries => prevEntries.filter(entry => entry.id !== entryId));
-
       setDeleteConfirmation(null);
     } catch (err) {
       console.error('Error deleting entry:', err);
-      toast.failed('Failed to delete entry. Please try again.');
+      // You can add a toast notification here if you have it set up
+      alert('Failed to delete entry. Please try again.');
     }
   };
-
 
   const confirmDelete = (entryId) => {
     setDeleteConfirmation(entryId);
@@ -76,7 +83,6 @@ const EntriesPage = () => {
   const cancelDelete = () => {
     setDeleteConfirmation(null);
   };
-
 
   const toggleMoodExpansion = (entryId) => {
     setExpandedMoods(prev => ({
@@ -89,13 +95,11 @@ const EntriesPage = () => {
     setFilterJournal(e.target.value);
   };
 
-
   const filteredEntries = filterJournal === 'all' 
     ? entries 
     : entries.filter(entry => entry.journal_id === parseInt(filterJournal));
 
-  if (loading) return <div className="loading">Loading entries...</div>;
-  if (error) return <div className="error">Error: {error}</div>;
+  if (loading) return <div className="loading">Loading your entries...</div>;
 
   return (
     <div className="entries-page-container">
@@ -122,10 +126,17 @@ const EntriesPage = () => {
         </div>
       </div>
       
-      {filteredEntries.length === 0 ? (
-        <div className="no-entries-message">
-          <p>No entries found. {filterJournal !== 'all' ? 'Try selecting a different journal or ' : ''}Start writing your first entry!</p>
-          <Link to={"/journal/new-entry"} className="create-entry-button">Create Entry</Link>
+      {entries.length === 0 ? (
+        <div className="no-data-message">
+          <p>You haven't written any entries yet.</p>
+          <p>Start documenting your thoughts, feelings, and experiences today!</p>
+          <Link to="/journal/new-entry" className="create-button">Write Your First Entry</Link>
+        </div>
+      ) : filteredEntries.length === 0 ? (
+        <div className="no-data-message">
+          <p>No entries found for the selected journal.</p>
+          <p>Try selecting a different journal or create a new entry!</p>
+          <Link to="/journal/new-entry" className="create-button">Create Entry</Link>
         </div>
       ) : (
         <div className="entries-list">

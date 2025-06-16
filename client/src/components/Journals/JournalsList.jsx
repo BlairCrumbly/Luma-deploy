@@ -24,10 +24,11 @@ const JournalsList = ({ refreshFlag, onJournalUpdate }) => {
   const fetchJournals = async () => {
     try {
       setLoading(true);
-      const data = await api.get('/journals');
-      setJournals(data);
+      const journalsData = await api.get('/journals');
+      setJournals(journalsData);
     } catch (err) {
-      setError(err.message || 'Failed to load journals');
+      console.log('Could not load journals, possibly a new user', err);
+      setJournals([]);
     } finally {
       setLoading(false);
     }

@@ -4,7 +4,7 @@ import AuthContext from '../contexts/AuthContext';
 import { api } from '../../services/api';
 import toast from 'react-hot-toast';
 import { Calendar, Award, Book, FileText, Trash2 } from 'lucide-react';
-import ConfirmationModal from './ConfirmationModal'; // import your new modal
+import ConfirmationModal from './ConfirmationModal';
 import './UserProfile.css';
 
 const UserProfile = () => {
@@ -26,28 +26,48 @@ const UserProfile = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const profileData = await api.get('/user/profile');
-        const statsData = await api.get('/user/stats');
-        setUserData({
-          username: profileData.username,
-          email: profileData.email,
-          stats: {
-            journalCount: statsData.journal_count || 0,
-            entryCount: statsData.entry_count || 0,
-            longestStreak: statsData.longest_streak || 0,
-            currentStreak: statsData.current_streak || 0
-          }
-        });
+        setLoading(true);
+        
+        // Fetch profile data - handle errors gracefully
+        try {
+          const profileData = await api.get('/user/profile');
+          setUserData(prev => ({
+            ...prev,
+            username: profileData.username,
+            email: profileData.email
+          }));
+        } catch (profileErr) {
+          console.log('Could not load profile data, using current user info', profileErr);
+          // Keep the currentUser data that's already set in initial state
+        }
+
+        // Fetch stats data - handle errors gracefully
+        try {
+          const statsData = await api.get('/user/stats');
+          setUserData(prev => ({
+            ...prev,
+            stats: {
+              journalCount: statsData.journal_count || 0,
+              entryCount: statsData.entry_count || 0,
+              longestStreak: statsData.longest_streak || 0,
+              currentStreak: statsData.current_streak || 0
+            }
+          }));
+        } catch (statsErr) {
+          console.log('Could not load stats data, using default values', statsErr);
+          // Keep the default stats (all zeros) that are already set
+        }
+
       } catch (error) {
-        console.error('Error fetching user data:', error);
-        toast.error('Could not load your profile data');
+        console.error('Error in fetchUserData:', error);
+        // Keep the default/fallback values that are already set
       } finally {
         setLoading(false);
       }
     };
 
     fetchUserData();
-  }, []);
+  }, [currentUser]);
 
   const handleDeleteAccount = async () => {
     try {
@@ -62,7 +82,7 @@ const UserProfile = () => {
   };
 
   if (loading) {
-    return <div className="profile-loading">Loading profile data...</div>;
+    return <div className="profile-loading">Loading your profile...</div>;
   }
 
   return (
@@ -77,11 +97,11 @@ const UserProfile = () => {
           <h2>Account Information</h2>
           <div className="info-item">
             <span className="info-label">Username:</span>
-            <span className="info-value">{userData.username}</span>
+            <span className="info-value">{userData.username || 'Not available'}</span>
           </div>
           <div className="info-item">
             <span className="info-label">Email:</span>
-            <span className="info-value">{userData.email}</span>
+            <span className="info-value">{userData.email || 'Not available'}</span>
           </div>
         </div>
 
@@ -120,10 +140,17 @@ const UserProfile = () => {
               </div>
             </div>
           </div>
+          
+          {userData.stats.journalCount === 0 && userData.stats.entryCount === 0 && (
+            <div className="no-data-message">
+              <p>No journaling activity to display yet.</p>
+              <p>Start your journaling journey to see your progress here!</p>
+              <Link to="/journal/new-entry" className="create-button">Start Writing Today</Link>
+            </div>
+          )}
         </div>
 
         <div className="profile-section important">
-          
           <div className="delete-account">
             <div className="delete-info">
               <Trash2 size={24} color="#d63031" />

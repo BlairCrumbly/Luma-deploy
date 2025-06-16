@@ -21,7 +21,7 @@ import time
 
 
 class Signup(Resource):
-    def post (self):
+    def post(self):
         data = request.get_json()
         if not data:
             return {"error": "Invalid JSON"}, 400
@@ -31,39 +31,37 @@ class Signup(Resource):
 
         if not username or not email or not password:
             return {"error": "All fields are required"}, 400
+
         existing_user_email = User.query.filter_by(email=email).first()
         if existing_user_email:
             return {"error": "Email is already in use"}, 400
-        
+
         existing_user_username = User.query.filter_by(username=username).first()
         if existing_user_username:
             return {"error": "Username is already in use"}, 400
 
-
         try:
-            
-            new_user = User(username=data['username'], email=data['email'])
-            new_user.set_password(data['password'])
-
+            new_user = User(username=username, email=email)
+            new_user.set_password(password)
             db.session.add(new_user)
             db.session.commit()
-            
-            access_token = create_access_token(identity=  str(new_user.id))
+
+            access_token = create_access_token(identity=str(new_user.id))
             refresh_token = create_refresh_token(identity=str(new_user.id))
-            response = make_response(new_user.to_dict(),201)
+
+            response = jsonify(new_user.to_dict())
             set_access_cookies(response, access_token)
             set_refresh_cookies(response, refresh_token)
-
+            response.status_code = 201
             return response
-        
-        
+
         except IntegrityError:
-            #! catch duplicate email and provide a clear error message
-            db.session.rollback()  #! rollback to maintain DB integrity
+            db.session.rollback()
             return {"error": "Email is already in use"}, 400
 
         except Exception as e:
             return {'error': f'Error creating user: {str(e)}'}, 500
+
 
 
 class Login(Resource):
@@ -72,21 +70,23 @@ class Login(Resource):
             data = request.get_json()
             if not data:
                 return {"error": "Invalid JSON"}, 400
-            
+
             user = User.query.filter_by(username=data['username']).first()
-            
             if not user:
                 return {"error": "User not found"}, 404
-            elif not user.check_password(data['password']):
-                return {"error": "Incorrect password"}, 401
-            else:
-                access_token = create_access_token(identity=str(user.id))
-                refresh_token = create_refresh_token(identity=str(user.id))
-                response = make_response(user.to_dict(), 200)
-                set_access_cookies(response,access_token, )
-                set_refresh_cookies(response, refresh_token)
 
-                return response
+            if not user.check_password(data['password']):
+                return {"error": "Incorrect password"}, 401
+
+            access_token = create_access_token(identity=str(user.id))
+            refresh_token = create_refresh_token(identity=str(user.id))
+
+            response = jsonify(user.to_dict())
+            set_access_cookies(response, access_token)
+            set_refresh_cookies(response, refresh_token)
+            response.status_code = 200
+            return response
+
         except Exception as e:
             return {'error': f'Error logging in user: {str(e)}'}, 500
 

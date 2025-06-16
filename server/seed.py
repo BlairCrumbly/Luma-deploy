@@ -22,24 +22,17 @@ MOODS = [
     {"emoji": "🤗", "score": 4},  # Grateful
 ]
 
-def seed_moods():
-    print("Seeding moods...")
-    
-    # Delete existing moods
-    Mood.query.delete()
-    
-    # Add new moods
-    for mood_data in MOODS:
-        mood = Mood(
-            emoji=mood_data["emoji"],
-            score=mood_data["score"]
-        )
-        db.session.add(mood)
-    
-    db.session.commit()
-    print("Moods seeded successfully!")
+def seed_moods_if_empty():
+    if Mood.query.first() is None:
+        print("Seeding moods...")
+        for mood_data in MOODS:
+            mood = Mood(emoji=mood_data["emoji"], score=mood_data["score"])
+            db.session.add(mood)
+        db.session.commit()
+        print("Moods seeded successfully!")
+    else:
+        print("Moods already seeded. Skipping.")
 
 if __name__ == "__main__":
     with app.app_context():
-        seed_moods()
-    
+        seed_moods_if_empty()

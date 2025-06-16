@@ -1,4 +1,4 @@
-
+from seed import seed_moods_if_empty
 from config import app, api
 from models import *
 from routes import Signup, Login, Logout, UserProfile, GoogleLogin, GoogleAuthorize, TokenRefresh, DeleteUser, UserStats
@@ -34,7 +34,9 @@ api.add_resource(MoodsResource, '/api/moods', endpoint="moods_api")
 api.add_resource(TokenRefresh, '/api/refresh-token', endpoint="token_refresh_api")
 
 
-
+with app.app_context():
+    db.create_all()
+    seed_moods_if_empty()
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5555))

@@ -100,6 +100,8 @@ google = oauth.register(
 def after_request(response):
     response.headers.add('Access-Control-Allow-Origin', 'https://luma-deploy-frontend.onrender.com')
     response.headers.add('Access-Control-Allow-Credentials', 'true')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
     return response
 
 

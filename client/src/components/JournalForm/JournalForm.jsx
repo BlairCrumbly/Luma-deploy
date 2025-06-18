@@ -24,7 +24,7 @@ const JournalForm = ({ onJournalCreated }) => {
 
   const handleSubmit = async (values, { setSubmitting, resetForm, setStatus }) => {
     try {
-      const newJournal = await api.post('/api/journals', values);
+      const newJournal = await api.post('/journals', values);
       
       // After successfully creating the journal, notify the parent component
       if (onJournalCreated) {
@@ -34,20 +34,16 @@ const JournalForm = ({ onJournalCreated }) => {
       resetForm();
       setStatus(null); // Clear any previous errors
     } catch (err) {
-      // Fixed: Changed toast.failed to toast.error
       toast.error('Error creating journal :(');
       
-      // Check if it's a unique constraint violation error
       if (err.message && err.message.includes('UNIQUE constraint failed: journals.title')) {
         setStatus({ error: 'A journal with this title already exists. Please use a different title.' });
       } else if (err.response && err.response.data && err.response.data.error) {
-        // Handle API error responses
         setStatus({ error: err.response.data.error });
       } else {
         setStatus({ error: 'Error creating journal. Please try again.' });
       }
       
-      // Optional: Log the full error for debugging
       console.error('Journal creation error:', err);
     } finally {
       setSubmitting(false);

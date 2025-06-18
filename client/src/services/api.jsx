@@ -1,7 +1,14 @@
 // API service wrapper for making HTTP requests
 const BASE = import.meta.env.VITE_API_URL || '';
 
-// Helper function to get JWT token from localStorage
+// Utility function to get a cookie by name (needed for CSRF token)
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
+// Helper function to get JWT token from localStorage or sessionStorage
 const getAuthToken = () => {
   return localStorage.getItem('authToken') || localStorage.getItem('access_token') || sessionStorage.getItem('authToken');
 };
@@ -13,25 +20,23 @@ export const api = {
       const token = getAuthToken();
       console.log(`Making GET request to: ${BASE}/api${endpoint}`);
       console.log(`Token exists: ${!!token}`);
-      
+
       const headers = {
         'Content-Type': 'application/json',
       };
-      
-      // Add JWT token if available
+
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
-      
+
       const response = await fetch(`${BASE}/api${endpoint}`, {
         method: 'GET',
-        credentials: 'include', // Keep for any other cookies
-        headers
+        credentials: 'include',
+        headers,
       });
 
       console.log(`Response status: ${response.status}`);
 
-      // For 404 errors with new users, return empty array instead of throwing
       if (response.status === 404) {
         console.log(`Endpoint ${endpoint} not found, returning empty array`);
         return [];
@@ -50,7 +55,7 @@ export const api = {
     }
   },
 
-  // POST request
+  // POST request (with CSRF token header)
   async post(endpoint, data) {
     try {
       const token = getAuthToken();
@@ -61,10 +66,15 @@ export const api = {
       const headers = {
         'Content-Type': 'application/json',
       };
-      
-      // Add JWT token if available
+
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      // Add CSRF token header from cookie (required by Flask-JWT-Extended)
+      const csrfToken = getCookie('csrf_access_token');
+      if (csrfToken) {
+        headers['X-CSRF-TOKEN'] = csrfToken;
       }
 
       const response = await fetch(`${BASE}/api${endpoint}`, {
@@ -95,27 +105,27 @@ export const api = {
     try {
       const token = getAuthToken();
       console.log(`Making PUT request to: ${BASE}/api${endpoint}`);
-      
+
       const headers = {
         'Content-Type': 'application/json',
       };
-      
+
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
-  
+
       const response = await fetch(`${BASE}/api${endpoint}`, {
         method: 'PUT',
         credentials: 'include',
         headers,
         body: JSON.stringify(data),
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || `Request failed with status ${response.status}`);
       }
-  
+
       return await response.json();
     } catch (error) {
       console.error(`PUT ${endpoint} error:`, error);
@@ -123,15 +133,14 @@ export const api = {
     }
   },
 
-  // PATCH request
   async patch(endpoint, data) {
     try {
       const token = getAuthToken();
-      
+
       const headers = {
         'Content-Type': 'application/json',
       };
-      
+
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
@@ -155,41 +164,40 @@ export const api = {
     }
   },
 
-  // DELETE request
   async delete(endpoint) {
     try {
       const token = getAuthToken();
-      
+
       const headers = {
         'Content-Type': 'application/json',
       };
-      
+
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
-  
+
       const options = {
         method: 'DELETE',
         credentials: 'include',
         headers,
       };
-  
+
       const apiUrl = `${BASE}/api${endpoint}`;
       const response = await fetch(apiUrl, options);
-  
+
       if (!response.ok) {
         if (response.status === 404) {
-          return null; // Return null for 404 errors
+          return null;
         }
         const errorText = await response.text();
         const errorData = errorText ? JSON.parse(errorText) : {};
         throw new Error(errorData.error || `Request failed with status ${response.status}`);
       }
-  
+
       if (response.status === 204) {
         return null;
       }
-  
+
       return await response.json();
     } catch (error) {
       console.error(`DELETE ${endpoint} error:`, error);

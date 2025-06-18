@@ -37,7 +37,7 @@ export const api = {
   async get(endpoint) {
     try {
       const headers = prepareHeaders('GET');
-      const response = await fetch(`${BASE}/api${endpoint}`, {
+      const response = await fetch(`${BASE}${endpoint}`, {
         method: 'GET',
         credentials: 'include',
         headers
@@ -60,7 +60,7 @@ export const api = {
   async post(endpoint, data) {
     try {
       const headers = prepareHeaders('POST');
-      const response = await fetch(`${BASE}/api${endpoint}`, {
+      const response = await fetch(`${BASE}${endpoint}`, {
         method: 'POST',
         credentials: 'include',
         headers,
@@ -82,7 +82,7 @@ export const api = {
   async put(endpoint, data) {
     try {
       const headers = prepareHeaders('PUT');
-      const response = await fetch(`${BASE}/api${endpoint}`, {
+      const response = await fetch(`${BASE}${endpoint}`, {
         method: 'PUT',
         credentials: 'include',
         headers,
@@ -104,7 +104,7 @@ export const api = {
   async patch(endpoint, data) {
     try {
       const headers = prepareHeaders('PATCH');
-      const response = await fetch(`${BASE}/api${endpoint}`, {
+      const response = await fetch(`${BASE}${endpoint}`, {
         method: 'PATCH',
         credentials: 'include',
         headers,

@@ -99,11 +99,5 @@ google = oauth.register(
     client_kwargs={"scope": "openid email profile"}
 )
 
-# Updated after_request to include X-CSRF-TOKEN in allowed headers
-@app.after_request
-def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', 'https://luma-deploy-frontend.onrender.com')
-    response.headers.add('Access-Control-Allow-Credentials', 'true')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-CSRF-TOKEN')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS')
-    return response
+# Removed @app.after_request function to avoid duplicate CORS headers
+# CORS configuration above handles all the necessary headers

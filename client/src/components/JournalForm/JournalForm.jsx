@@ -32,15 +32,23 @@ const JournalForm = ({ onJournalCreated }) => {
       }
       toast.success('Journal created successfully!');
       resetForm();
+      setStatus(null); // Clear any previous errors
     } catch (err) {
-      toast.failed('Error creating journal :(');
+      // Fixed: Changed toast.failed to toast.error
+      toast.error('Error creating journal :(');
       
       // Check if it's a unique constraint violation error
       if (err.message && err.message.includes('UNIQUE constraint failed: journals.title')) {
         setStatus({ error: 'A journal with this title already exists. Please use a different title.' });
+      } else if (err.response && err.response.data && err.response.data.error) {
+        // Handle API error responses
+        setStatus({ error: err.response.data.error });
       } else {
         setStatus({ error: 'Error creating journal. Please try again.' });
       }
+      
+      // Optional: Log the full error for debugging
+      console.error('Journal creation error:', err);
     } finally {
       setSubmitting(false);
     }

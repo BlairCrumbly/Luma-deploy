@@ -81,9 +81,12 @@ bcrypt = Bcrypt(app=app)
 
 api = Api(app=app)
 
-CORS(app, supports_credentials=True, origins=[
-    "https://luma-deploy-frontend.onrender.com"
-])
+# Updated CORS configuration to allow X-CSRF-TOKEN header
+CORS(app, 
+     supports_credentials=True, 
+     origins=["https://luma-deploy-frontend.onrender.com"],
+     allow_headers=["Content-Type", "Authorization", "X-CSRF-TOKEN"],
+     methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"])
 
 oauth = OAuth(app)
 
@@ -96,13 +99,11 @@ google = oauth.register(
     client_kwargs={"scope": "openid email profile"}
 )
 
+# Updated after_request to include X-CSRF-TOKEN in allowed headers
 @app.after_request
 def after_request(response):
     response.headers.add('Access-Control-Allow-Origin', 'https://luma-deploy-frontend.onrender.com')
     response.headers.add('Access-Control-Allow-Credentials', 'true')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-CSRF-TOKEN')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS')
     return response
-
-
-

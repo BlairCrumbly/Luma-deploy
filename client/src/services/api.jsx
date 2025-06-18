@@ -1,23 +1,35 @@
 // API service wrapper for making HTTP requests
 const BASE = import.meta.env.VITE_API_URL || '';
 
+// Helper function to get JWT token from localStorage
+const getAuthToken = () => {
+  return localStorage.getItem('authToken') || localStorage.getItem('access_token') || sessionStorage.getItem('authToken');
+};
+
 export const api = {
   // GET request
   async get(endpoint) {
     try {
-      const csrfToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrf_access_token'))
-        ?.split('=')[1]; // Get CSRF token from cookie
+      const token = getAuthToken();
+      console.log(`Making GET request to: ${BASE}/api${endpoint}`);
+      console.log(`Token exists: ${!!token}`);
+      
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+      
+      // Add JWT token if available
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
       
       const response = await fetch(`${BASE}/api${endpoint}`, {
         method: 'GET',
-        credentials: 'include', // Important for cookies/JWT
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': csrfToken || '', // Use the token if found, or empty string
-        }
+        credentials: 'include', // Keep for any other cookies
+        headers
       });
+
+      console.log(`Response status: ${response.status}`);
 
       // For 404 errors with new users, return empty array instead of throwing
       if (response.status === 404) {
@@ -27,6 +39,7 @@ export const api = {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.error(`GET ${endpoint} error response:`, errorData);
         throw new Error(errorData.error || `Request failed with status ${response.status}`);
       }
 
@@ -40,27 +53,38 @@ export const api = {
   // POST request
   async post(endpoint, data) {
     try {
-      const csrfToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrf_access_token'))
-        ?.split('=')[1];
+      const token = getAuthToken();
+      console.log(`Making POST request to: ${BASE}/api${endpoint}`);
+      console.log(`Token exists: ${!!token}`);
+      console.log(`Request data:`, data);
+
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+      
+      // Add JWT token if available
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
 
       const response = await fetch(`${BASE}/api${endpoint}`, {
         method: 'POST',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': csrfToken || '',
-        },
+        headers,
         body: JSON.stringify(data),
       });
 
+      console.log(`Response status: ${response.status}`);
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.error(`POST ${endpoint} error response:`, errorData);
         throw new Error(errorData.error || `Request failed with status ${response.status}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log(`POST ${endpoint} success:`, result);
+      return result;
     } catch (error) {
       console.error(`POST ${endpoint} error:`, error);
       throw error;
@@ -69,18 +93,21 @@ export const api = {
 
   async put(endpoint, data) {
     try {
-      const csrfToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrf_access_token'))
-        ?.split('=')[1]; // Get CSRF token from cookie
+      const token = getAuthToken();
+      console.log(`Making PUT request to: ${BASE}/api${endpoint}`);
+      
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
   
       const response = await fetch(`${BASE}/api${endpoint}`, {
         method: 'PUT',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': csrfToken || '', // Use the token if found, or empty string
-        },
+        headers,
         body: JSON.stringify(data),
       });
   
@@ -99,18 +126,20 @@ export const api = {
   // PATCH request
   async patch(endpoint, data) {
     try {
-      const csrfToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrf_access_token'))
-        ?.split('=')[1]; // Get CSRF token from cookie
+      const token = getAuthToken();
+      
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
 
       const response = await fetch(`${BASE}/api${endpoint}`, {
         method: 'PATCH',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': csrfToken || '', // Use the token if found, or empty string
-        },
+        headers,
         body: JSON.stringify(data),
       });
 
@@ -129,18 +158,20 @@ export const api = {
   // DELETE request
   async delete(endpoint) {
     try {
-      const csrfToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrf_access_token'))
-        ?.split('=')[1]; // Get CSRF token from cookie
+      const token = getAuthToken();
+      
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
   
       const options = {
         method: 'DELETE',
-        credentials: 'include', // Ensure cookies are sent with the request
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': csrfToken || '', // Use the token if found, or empty string
-        },
+        credentials: 'include',
+        headers,
       };
   
       const apiUrl = `${BASE}/api${endpoint}`;
@@ -165,4 +196,4 @@ export const api = {
       throw error;
     }
   }
-}
+};

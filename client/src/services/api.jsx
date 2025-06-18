@@ -1,50 +1,52 @@
-// API service wrapper for making HTTP requests
 const BASE = import.meta.env.VITE_API_URL || '';
 
-// Utility function to get a cookie by name (needed for CSRF token)
-function getCookie(name) {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(';').shift();
-}
-
-// Helper function to get JWT token from localStorage or sessionStorage
+// Helper function to get JWT auth token from storage
 const getAuthToken = () => {
   return localStorage.getItem('authToken') || localStorage.getItem('access_token') || sessionStorage.getItem('authToken');
 };
 
+// Helper function to get a cookie by name (for CSRF token)
+const getCookie = (name) => {
+  const cookies = document.cookie.split(';');
+  for (let cookie of cookies) {
+    const [key, value] = cookie.trim().split('=');
+    if (key === name) return decodeURIComponent(value);
+  }
+  return null;
+};
+
+// Prepare headers for secure requests
+const prepareHeaders = (method) => {
+  const headers = {
+    'Content-Type': 'application/json',
+  };
+
+  const token = getAuthToken();
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  // Only attach CSRF token for methods that modify data
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method.toUpperCase())) {
+    const csrfToken = getCookie('csrf_access_token');
+    if (csrfToken) headers['X-CSRF-TOKEN'] = csrfToken;
+  }
+
+  return headers;
+};
+
 export const api = {
-  // GET request
   async get(endpoint) {
     try {
-      const token = getAuthToken();
-      console.log(`Making GET request to: ${BASE}/api${endpoint}`);
-      console.log(`Token exists: ${!!token}`);
-
-      const headers = {
-        'Content-Type': 'application/json',
-      };
-
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
+      const headers = prepareHeaders('GET');
       const response = await fetch(`${BASE}/api${endpoint}`, {
         method: 'GET',
         credentials: 'include',
-        headers,
+        headers
       });
 
-      console.log(`Response status: ${response.status}`);
-
-      if (response.status === 404) {
-        console.log(`Endpoint ${endpoint} not found, returning empty array`);
-        return [];
-      }
+      if (response.status === 404) return [];
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error(`GET ${endpoint} error response:`, errorData);
         throw new Error(errorData.error || `Request failed with status ${response.status}`);
       }
 
@@ -55,28 +57,9 @@ export const api = {
     }
   },
 
-  // POST request (with CSRF token header)
   async post(endpoint, data) {
     try {
-      const token = getAuthToken();
-      console.log(`Making POST request to: ${BASE}/api${endpoint}`);
-      console.log(`Token exists: ${!!token}`);
-      console.log(`Request data:`, data);
-
-      const headers = {
-        'Content-Type': 'application/json',
-      };
-
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      // Add CSRF token header from cookie (required by Flask-JWT-Extended)
-      const csrfToken = getCookie('csrf_access_token');
-      if (csrfToken) {
-        headers['X-CSRF-TOKEN'] = csrfToken;
-      }
-
+      const headers = prepareHeaders('POST');
       const response = await fetch(`${BASE}/api${endpoint}`, {
         method: 'POST',
         credentials: 'include',
@@ -84,17 +67,12 @@ export const api = {
         body: JSON.stringify(data),
       });
 
-      console.log(`Response status: ${response.status}`);
-
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error(`POST ${endpoint} error response:`, errorData);
         throw new Error(errorData.error || `Request failed with status ${response.status}`);
       }
 
-      const result = await response.json();
-      console.log(`POST ${endpoint} success:`, result);
-      return result;
+      return await response.json();
     } catch (error) {
       console.error(`POST ${endpoint} error:`, error);
       throw error;
@@ -103,17 +81,7 @@ export const api = {
 
   async put(endpoint, data) {
     try {
-      const token = getAuthToken();
-      console.log(`Making PUT request to: ${BASE}/api${endpoint}`);
-
-      const headers = {
-        'Content-Type': 'application/json',
-      };
-
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
+      const headers = prepareHeaders('PUT');
       const response = await fetch(`${BASE}/api${endpoint}`, {
         method: 'PUT',
         credentials: 'include',
@@ -135,16 +103,7 @@ export const api = {
 
   async patch(endpoint, data) {
     try {
-      const token = getAuthToken();
-
-      const headers = {
-        'Content-Type': 'application/json',
-      };
-
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
+      const headers = prepareHeaders('PATCH');
       const response = await fetch(`${BASE}/api${endpoint}`, {
         method: 'PATCH',
         credentials: 'include',
@@ -166,37 +125,21 @@ export const api = {
 
   async delete(endpoint) {
     try {
-      const token = getAuthToken();
-
-      const headers = {
-        'Content-Type': 'application/json',
-      };
-
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const options = {
+      const headers = prepareHeaders('DELETE');
+      const response = await fetch(`${BASE}/api${endpoint}`, {
         method: 'DELETE',
         credentials: 'include',
         headers,
-      };
-
-      const apiUrl = `${BASE}/api${endpoint}`;
-      const response = await fetch(apiUrl, options);
+      });
 
       if (!response.ok) {
-        if (response.status === 404) {
-          return null;
-        }
+        if (response.status === 404) return null;
         const errorText = await response.text();
         const errorData = errorText ? JSON.parse(errorText) : {};
         throw new Error(errorData.error || `Request failed with status ${response.status}`);
       }
 
-      if (response.status === 204) {
-        return null;
-      }
+      if (response.status === 204) return null;
 
       return await response.json();
     } catch (error) {

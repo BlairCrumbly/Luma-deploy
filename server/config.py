@@ -82,11 +82,9 @@ bcrypt = Bcrypt(app=app)
 api = Api(app=app)
 
 # Updated CORS configuration to allow X-CSRF-TOKEN header
-CORS(app, 
-     supports_credentials=True, 
-     origins=["https://luma-deploy-frontend.onrender.com"],
-     allow_headers=["Content-Type", "Authorization", "X-CSRF-TOKEN"],
-     methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"])
+
+CORS(app, supports_credentials=True, origins=["https://luma-deploy-frontend.onrender.com"],
+     allow_headers=["Content-Type", "Authorization", "X-CSRF-Token"])
 
 oauth = OAuth(app)
 

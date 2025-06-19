@@ -24,13 +24,8 @@ const JournalForm = ({ onJournalCreated }) => {
 
   const handleSubmit = async (values, { setSubmitting, resetForm, setStatus }) => {
     try {
-
-      const newJournal = await api.post('/journals', values, {
-
-        headers: {
-          "X-CSRF-Token": getCSRFToken() // Add CSRF protection
-  }
-});
+      // Use api.post without manual headers - API service handles CSRF
+      const newJournal = await api.post('/journals', values);
       
       // After successfully creating the journal, notify the parent component
       if (onJournalCreated) {

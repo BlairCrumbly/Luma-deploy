@@ -41,9 +41,9 @@ app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
 app.config["JWT_SECRET_KEY"] = os.getenv('JWT_SECRET_KEY')
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=24)
 app.config["JWT_COOKIE_NAME"] = "access_token_cookie"
-app.config["JWT_COOKIE_SECURE"] = True  # ✅ Required for HTTPS
-app.config["JWT_COOKIE_SAMESITE"] = "None"  # ✅ Needed for cross-origin
-app.config["JWT_COOKIE_CSRF_PROTECT"] = True  # ✅ Enables CSRF protection
+app.config["JWT_COOKIE_SECURE"] = True
+app.config["JWT_COOKIE_SAMESITE"] = "None"  
+app.config["JWT_COOKIE_CSRF_PROTECT"] = True 
 app.config["JWT_CSRF_IN_COOKIES"] = True
 app.config["JWT_CSRF_METHODS"] = ["POST", "PUT", "PATCH", "DELETE"]
 
@@ -51,7 +51,7 @@ app.config["JWT_CSRF_METHODS"] = ["POST", "PUT", "PATCH", "DELETE"]
 app.config["SESSION_TYPE"] = "filesystem"
 app.config["SESSION_PERMANENT"] = True
 app.config["SESSION_USE_SIGNER"] = True
-app.config["SESSION_COOKIE_SECURE"] = True  # ✅ Updated for HTTPS
+app.config["SESSION_COOKIE_SECURE"] = True  
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=30)
@@ -70,10 +70,11 @@ migrate = Migrate(app=app, db=db)
 bcrypt = Bcrypt(app=app)
 api = Api(app=app)
 
-# ✅ CORS with CSRF header
+
 CORS(app, supports_credentials=True,
      origins=["https://luma-deploy-frontend.onrender.com"],
-     allow_headers=["Content-Type", "Authorization", "X-CSRF-Token"])
+     allow_headers=["Content-Type", "Authorization", "X-CSRF-Token"],
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
 oauth = OAuth(app)
 

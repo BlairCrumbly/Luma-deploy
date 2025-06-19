@@ -1,10 +1,5 @@
 const BASE = import.meta.env.VITE_API_URL || '';
 
-// Helper function to get JWT auth token from storage
-const getAuthToken = () => {
-  return localStorage.getItem('authToken') || localStorage.getItem('access_token') || sessionStorage.getItem('authToken');
-};
-
 // Helper function to get a cookie by name (for CSRF token)
 const getCookie = (name) => {
   const cookies = document.cookie.split(';');
@@ -20,9 +15,6 @@ const prepareHeaders = (method) => {
   const headers = {
     'Content-Type': 'application/json',
   };
-
-  const token = getAuthToken();
-  if (token) headers['Authorization'] = `Bearer ${token}`;
 
   // Only attach CSRF token for methods that modify data
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method.toUpperCase())) {
@@ -126,7 +118,7 @@ export const api = {
   async delete(endpoint) {
     try {
       const headers = prepareHeaders('DELETE');
-      const response = await fetch(`${BASE}/api${endpoint}`, {
+      const response = await fetch(`${BASE}${endpoint}`, {
         method: 'DELETE',
         credentials: 'include',
         headers,

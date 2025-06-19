@@ -22,7 +22,7 @@ api.add_resource(UserStats, '/api/user/stats', endpoint="user_stats_api")
 api.add_resource(DeleteUser, '/api/user/delete', endpoint="delete_user_api")
 
 api.add_resource(JournalsResource, '/api/journals', endpoint="journals_api")
-api.add_resource(JournalResource, '/api/journals/<int:journal_id>', endpoint="journal_api")
+# api.add_resource(JournalResource, '/api/journals/<int:journal_id>', endpoint="journal_api")
 
 api.add_resource(EntryResource, '/api/entries', '/api/entries/<int:entry_id>', endpoint="entry_api")
 api.add_resource(JournalEntriesResource, '/api/journals/<int:journal_id>/entries', endpoint="journal_entries_api")

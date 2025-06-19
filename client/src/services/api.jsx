@@ -16,7 +16,7 @@ const prepareHeaders = (method) => {
     'Content-Type': 'application/json',
   };
 
-  // Only attach CSRF token for methods that modify data
+  // Attach CSRF token header only for mutating methods
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method.toUpperCase())) {
     const csrfToken = getCookie('csrf_access_token');
     if (csrfToken) headers['X-CSRF-TOKEN'] = csrfToken;
@@ -31,7 +31,7 @@ export const api = {
       const headers = prepareHeaders('GET');
       const response = await fetch(`${BASE}${endpoint}`, {
         method: 'GET',
-        credentials: 'include',
+        credentials: 'include',  // send cookies
         headers
       });
 

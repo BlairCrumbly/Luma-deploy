@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import AuthContext from '../contexts/AuthContext';
+import {AuthContext} from '../contexts/AuthContext';
 import { api } from '../../services/api';
 import toast from 'react-hot-toast';
 import { Calendar, Award, Book, FileText, Trash2 } from 'lucide-react';

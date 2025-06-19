@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'; // ⬅️ add useEffect
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './components/contexts/AuthContext';
 import AuthPage from './pages/AuthPage';
@@ -15,25 +15,25 @@ import EntryForm from './components/EntryForm/EntryForm';
 import EntryEditor from './components/EntryEditor/EntryEditor';
 import UserProfile from './components/UserProfile/UserProfile';
 import { Toaster } from 'react-hot-toast';
-import { api } from './services/api'; // ⬅️ make sure this is imported
+import { api } from './services/api';
 
 function App() {
   useEffect(() => {
     const refreshCSRFToken = async () => {
       try {
-        await api.post('/refresh-token'); // 🔑 this sets csrf_access_token cookie
+        await api.post('/refresh-token');
         console.log("✅ CSRF token refreshed");
       } catch (error) {
         console.error("❌ Error refreshing CSRF token:", error);
       }
     };
 
-    refreshCSRFToken(); // 🔁 call once on app load
+    refreshCSRFToken();
   }, []);
 
   return (
-    <AuthProvider>
-      <Router>
+    <Router>
+      <AuthProvider>
         <Toaster position="top-right" />
         <Navbar />
         <div className="main-content">
@@ -56,8 +56,8 @@ function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
-      </Router>
-    </AuthProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 

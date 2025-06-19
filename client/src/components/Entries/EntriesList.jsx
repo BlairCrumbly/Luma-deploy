@@ -12,7 +12,7 @@ const EntriesList = ({ journalId }) => {
     const fetchEntries = async () => {
       try {
         // If journalId is provided, fetch entries for that journal
-        const endpoint = journalId ? `/journals/${journalId}/entries` : '/entries';
+        const endpoint = journalId ? `/api/journals/${journalId}/entries` : '/api/entries';
         const data = await api.get(endpoint);
         
         setEntries(data);

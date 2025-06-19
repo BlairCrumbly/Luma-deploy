@@ -20,7 +20,7 @@ const JournalPage = () => {
       <div className="journals-header">
         <h1>My Journals</h1>
         {/* window location tells browser to go to the certain url */}
-        <button className="new-journal-btn" onClick={() => navigate('/journals/new')}>
+        <button className="new-journal-btn" onClick={() => navigate('/api/journals/new')}>
           New Journal
         </button>
       </div>

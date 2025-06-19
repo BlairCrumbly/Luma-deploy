@@ -1,11 +1,11 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
-import { useNavigate } from "react-router-dom";
-
+import { useNavigate } from "react-router-dom"; // For react-router v6+
 
 export const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
+// Helper: Get cookie value by name (used for CSRF token)
 const getCookie = (name) => {
   const cookies = document.cookie.split(";");
   for (let cookie of cookies) {
@@ -20,6 +20,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // Check if user is already logged in
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -33,7 +34,7 @@ export const AuthProvider = ({ children }) => {
         } else {
           setUser(null);
         }
-      } catch {
+      } catch (err) {
         setUser(null);
       } finally {
         setLoading(false);
@@ -132,7 +133,9 @@ export const AuthProvider = ({ children }) => {
         },
       });
 
-      if (!res.ok) throw new Error("Logout failed");
+      if (!res.ok) {
+        throw new Error("Logout failed");
+      }
 
       setUser(null);
       navigate("/login");
@@ -151,9 +154,5 @@ export const AuthProvider = ({ children }) => {
     logout,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

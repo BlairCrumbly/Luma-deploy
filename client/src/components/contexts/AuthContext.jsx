@@ -1,11 +1,11 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
-import { useNavigate } from "react-router-dom"; // useHistory replaced with useNavigate in react-router v6
+import { useNavigate } from "react-router-dom";
 
-const AuthContext = createContext();
+
+export const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
-// Helper: get CSRF token cookie by name
 const getCookie = (name) => {
   const cookies = document.cookie.split(";");
   for (let cookie of cookies) {
@@ -20,7 +20,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // On mount, fetch user profile to verify login
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -34,7 +33,7 @@ export const AuthProvider = ({ children }) => {
         } else {
           setUser(null);
         }
-      } catch (err) {
+      } catch {
         setUser(null);
       } finally {
         setLoading(false);
@@ -64,13 +63,50 @@ export const AuthProvider = ({ children }) => {
         throw new Error(errorData.error || "Login failed");
       }
 
-      // Fetch user profile after login
       const profileRes = await fetch("/api/profile", {
         method: "GET",
         credentials: "include",
       });
 
       if (!profileRes.ok) throw new Error("Failed to fetch user profile");
+
+      const userData = await profileRes.json();
+      setUser(userData);
+      navigate("/dashboard");
+    } catch (error) {
+      setUser(null);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signup = async (data) => {
+    setLoading(true);
+    try {
+      const csrfToken = getCookie("csrf_access_token");
+
+      const res = await fetch("/api/signup", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-TOKEN": csrfToken,
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Signup failed");
+      }
+
+      const profileRes = await fetch("/api/profile", {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (!profileRes.ok) throw new Error("Failed to fetch profile after signup");
 
       const userData = await profileRes.json();
       setUser(userData);
@@ -96,9 +132,7 @@ export const AuthProvider = ({ children }) => {
         },
       });
 
-      if (!res.ok) {
-        throw new Error("Logout failed");
-      }
+      if (!res.ok) throw new Error("Logout failed");
 
       setUser(null);
       navigate("/login");
@@ -113,8 +147,13 @@ export const AuthProvider = ({ children }) => {
     user,
     loading,
     login,
+    signup,
     logout,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 };

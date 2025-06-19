@@ -5,7 +5,7 @@ import { api } from '../services/api';
 import '../styles/JournalsPage.css';
 import { useNavigate } from 'react-router-dom';
 
-//! reflag is forcing journal list to re fetch (refresh) its data 
+//! reflag is forcing journal list to re fetch (refresh) its data !
 const JournalPage = () => {
   const [refreshFlag, setRefreshFlag] = useState(false);
 

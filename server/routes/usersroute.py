@@ -14,7 +14,7 @@ import urllib.parse
 import os
 import time
 
-
+import traceback
 
 
 
@@ -257,7 +257,8 @@ class TokenRefresh(Resource):
 
         except Exception as e:
             app.logger.error(f"Token refresh error: {str(e)}")
-            return {"error": str(e)}, 500
+            app.logger.error(traceback.format_exc())  # This logs full stack trace
+            return {"error": "Internal Server Error"}, 500
         
 
 

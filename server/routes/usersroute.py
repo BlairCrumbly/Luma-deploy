@@ -295,6 +295,14 @@ class TokenRefresh(Resource):
         except Exception as e:
             app.logger.error(f"Token refresh error: {str(e)}")
             return {"error": "Failed to refresh token"}, 500
+        
+class CsrfToken(Resource):
+    def get(self):
+        access_token = create_access_token(identity="csrf-init")
+        response = jsonify({"msg": "CSRF token cookie set"})
+        set_access_cookies(response, access_token)
+        return response
+        
 
 class UserProfile(Resource):
     @jwt_required()

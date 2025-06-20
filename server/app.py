@@ -1,7 +1,7 @@
 
 from config import app, api
 from models import *
-from routes import Signup, Login, Logout, UserProfile, GoogleLogin, GoogleAuthorize, TokenRefresh, DeleteUser, UserStats
+from routes import Signup, Login, Logout, UserProfile, GoogleLogin, GoogleAuthorize, TokenRefresh, DeleteUser, UserStats, CsrfToken
 # DeleteUser
 from routes.journalsroute import JournalsResource, JournalResource
 from routes.entriesroute import EntryResource, AiPromptResource,CustomAiPromptResource, JournalEntriesResource
@@ -21,6 +21,7 @@ api.add_resource(GoogleAuthorize, "/api/authorize", endpoint="google_authorize_a
 api.add_resource(UserProfile, '/api/user/profile', endpoint="user_profile_api")
 api.add_resource(UserStats, '/api/user/stats', endpoint="user_stats_api")
 api.add_resource(DeleteUser, '/api/user/delete', endpoint="delete_user_api")
+api.add_resource(CsrfToken, "/api/csrf-token")
 
 api.add_resource(JournalsResource, '/api/journals', endpoint="journals_api")
 # api.add_resource(JournalResource, '/api/journals/<int:journal_id>', endpoint="journal_api")

@@ -296,10 +296,12 @@ class TokenRefresh(Resource):
             app.logger.error(f"Token refresh error: {str(e)}")
             return {"error": "Failed to refresh token"}, 500
         
+
 class CsrfToken(Resource):
     def get(self):
-        access_token = create_access_token(identity="csrf-init")
-        response = jsonify({"msg": "CSRF token cookie set"})
+        # In production, you may want to create a 'dummy' identity or anonymous user
+        access_token = create_access_token(identity="anonymous")
+        response = jsonify({"msg": "CSRF cookie set"})
         set_access_cookies(response, access_token)
         return response
         

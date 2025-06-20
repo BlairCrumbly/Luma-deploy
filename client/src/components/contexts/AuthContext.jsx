@@ -27,15 +27,32 @@ export const AuthProvider = ({ children }) => {
         const res = await fetch("/api/user/profile", {
           method: "GET",
           credentials: "include",
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+          },
         });
+        
         if (res.ok) {
-          const data = await res.json();
-          setUser(data);
+          // Check if response is actually JSON
+          const contentType = res.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            const data = await res.json();
+            setUser(data);
+          } else {
+            console.error("Profile endpoint returned non-JSON response");
+            setUser(null);
+          }
         } else {
+          console.log(`Profile fetch failed with status: ${res.status}`);
           setUser(null);
         }
       } catch (err) {
         console.error("Error fetching profile:", err);
+        // Check if it's a JSON parsing error
+        if (err.message.includes("Unexpected token")) {
+          console.error("Server returned HTML instead of JSON - check if API server is running");
+        }
         setUser(null);
       } finally {
         setLoading(false);

@@ -7,6 +7,7 @@ from routes.journalsroute import JournalsResource, JournalResource
 from routes.entriesroute import EntryResource, AiPromptResource,CustomAiPromptResource, JournalEntriesResource
 from routes.moodsroute import MoodsResource
 import os
+from flask import jsonify
 
 @app.route("/")
 def index():
@@ -42,6 +43,16 @@ with app.app_context():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5555))
     app.run(host="0.0.0.0", port=port)
+
+@app.errorhandler(500)
+def internal_error(e):
+    app.logger.error(f"Server error: {e}")
+    return jsonify({"error": "Internal Server Error"}), 500
+
+@app.errorhandler(404)
+def not_found_error(e):
+    return jsonify({"error": "Not Found"}), 404
+
   
 
   

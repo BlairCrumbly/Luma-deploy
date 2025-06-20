@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from flask_migrate import Migrate
@@ -7,11 +7,11 @@ from flask_restful import Api
 from flask_cors import CORS
 from dotenv import load_dotenv
 from authlib.integrations.flask_client import OAuth
+from flask_jwt_extended import JWTManager
+from flask_session import Session
 
 import os
 from datetime import timedelta
-from flask_jwt_extended import JWTManager
-from flask_session import Session
 
 load_dotenv()
 
@@ -32,36 +32,42 @@ app = Flask(
     template_folder='../client/dist'
 )
 
+# Basic app config
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "super-secret-key")
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URI")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# JWT Configuration for cross-origin cookies and CSRF protection
+# JWT config
 app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
-app.config["JWT_SECRET_KEY"] = os.getenv('JWT_SECRET_KEY')
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=24)
 
 app.config["JWT_COOKIE_NAME"] = "access_token_cookie"
 app.config["JWT_REFRESH_COOKIE_NAME"] = "refresh_token_cookie"  # If you use refresh tokens
-app.config["JWT_COOKIE_SECURE"] = True  # Must be True for HTTPS
 app.config["JWT_COOKIE_SAMESITE"] = "None"  # Allow cross-site cookies
-app.config["JWT_COOKIE_HTTPONLY"] = True  # Prevent JS access to token cookies
+app.config["JWT_COOKIE_HTTPONLY"] = True  # Prevent JS access to cookies
 app.config["JWT_COOKIE_CSRF_PROTECT"] = True
 app.config["JWT_CSRF_IN_COOKIES"] = True
 app.config["JWT_CSRF_METHODS"] = ["POST", "PUT", "PATCH", "DELETE"]
 
-# Session config (ensure session cookie settings match security requirements)
+# Enable secure cookies only in production (requires HTTPS)
+if os.getenv("FLASK_ENV") == "production":
+    app.config["JWT_COOKIE_SECURE"] = True
+else:
+    app.config["JWT_COOKIE_SECURE"] = False
+
+# Session config
 app.config["SESSION_TYPE"] = "filesystem"
 app.config["SESSION_PERMANENT"] = True
 app.config["SESSION_USE_SIGNER"] = True
-app.config["SESSION_COOKIE_SECURE"] = True
+app.config["SESSION_COOKIE_SECURE"] = app.config["JWT_COOKIE_SECURE"]
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=30)
 app.config["SESSION_FILE_THRESHOLD"] = 100
-app.config["SESSION_COOKIE_DOMAIN"] = None  # Set only if needed for multiple subdomains
+app.config["SESSION_COOKIE_DOMAIN"] = None  # Set if needed
 
-# AI config
+# AI config (example)
 app.config["WRITECREAM_API_URL"] = os.getenv("WRITECREAM_API_URL")
 app.config["WRITECREAM_API_KEY"] = os.getenv("WRITECREAM_API_KEY")
 app.config["WRITECREAM_TOOL_ID"] = os.getenv("WRITECREAM_TOOL_ID")
@@ -73,9 +79,20 @@ migrate = Migrate(app=app, db=db)
 bcrypt = Bcrypt(app=app)
 api = Api(app=app)
 
+# Allowed origins for CORS (add localhost dev + prod frontend)
+allowed_origins = [
+    "http://localhost:5173",
+    "https://luma-deploy-frontend.onrender.com"
+]
+
+# Optionally append from env variable FRONTEND_URL
+prod_frontend = os.getenv("FRONTEND_URL")
+if prod_frontend and prod_frontend not in allowed_origins:
+    allowed_origins.append(prod_frontend)
+
 CORS(app,
      supports_credentials=True,
-     origins=["https://luma-deploy-frontend.onrender.com"],
+     origins=allowed_origins,
      allow_headers=["Content-Type", "Authorization", "X-CSRF-Token"],
      methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
 )

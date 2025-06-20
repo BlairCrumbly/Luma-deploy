@@ -21,7 +21,7 @@ function App() {
   useEffect(() => {
     const refreshCSRFToken = async () => {
       try {
-        await api.post('/refresh-token');
+        await api.post('/api/refresh-token');
         console.log("✅ CSRF token refreshed");
       } catch (error) {
         console.error("❌ Error refreshing CSRF token:", error);

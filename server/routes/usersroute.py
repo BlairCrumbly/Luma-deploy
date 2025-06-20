@@ -239,25 +239,22 @@ class TokenRefresh(Resource):
         try:
             current_user_id = get_jwt_identity()
             user = User.query.get(current_user_id)
-            
             if not user:
                 return {"error": "User not found"}, 404
-                
-
-            access_token = create_access_token(identity=user.id)
             
+            # Create new access token
+            access_token = create_access_token(identity=user.id)
 
+            # Optionally refresh Google token if expired (custom logic)
             if user.google_token and user.google_refresh_token and user.is_token_expired():
                 success = user.refresh_google_token()
                 if not success:
                     app.logger.warning(f"Failed to refresh Google token for user {user.id}")
-            
 
             response = jsonify({"message": "Token refreshed successfully"})
             set_access_cookies(response, access_token)
-            
             return response
-            
+
         except Exception as e:
             app.logger.error(f"Token refresh error: {str(e)}")
             return {"error": str(e)}, 500

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './components/contexts/AuthContext';
 import AuthPage from './pages/AuthPage';
@@ -15,22 +15,8 @@ import EntryForm from './components/EntryForm/EntryForm';
 import EntryEditor from './components/EntryEditor/EntryEditor';
 import UserProfile from './components/UserProfile/UserProfile';
 import { Toaster } from 'react-hot-toast';
-import { api } from './services/api';
 
 function App() {
-  useEffect(() => {
-    const refreshCSRFToken = async () => {
-      try {
-        await api.post('/api/refresh-token');
-        console.log("✅ CSRF token refreshed");
-      } catch (error) {
-        console.error("❌ Error refreshing CSRF token:", error);
-      }
-    };
-
-    refreshCSRFToken();
-  }, []);
-
   return (
     <Router>
       <AuthProvider>

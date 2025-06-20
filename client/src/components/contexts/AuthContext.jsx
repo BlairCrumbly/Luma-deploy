@@ -45,6 +45,43 @@ export const AuthProvider = ({ children }) => {
     fetchProfile();
   }, []);
 
+  // Refresh CSRF token when user is authenticated
+  useEffect(() => {
+    const refreshCSRFToken = async () => {
+      if (user && !loading) {
+        try {
+          const res = await fetch("/api/refresh-token", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          if (res.ok) {
+            console.log("✅ CSRF token refreshed");
+          } else {
+            console.error("❌ Error refreshing CSRF token - Status:", res.status);
+            
+            // Handle different error scenarios
+            if (res.status === 401) {
+              // Token is invalid, user needs to re-authenticate
+              console.log("Token invalid - logging out user");
+              await logout();
+            }
+          }
+        } catch (error) {
+          console.error("❌ Error refreshing CSRF token:", error);
+        }
+      }
+    };
+
+    // Only refresh CSRF token if user is authenticated and not loading
+    if (user && !loading) {
+      refreshCSRFToken();
+    }
+  }, [user, loading]);
+
   const login = async (username, password) => {
     setLoading(true);
     try {

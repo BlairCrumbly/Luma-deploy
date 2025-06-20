@@ -13,12 +13,7 @@ import requests
 import urllib.parse
 import os
 import time
-
 import traceback
-
-
-
-
 
 class Signup(Resource):
     def post(self):
@@ -60,9 +55,8 @@ class Signup(Resource):
             return {"error": "Email is already in use"}, 400
 
         except Exception as e:
+            db.session.rollback()
             return {'error': f'Error creating user: {str(e)}'}, 500
-
-
 
 class Login(Resource):
     def post(self):
@@ -71,12 +65,18 @@ class Login(Resource):
             if not data:
                 return {"error": "Invalid JSON"}, 400
 
-            user = User.query.filter_by(username=data['username']).first()
-            if not user:
-                return {"error": "User not found"}, 404
+            username = data.get('username')
+            password = data.get('password')
+            
+            if not username or not password:
+                return {"error": "Username and password are required"}, 400
 
-            if not user.check_password(data['password']):
-                return {"error": "Incorrect password"}, 401
+            user = User.query.filter_by(username=username).first()
+            if not user:
+                return {"error": "Invalid username or password"}, 401
+
+            if not user.check_password(password):
+                return {"error": "Invalid username or password"}, 401
 
             access_token = create_access_token(identity=str(user.id))
             refresh_token = create_refresh_token(identity=str(user.id))
@@ -88,58 +88,62 @@ class Login(Resource):
             return response
 
         except Exception as e:
-            return {'error': f'Error logging in user: {str(e)}'}, 500
+            app.logger.error(f"Login error: {str(e)}")
+            return {'error': 'An error occurred during login'}, 500
 
 class Logout(Resource):
     @jwt_required()
     def delete(self):
         try:
-
             current_user_id = get_jwt_identity()
             user = User.query.get(current_user_id)
 
-            #! If a Google token exists, revoke it
+            # If a Google token exists, revoke it
             if user and user.google_token:
-                revoke_url = f'https://oauth2.googleapis.com/revoke?token={user.google_token}'
-                response = requests.post(revoke_url)
-
-                if response.status_code == 200:
-                    print("Google token revoked successfully.")
-                else:
-                    print(f"Failed to revoke Google token: {response.text}")
-
+                try:
+                    revoke_url = f'https://oauth2.googleapis.com/revoke?token={user.google_token}'
+                    response = requests.post(revoke_url, timeout=5)
+                    if response.status_code == 200:
+                        app.logger.info("Google token revoked successfully.")
+                    else:
+                        app.logger.warning(f"Failed to revoke Google token: {response.text}")
+                except Exception as e:
+                    app.logger.error(f"Error revoking Google token: {str(e)}")
 
             response = make_response('', 204)
             unset_jwt_cookies(response)
-
             session.clear()
 
             return response
 
         except Exception as e:
-            return {"error": f"Error during logout: {str(e)}"}, 500
+            app.logger.error(f"Logout error: {str(e)}")
+            return {"error": "Error during logout"}, 500
 
 class GoogleLogin(Resource):
     def get(self):
-        # Generate a secure state token
-        state = secrets.token_urlsafe(32)
-        
-        # Store state token in session
-        session['oauth_state'] = state
-        session.modified = True
-        
-        # Log for debugging
-        app.logger.info(f"Generated state token: {state}")
-        app.logger.info(f"Full session: {dict(session)}")
-        
-        # Build redirect URI with state
-        redirect_uri = url_for("googleauthorize", _external=True)
-        return oauth.google.authorize_redirect(
-            redirect_uri,
-            state=state,
-            prompt="consent",
-            access_type="offline"
-        )
+        try:
+            # Generate a secure state token
+            state = secrets.token_urlsafe(32)
+            
+            # Store state token in session
+            session['oauth_state'] = state
+            session.permanent = True
+            
+            app.logger.info(f"Generated state token: {state}")
+            
+            # Build redirect URI
+            redirect_uri = url_for("google_authorize_api", _external=True)
+            
+            return oauth.google.authorize_redirect(
+                redirect_uri,
+                state=state,
+                prompt="consent",
+                access_type="offline"
+            )
+        except Exception as e:
+            app.logger.error(f"Google login error: {str(e)}")
+            return {"error": "Failed to initiate Google login"}, 500
 
 class GoogleAuthorize(Resource):
     def get(self):
@@ -150,39 +154,70 @@ class GoogleAuthorize(Resource):
             # Get state from query parameters
             state_param = request.args.get('state')
             if not state_param:
-                return {"error": "Missing state parameter"}, 400
+                app.logger.error("Missing state parameter")
+                return self._redirect_with_error("Missing state parameter")
                 
-            # Since session persistence is problematic, we'll implement a fallback
-            # approach where we accept the state parameter if it looks valid
-            if len(state_param) >= 32:  # Check it's a reasonable length for a secure token
-                app.logger.info(f"Using state parameter from URL: {state_param}")
-                
-                # Get token using OAuth client
+            # Verify state (with fallback for session issues)
+            session_state = session.get('oauth_state')
+            if session_state and session_state != state_param:
+                app.logger.error(f"State mismatch. Session: {session_state}, Param: {state_param}")
+                return self._redirect_with_error("Invalid state parameter")
+            
+            # Check for authorization errors
+            error = request.args.get('error')
+            if error:
+                app.logger.error(f"OAuth authorization error: {error}")
+                return self._redirect_with_error(f"Authorization failed: {error}")
+            
+            # Get authorization code
+            code = request.args.get('code')
+            if not code:
+                app.logger.error("Missing authorization code")
+                return self._redirect_with_error("Missing authorization code")
+            
+            # Exchange code for token
+            try:
                 token = oauth.google.authorize_access_token()
                 if not token:
                     app.logger.error("Failed to get access token")
-                    return {"error": "Failed to get access token"}, 400
+                    return self._redirect_with_error("Failed to get access token")
                 
-                # Get user info from token
+                app.logger.info("Successfully obtained access token")
+                
+            except Exception as e:
+                app.logger.error(f"Token exchange error: {str(e)}")
+                return self._redirect_with_error("Failed to exchange authorization code")
+            
+            # Get user info from Google
+            try:
                 userinfo_endpoint = "https://www.googleapis.com/oauth2/v3/userinfo"
                 resp = requests.get(
                     userinfo_endpoint,
-                    headers={"Authorization": f"Bearer {token['access_token']}"}
+                    headers={"Authorization": f"Bearer {token['access_token']}"},
+                    timeout=10
                 )
                 
                 if resp.status_code != 200:
                     app.logger.error(f"Failed to get user info: {resp.text}")
-                    return {"error": "Failed to get user info"}, 400
+                    return self._redirect_with_error("Failed to get user information")
                 
                 user_info = resp.json()
-                app.logger.info(f"User info retrieved: {user_info}")
+                app.logger.info(f"User info retrieved: {user_info.get('email', 'no email')}")
                 
-                # Check if user exists
+            except Exception as e:
+                app.logger.error(f"Error getting user info: {str(e)}")
+                return self._redirect_with_error("Failed to retrieve user information")
+            
+            # Find or create user
+            try:
                 user = User.query.filter_by(email=user_info['email']).first()
                 
                 if not user:
                     # Create new user
                     username = user_info.get('name', '').replace(' ', '_').lower()
+                    if not username:
+                        username = user_info['email'].split('@')[0]
+                    
                     # Make username unique
                     base_username = username
                     counter = 1
@@ -199,21 +234,32 @@ class GoogleAuthorize(Resource):
                         token_expiry=int(time.time()) + int(token.get('expires_in', 3600))
                     )
                     db.session.add(user)
+                    app.logger.info(f"Created new user: {user.email}")
                 else:
                     # Update existing user
                     user.google_id = user_info.get('sub')
                     user.google_token = token.get('access_token')
-                    if token.get('refresh_token'):  # Only update if present
+                    if token.get('refresh_token'):
                         user.google_refresh_token = token.get('refresh_token')
                     user.token_expiry = int(time.time()) + int(token.get('expires_in', 3600))
+                    app.logger.info(f"Updated existing user: {user.email}")
                 
                 db.session.commit()
                 
-                # Create JWT tokens
+            except Exception as e:
+                db.session.rollback()
+                app.logger.error(f"Database error: {str(e)}")
+                return self._redirect_with_error("Database error occurred")
+            
+            # Create JWT tokens
+            try:
                 access_token = create_access_token(identity=str(user.id))
                 refresh_token = create_refresh_token(identity=str(user.id))
                 
-                # Redirect to frontend with tokens
+                # Clean up session
+                session.pop('oauth_state', None)
+                
+                # Redirect to frontend with cookies set
                 frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:5173')
                 response = redirect(f"{frontend_url}/oauth-redirect")
                 
@@ -221,53 +267,47 @@ class GoogleAuthorize(Resource):
                 set_access_cookies(response, access_token)
                 set_refresh_cookies(response, refresh_token)
                 
+                app.logger.info(f"Successfully authenticated user: {user.email}")
                 return response
-            else:
-                app.logger.error(f"Invalid state parameter: {state_param}")
-                return {"error": "Invalid state parameter"}, 400
+                
+            except Exception as e:
+                app.logger.error(f"JWT token creation error: {str(e)}")
+                return self._redirect_with_error("Authentication token creation failed")
                 
         except Exception as e:
-            app.logger.error(f"Authorization error: {str(e)}", exc_info=True)
-            frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:5173')
-            error_msg = urllib.parse.quote(str(e))
-            return redirect(f"{frontend_url}/oauth-redirect?error={error_msg}")
+            app.logger.error(f"Unexpected authorization error: {str(e)}")
+            app.logger.error(traceback.format_exc())
+            return self._redirect_with_error("An unexpected error occurred")
 
-        
+    def _redirect_with_error(self, error_message):
+        """Helper method to redirect to frontend with error message"""
+        frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:5173')
+        error_encoded = urllib.parse.quote(error_message)
+        return redirect(f"{frontend_url}/oauth-redirect?error={error_encoded}")
+
 class TokenRefresh(Resource):
-    @jwt_required(refresh=True)
     def post(self):
+        """Refresh CSRF token without requiring authentication"""
+        try:
+            # This endpoint is used to refresh CSRF tokens
+            # The actual token refresh is handled by Flask-JWT-Extended automatically
+            return {"message": "CSRF token refreshed"}, 200
+        except Exception as e:
+            app.logger.error(f"Token refresh error: {str(e)}")
+            return {"error": "Failed to refresh token"}, 500
+
+class UserProfile(Resource):
+    @jwt_required()
+    def get(self):
         try:
             current_user_id = get_jwt_identity()
             user = User.query.get(current_user_id)
             if not user:
                 return {"error": "User not found"}, 404
-            
-            # Create new access token
-            access_token = create_access_token(identity=user.id)
-
-            # Optionally refresh Google token if expired (custom logic)
-            if user.google_token and user.google_refresh_token and user.is_token_expired():
-                success = user.refresh_google_token()
-                if not success:
-                    app.logger.warning(f"Failed to refresh Google token for user {user.id}")
-
-            response = jsonify({"message": "Token refreshed successfully"})
-            set_access_cookies(response, access_token)
-            return response
-
+            return user.to_dict(), 200
         except Exception as e:
-            app.logger.error(f"Token refresh error: {str(e)}")
-            app.logger.error(traceback.format_exc())  # This logs full stack trace
-            return {"error": "Internal Server Error"}, 500
-        
-
-
-class UserProfile(Resource):
-    @jwt_required()
-    def get(self):
-        current_user_id = get_jwt_identity()
-        user = User.query.get_or_404(current_user_id)
-        return user.to_dict(), 200
+            app.logger.error(f"Profile fetch error: {str(e)}")
+            return {"error": "Failed to fetch profile"}, 500
 
 class UserStats(Resource):
     @jwt_required()

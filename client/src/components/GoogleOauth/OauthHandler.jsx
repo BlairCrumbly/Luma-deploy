@@ -1,74 +1,57 @@
-import React, { useEffect, useContext, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useEffect, useContext } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
+import toast from 'react-hot-toast';
 
 const OAuthRedirectHandler = () => {
-  const { handleGoogleRedirect } = useContext(AuthContext);
   const navigate = useNavigate();
-  const location = useLocation();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  
+  const { setUser } = useContext(AuthContext);
+  const [searchParams] = useSearchParams();
+
   useEffect(() => {
-    const handleRedirect = async () => {
+    const handleOAuthCallback = async () => {
       try {
-        console.log("Starting OAuth redirect handling...");
-        console.log("URL params:", location.search);
+        const error = searchParams.get('error');
         
-        // Check for error in URL parameters
-        const urlParams = new URLSearchParams(location.search);
-        const errorParam = urlParams.get('error');
-        
-        if (errorParam) {
-          throw new Error(`Authentication error: ${errorParam}`);
+        if (error) {
+          console.error('OAuth error:', error);
+          toast.error('Authentication failed. Please try again.');
+          navigate('/login');
+          return;
         }
-        
-        // Try to get the current user with the new tokens
-        const userData = await handleGoogleRedirect();
-        
-        if (userData) {
-          navigate('/', { replace: true });
+
+        // Check if we have authentication cookies by trying to fetch profile
+        const response = await fetch('/api/user/profile', {
+          method: 'GET',
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData);
+          toast.success('Successfully logged in!');
+          navigate('/');
         } else {
-          throw new Error('No user data returned after authentication');
+          throw new Error('Failed to authenticate');
         }
-      } catch (err) {
-        console.error('OAuth error:', err);
-        setError(err.message || 'Authentication failed');
-        setTimeout(() => {
-          navigate('/login', { replace: true });
-        }, 3000);
-      } finally {
-        setLoading(false);
+      } catch (error) {
+        console.error('OAuth handling error:', error);
+        toast.error('Authentication failed. Please try again.');
+        navigate('/login');
       }
     };
-    
-    handleRedirect();
-  }, [handleGoogleRedirect, navigate, location]);
-  
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent border-blue-600 align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
-          <p className="mt-4">Completing authentication...</p>
-        </div>
+
+    handleOAuthCallback();
+  }, [navigate, setUser, searchParams]);
+
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+        <p className="mt-4 text-lg">Completing authentication...</p>
       </div>
-    );
-  }
-  
-  if (error) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-          <strong className="font-bold">Authentication failed!</strong>
-          <p className="block sm:inline">{error}</p>
-          <p className="mt-2">Redirecting to login page...</p>
-        </div>
-      </div>
-    );
-  }
-  
-  return null;
+    </div>
+  );
 };
 
 export default OAuthRedirectHandler;

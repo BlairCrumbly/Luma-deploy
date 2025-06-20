@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
-import { useNavigate } from "react-router-dom"; // For react-router v6+
+import { useNavigate } from "react-router-dom";
 
 export const AuthContext = createContext();
 
@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch("/api/profile", {
+        const res = await fetch("/api/user/profile", {
           method: "GET",
           credentials: "include",
         });
@@ -35,6 +35,7 @@ export const AuthProvider = ({ children }) => {
           setUser(null);
         }
       } catch (err) {
+        console.error("Error fetching profile:", err);
         setUser(null);
       } finally {
         setLoading(false);
@@ -44,7 +45,7 @@ export const AuthProvider = ({ children }) => {
     fetchProfile();
   }, []);
 
-  const login = async (credentials) => {
+  const login = async (username, password) => {
     setLoading(true);
     try {
       const csrfToken = getCookie("csrf_access_token");
@@ -54,9 +55,9 @@ export const AuthProvider = ({ children }) => {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRF-TOKEN": csrfToken,
+          ...(csrfToken && { "X-CSRF-TOKEN": csrfToken }),
         },
-        body: JSON.stringify(credentials),
+        body: JSON.stringify({ username, password }),
       });
 
       if (!res.ok) {
@@ -64,16 +65,9 @@ export const AuthProvider = ({ children }) => {
         throw new Error(errorData.error || "Login failed");
       }
 
-      const profileRes = await fetch("/api/profile", {
-        method: "GET",
-        credentials: "include",
-      });
-
-      if (!profileRes.ok) throw new Error("Failed to fetch user profile");
-
-      const userData = await profileRes.json();
+      const userData = await res.json();
       setUser(userData);
-      navigate("/dashboard");
+      navigate("/");
     } catch (error) {
       setUser(null);
       throw error;
@@ -82,7 +76,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const signup = async (data) => {
+  const signup = async (username, email, password) => {
     setLoading(true);
     try {
       const csrfToken = getCookie("csrf_access_token");
@@ -92,9 +86,9 @@ export const AuthProvider = ({ children }) => {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRF-TOKEN": csrfToken,
+          ...(csrfToken && { "X-CSRF-TOKEN": csrfToken }),
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ username, email, password }),
       });
 
       if (!res.ok) {
@@ -102,16 +96,9 @@ export const AuthProvider = ({ children }) => {
         throw new Error(errorData.error || "Signup failed");
       }
 
-      const profileRes = await fetch("/api/profile", {
-        method: "GET",
-        credentials: "include",
-      });
-
-      if (!profileRes.ok) throw new Error("Failed to fetch profile after signup");
-
-      const userData = await profileRes.json();
+      const userData = await res.json();
       setUser(userData);
-      navigate("/dashboard");
+      navigate("/");
     } catch (error) {
       setUser(null);
       throw error;
@@ -129,7 +116,7 @@ export const AuthProvider = ({ children }) => {
         method: "DELETE",
         credentials: "include",
         headers: {
-          "X-CSRF-TOKEN": csrfToken,
+          ...(csrfToken && { "X-CSRF-TOKEN": csrfToken }),
         },
       });
 
@@ -140,7 +127,10 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       navigate("/login");
     } catch (error) {
-      console.error(error);
+      console.error("Logout error:", error);
+      // Even if logout fails on server, clear local state
+      setUser(null);
+      navigate("/login");
     } finally {
       setLoading(false);
     }

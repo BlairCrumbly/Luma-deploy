@@ -1,4 +1,12 @@
-const BASE = import.meta.env.VITE_API_URL || '';
+// Determine the base URL based on environment
+const getBaseURL = () => {
+  if (import.meta.env.PROD) {
+    return import.meta.env.VITE_API_URL || '';
+  }
+  return '';
+};
+
+const BASE = getBaseURL();
 
 // Helper function to get a cookie by name (for CSRF token)
 const getCookie = (name) => {
@@ -19,10 +27,52 @@ const prepareHeaders = (method) => {
   // Attach CSRF token header only for mutating methods
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method.toUpperCase())) {
     const csrfToken = getCookie('csrf_access_token');
-    if (csrfToken) headers['X-CSRF-TOKEN'] = csrfToken;
+    if (csrfToken) {
+      headers['X-CSRF-TOKEN'] = csrfToken;
+    }
   }
 
   return headers;
+};
+
+// Helper function to handle response errors
+const handleResponse = async (response) => {
+  if (response.status === 404) {
+    return null;
+  }
+
+  if (!response.ok) {
+    let errorData;
+    try {
+      errorData = await response.json();
+    } catch {
+      errorData = { error: `Request failed with status ${response.status}` };
+    }
+    
+    // Handle specific error cases
+    if (response.status === 401) {
+      // Token expired or invalid - redirect to login
+      window.location.href = '/login';
+      throw new Error(errorData.error || 'Authentication required');
+    }
+    
+    if (response.status === 403) {
+      throw new Error(errorData.error || 'Access forbidden');
+    }
+    
+    throw new Error(errorData.error || `Request failed with status ${response.status}`);
+  }
+
+  // Handle no content responses
+  if (response.status === 204) {
+    return null;
+  }
+
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
 };
 
 export const api = {
@@ -31,40 +81,28 @@ export const api = {
       const headers = prepareHeaders('GET');
       const response = await fetch(`${BASE}${endpoint}`, {
         method: 'GET',
-        credentials: 'include',  // send cookies
+        credentials: 'include',
         headers
       });
 
-      if (response.status === 404) return [];
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Request failed with status ${response.status}`);
-      }
-
-      return await response.json();
+      return await handleResponse(response);
     } catch (error) {
       console.error(`GET ${endpoint} error:`, error);
       throw error;
     }
   },
 
-  async post(endpoint, data) {
+  async post(endpoint, data = null) {
     try {
       const headers = prepareHeaders('POST');
       const response = await fetch(`${BASE}${endpoint}`, {
         method: 'POST',
         credentials: 'include',
         headers,
-        body: JSON.stringify(data),
+        ...(data && { body: JSON.stringify(data) }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Request failed with status ${response.status}`);
-      }
-
-      return await response.json();
+      return await handleResponse(response);
     } catch (error) {
       console.error(`POST ${endpoint} error:`, error);
       throw error;
@@ -81,12 +119,7 @@ export const api = {
         body: JSON.stringify(data),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Request failed with status ${response.status}`);
-      }
-
-      return await response.json();
+      return await handleResponse(response);
     } catch (error) {
       console.error(`PUT ${endpoint} error:`, error);
       throw error;
@@ -103,12 +136,7 @@ export const api = {
         body: JSON.stringify(data),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Request failed with status ${response.status}`);
-      }
-
-      return await response.json();
+      return await handleResponse(response);
     } catch (error) {
       console.error(`PATCH ${endpoint} error:`, error);
       throw error;
@@ -124,16 +152,7 @@ export const api = {
         headers,
       });
 
-      if (!response.ok) {
-        if (response.status === 404) return null;
-        const errorText = await response.text();
-        const errorData = errorText ? JSON.parse(errorText) : {};
-        throw new Error(errorData.error || `Request failed with status ${response.status}`);
-      }
-
-      if (response.status === 204) return null;
-
-      return await response.json();
+      return await handleResponse(response);
     } catch (error) {
       console.error(`DELETE ${endpoint} error:`, error);
       throw error;

@@ -58,7 +58,8 @@ app.config.update({
 
     "JWT_ACCESS_COOKIE_PATH": "/",
     "JWT_REFRESH_COOKIE_PATH": "/",
-
+    "JWT_COOKIE_HTTPONLY": True,
+    "JWT_CSRF_IN_COOKIES": True,
     # CSRF protection enabled
     "JWT_COOKIE_CSRF_PROTECT": True,
     "JWT_CSRF_METHODS": ["POST", "PUT", "PATCH", "DELETE"],

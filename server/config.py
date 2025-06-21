@@ -14,7 +14,7 @@ import os
 
 load_dotenv()
 
-# Naming conventions for Alembic migrations
+# Naming conventions for Alembic
 naming_convention = {
     "ix": "ix_%(column_0_label)s",
     "uq": "uq_%(table_name)s_%(column_0_name)s",
@@ -25,10 +25,10 @@ naming_convention = {
 
 metadata = MetaData(naming_convention=naming_convention)
 
-# Determine environment
+# Detect environment
 IS_PRODUCTION = os.getenv("FLASK_ENV") == "production" or bool(os.getenv("RENDER"))
 
-# Initialize Flask app
+# Flask app
 app = Flask(
     __name__,
     static_url_path='',
@@ -36,43 +36,37 @@ app = Flask(
     template_folder='../client/dist'
 )
 
-# Core config
+# Core app config
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "super-secret-key")
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URI")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# JWT configuration
+# JWT config
 app.config.update({
     "JWT_SECRET_KEY": os.getenv("JWT_SECRET_KEY"),
     "JWT_TOKEN_LOCATION": ["cookies"],
     "JWT_ACCESS_TOKEN_EXPIRES": timedelta(hours=24),
-    "JWT_COOKIE_NAME": "access_token_cookie",
-    "JWT_REFRESH_COOKIE_NAME": "refresh_token_cookie",
+    "JWT_REFRESH_TOKEN_EXPIRES": timedelta(days=30),
     "JWT_COOKIE_SECURE": IS_PRODUCTION,
     "JWT_COOKIE_SAMESITE": "None" if IS_PRODUCTION else "Lax",
-    "JWT_COOKIE_HTTPONLY": True,
+    "JWT_COOKIE_HTTPONLY": False,
+    "JWT_ACCESS_COOKIE_PATH": "/",  # allow everywhere
+    "JWT_REFRESH_COOKIE_PATH": "/",  # allow everywhere
     "JWT_COOKIE_CSRF_PROTECT": True,
-    "JWT_CSRF_IN_COOKIES": True,
     "JWT_CSRF_METHODS": ["POST", "PUT", "PATCH", "DELETE"],
+    "JWT_CSRF_IN_COOKIES": True,
 })
 
-# Session config
+# Flask-Session config (used for Google OAuth, etc.)
 app.config.update({
     "SESSION_TYPE": "filesystem",
     "SESSION_PERMANENT": True,
     "SESSION_USE_SIGNER": True,
     "SESSION_COOKIE_SECURE": IS_PRODUCTION,
-    "SESSION_COOKIE_HTTPONLY": True,
-    "SESSION_COOKIE_SAMESITE": "Lax",
-    "SESSION_FILE_THRESHOLD": 100,
-    "SESSION_COOKIE_DOMAIN": None,
+    "SESSION_COOKIE_HTTPONLY": False,
+    "SESSION_COOKIE_SAMESITE": "None" if IS_PRODUCTION else "Lax",
     "PERMANENT_SESSION_LIFETIME": timedelta(minutes=30),
 })
-
-# AI config
-app.config["WRITECREAM_API_URL"] = os.getenv("WRITECREAM_API_URL")
-app.config["WRITECREAM_API_KEY"] = os.getenv("WRITECREAM_API_KEY")
-app.config["WRITECREAM_TOOL_ID"] = os.getenv("WRITECREAM_TOOL_ID")
 
 # Initialize extensions
 sess = Session(app)
@@ -82,23 +76,22 @@ bcrypt = Bcrypt(app=app)
 jwt = JWTManager(app)
 api = Api(app)
 
-# CORS setup
+# CORS config: allows frontend access to backend with credentials
 CORS(
     app,
     supports_credentials=True,
     origins=[
         "http://localhost:5173",  # Vite dev
-        "http://localhost:3000",  # Fallback
+
         "https://luma-deploy-frontend.onrender.com",
         os.getenv("FRONTEND_URL", "https://luma-deploy-frontend.onrender.com"),
     ],
     allow_headers=["Content-Type", "Authorization", "X-CSRF-Token"],
-    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"]
+    methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
 )
 
-# OAuth setup (Google)
+# Google OAuth setup
 oauth = OAuth(app)
-
 google = oauth.register(
     name='google',
     client_id=os.getenv("CLIENT_ID"),
@@ -108,7 +101,7 @@ google = oauth.register(
     client_kwargs={"scope": "openid email profile"}
 )
 
-# Return all errors as JSON to prevent <html> parsing issues in React
+# Global error handlers (to avoid HTML in React app)
 @app.errorhandler(500)
 def internal_error(e):
     return jsonify(error="Internal Server Error", message=str(e)), 500

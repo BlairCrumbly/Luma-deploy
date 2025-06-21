@@ -14,7 +14,7 @@ import os
 
 load_dotenv()
 
-# Naming conventions for Alembic
+# Naming convention for migrations
 naming_convention = {
     "ix": "ix_%(column_0_label)s",
     "uq": "uq_%(table_name)s_%(column_0_name)s",
@@ -22,10 +22,9 @@ naming_convention = {
     "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
     "pk": "pk_%(table_name)s",
 }
-
 metadata = MetaData(naming_convention=naming_convention)
 
-# Flask app
+# Flask app instance
 app = Flask(
     __name__,
     static_url_path='',
@@ -33,47 +32,40 @@ app = Flask(
     template_folder='../client/dist'
 )
 
-# Core app config
+# Core configuration
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "super-secret-key")
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URI")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# JWT config — strictly production-safe
+# JWT config
 app.config.update({
     "JWT_SECRET_KEY": os.getenv("JWT_SECRET_KEY"),
     "JWT_TOKEN_LOCATION": ["cookies"],
     "JWT_ACCESS_TOKEN_EXPIRES": timedelta(hours=24),
     "JWT_REFRESH_TOKEN_EXPIRES": timedelta(days=30),
 
-    "JWT_COOKIE_SECURE": True,           # HTTPS only
-    "JWT_COOKIE_SAMESITE": "None",       # cross-site cookie
-
-    # Set access & refresh cookies HttpOnly (good security)
+    # Cookie security for production
+    "JWT_COOKIE_SECURE": True,                # HTTPS only
+    "JWT_COOKIE_SAMESITE": "None",            # Required for cross-origin cookies
     "JWT_ACCESS_COOKIE_HTTPONLY": True,
     "JWT_REFRESH_COOKIE_HTTPONLY": True,
 
-    # But CSRF cookies must be readable by JS to send with requests (HttpOnly=False)
-    "JWT_ACCESS_CSRF_COOKIE_HTTPONLY": False,
-    "JWT_REFRESH_CSRF_COOKIE_HTTPONLY": False,
-
-    "JWT_ACCESS_COOKIE_PATH": "/",
-    "JWT_REFRESH_COOKIE_PATH": "/",
-    "JWT_COOKIE_HTTPONLY": True,
-    "JWT_CSRF_IN_COOKIES": True,
-    # CSRF protection enabled
+    # CSRF protection settings
     "JWT_COOKIE_CSRF_PROTECT": True,
-    "JWT_CSRF_METHODS": ["POST", "PUT", "PATCH", "DELETE"],
     "JWT_CSRF_IN_COOKIES": True,
+    "JWT_CSRF_METHODS": ["POST", "PUT", "PATCH", "DELETE"],
+    "JWT_ACCESS_CSRF_COOKIE_HTTPONLY": False,   # JS must read this to send in headers
+    "JWT_REFRESH_CSRF_COOKIE_HTTPONLY": False,  # Same here
 })
 
-# Flask-Session config (for OAuth, etc.)
+# Flask-Session (used for OAuth)
 app.config.update({
     "SESSION_TYPE": "filesystem",
     "SESSION_PERMANENT": True,
     "SESSION_USE_SIGNER": True,
-    "SESSION_COOKIE_SECURE": True,        # HTTPS only
-    "SESSION_COOKIE_HTTPONLY": True,      # JS cannot access
-    "SESSION_COOKIE_SAMESITE": "None",    # Cross-site
+    "SESSION_COOKIE_SECURE": True,
+    "SESSION_COOKIE_HTTPONLY": True,
+    "SESSION_COOKIE_SAMESITE": "None",
     "PERMANENT_SESSION_LIFETIME": timedelta(minutes=30),
 })
 
@@ -85,7 +77,7 @@ bcrypt = Bcrypt(app=app)
 jwt = JWTManager(app)
 api = Api(app)
 
-# CORS config — only production frontend allowed
+# CORS config
 CORS(
     app,
     supports_credentials=True,
@@ -93,7 +85,7 @@ CORS(
         "https://luma-deploy-frontend.onrender.com",
         os.getenv("FRONTEND_URL", "https://luma-deploy-frontend.onrender.com"),
     ],
-    allow_headers=["Content-Type", "Authorization", "X-CSRF-Token"],
+    allow_headers=["Content-Type", "Authorization", "X-CSRF-TOKEN"],
     methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
 )
 
@@ -108,7 +100,7 @@ google = oauth.register(
     client_kwargs={"scope": "openid email profile"}
 )
 
-# Global error handlers
+# Error handlers
 @app.errorhandler(500)
 def internal_error(e):
     return jsonify(error="Internal Server Error", message=str(e)), 500

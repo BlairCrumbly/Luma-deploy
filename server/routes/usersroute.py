@@ -1,4 +1,4 @@
-from flask import request, redirect, url_for, session, jsonify
+from flask import request, redirect, url_for, session, jsonify, current_app
 from flask_restful import Resource
 from config import app, db, api, google, oauth
 from models import User, Journal, Entry
@@ -98,27 +98,25 @@ class Logout(Resource):
             current_user_id = get_jwt_identity()
             user = User.query.get(current_user_id)
 
-            # Revoke Google token if present
             if user and user.google_token:
                 try:
                     revoke_url = f'https://oauth2.googleapis.com/revoke?token={user.google_token}'
-                    response = requests.post(revoke_url, timeout=5)
-                    if response.status_code == 200:
-                        app.logger.info("Google token revoked successfully.")
-                    else:
-                        app.logger.warning(f"Failed to revoke Google token: {response.text}")
+                    revoke_res = requests.post(revoke_url, timeout=5)
+                    if revoke_res.status_code != 200:
+                        current_app.logger.warning(f"Failed to revoke Google token: {revoke_res.text}")
                 except Exception as e:
-                    app.logger.error(f"Error revoking Google token: {str(e)}")
+                    current_app.logger.error(f"Error revoking Google token: {str(e)}")
 
-            # Clear JWT cookies and session
-            response = make_response(jsonify({"msg": "Logout successful"}), 200)
+            # ✅ Unset cookies & clear session
+            response = make_response(jsonify({"message": "Logged out successfully"}), 200)
             unset_jwt_cookies(response)
             session.clear()
 
             return response
+
         except Exception as e:
-            app.logger.error(f"Logout error: {str(e)}")
-            return jsonify({"error": "Logout failed"}), 500
+            current_app.logger.error(f"❌ Logout exception: {str(e)}")
+            return jsonify({"error": "Logout failed", "details": str(e)}), 500
 
 class GoogleLogin(Resource):
     def get(self):

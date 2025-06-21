@@ -98,7 +98,7 @@ class Logout(Resource):
             current_user_id = get_jwt_identity()
             user = User.query.get(current_user_id)
 
-            # If a Google token exists, revoke it
+            # Revoke Google token if present
             if user and user.google_token:
                 try:
                     revoke_url = f'https://oauth2.googleapis.com/revoke?token={user.google_token}'
@@ -110,15 +110,15 @@ class Logout(Resource):
                 except Exception as e:
                     app.logger.error(f"Error revoking Google token: {str(e)}")
 
-            response = make_response('', 204)
+            # Clear JWT cookies and session
+            response = make_response(jsonify({"msg": "Logout successful"}), 200)
             unset_jwt_cookies(response)
             session.clear()
 
             return response
-
         except Exception as e:
             app.logger.error(f"Logout error: {str(e)}")
-            return {"error": "Error during logout"}, 500
+            return jsonify({"error": "Logout failed"}), 500
 
 class GoogleLogin(Resource):
     def get(self):

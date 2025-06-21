@@ -2,7 +2,7 @@ from flask import request, redirect, url_for, session, jsonify, current_app
 from flask_restful import Resource
 from config import app, db, api, google, oauth
 from models import User, Journal, Entry
-from flask_jwt_extended import create_access_token, set_access_cookies, jwt_required, get_jwt_identity, unset_jwt_cookies, create_refresh_token, set_refresh_cookies
+from flask_jwt_extended import create_access_token, set_access_cookies, jwt_required, get_jwt_identity, unset_jwt_cookies, create_refresh_token, set_refresh_cookies, get_csrf_token
 from flask import make_response
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import func, and_, or_
@@ -306,14 +306,20 @@ class TokenRefresh(Resource):
             return {"error": "Failed to refresh token"}, 500
         
 
+
 class CsrfToken(Resource):
     def get(self):
-        # In production, you may want to create a 'dummy' identity or anonymous user
-        access_token = create_access_token(identity="anonymous")
-        response = jsonify({"msg": "CSRF cookie set"})
-        set_access_cookies(response, access_token)
-        return response
-        
+        try:
+            # dummy acc token
+            access_token = create_access_token(identity="anonymous")
+            
+            response = jsonify({"csrf": get_csrf_token()})  # or just set_access_cookies will set CSRF cookie automatically
+            set_access_cookies(response, access_token)  # This also sets the csrf_access_token cookie
+            
+            return response, 200
+        except Exception as e:
+            current_app.logger.error(f"Failed to generate CSRF token: {str(e)}")
+            return {"error": "Failed to get CSRF token"}, 500
 
 class UserProfile(Resource):
     @jwt_required()

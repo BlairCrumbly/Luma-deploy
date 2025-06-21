@@ -8,14 +8,22 @@ const getBaseURL = () => {
 
 const BASE = getBaseURL();
 
-// Helper function to get a cookie by name (for CSRF token)
-const getCookie = (name) => {
-  const cookies = document.cookie.split(';');
-  for (let cookie of cookies) {
-    const [key, value] = cookie.trim().split('=');
-    if (key === name) return decodeURIComponent(value);
+// In-memory CSRF token (won’t rely on cookies!)
+let csrfToken = null;
+
+// Fetch the CSRF token from the backend explicitly
+export const fetchCsrfToken = async () => {
+  try {
+    const res = await fetch(`${BASE}/api/csrf-token`, {
+      method: 'GET',
+      credentials: 'include',
+    });
+    const data = await res.json();
+    csrfToken = data.csrf;
+    console.log('✅ CSRF token fetched:', csrfToken);
+  } catch (err) {
+    console.error('❌ Failed to fetch CSRF token:', err);
   }
-  return null;
 };
 
 // Prepare headers for secure requests
@@ -25,21 +33,19 @@ const prepareHeaders = (method) => {
   };
 
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method.toUpperCase())) {
-    const csrfToken = getCookie('csrf_access_token');
-    console.log('CSRF Token attached:', csrfToken); // <-- Debug line
     if (csrfToken) {
       headers['X-CSRF-TOKEN'] = csrfToken;
+    } else {
+      console.warn('⚠️ No CSRF token attached!');
     }
   }
 
   return headers;
 };
 
-// Helper function to handle response errors
+// Handle responses
 const handleResponse = async (response) => {
-  if (response.status === 404) {
-    return null;
-  }
+  if (response.status === 404) return null;
 
   if (!response.ok) {
     let errorData;
@@ -48,25 +54,20 @@ const handleResponse = async (response) => {
     } catch {
       errorData = { error: `Request failed with status ${response.status}` };
     }
-    
-    // Handle specific error cases
+
     if (response.status === 401) {
-      // Token expired or invalid - redirect to login
       window.location.href = '/login';
       throw new Error(errorData.error || 'Authentication required');
     }
-    
+
     if (response.status === 403) {
       throw new Error(errorData.error || 'Access forbidden');
     }
-    
+
     throw new Error(errorData.error || `Request failed with status ${response.status}`);
   }
 
-  // Handle no content responses
-  if (response.status === 204) {
-    return null;
-  }
+  if (response.status === 204) return null;
 
   try {
     return await response.json();

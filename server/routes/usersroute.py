@@ -286,12 +286,23 @@ class GoogleAuthorize(Resource):
         return redirect(f"{frontend_url}/oauth-redirect?error={error_encoded}")
 
 class TokenRefresh(Resource):
+    @jwt_required(refresh=True)
     def post(self):
-        """Refresh CSRF token without requiring authentication"""
         try:
-            # This endpoint is used to refresh CSRF tokens
-            # The actual token refresh is handled by Flask-JWT-Extended automatically
-            return {"message": "CSRF token refreshed"}, 200
+            # Get the identity (user id) from the refresh token
+            current_user_id = get_jwt_identity()
+
+            # Create a new access token
+            new_access_token = create_access_token(identity=current_user_id)
+
+            # Create a JSON response
+            response = jsonify({"message": "Token refreshed successfully"})
+
+            # Set the access token cookie (this also sets the CSRF token cookie)
+            set_access_cookies(response, new_access_token)
+
+            return response, 200
+
         except Exception as e:
             app.logger.error(f"Token refresh error: {str(e)}")
             return {"error": "Failed to refresh token"}, 500

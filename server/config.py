@@ -45,11 +45,21 @@ app.config.update({
     "JWT_ACCESS_TOKEN_EXPIRES": timedelta(hours=24),
     "JWT_REFRESH_TOKEN_EXPIRES": timedelta(days=30),
 
-    "JWT_COOKIE_SECURE": True,            # HTTPS only
-    "JWT_COOKIE_SAMESITE": "None",        # Cross-site cookie support
-    "JWT_COOKIE_HTTPONLY": True,          # JS cannot access cookie
+    "JWT_COOKIE_SECURE": True,           # HTTPS only
+    "JWT_COOKIE_SAMESITE": "None",       # cross-site cookie
+
+    # Set access & refresh cookies HttpOnly (good security)
+    "JWT_ACCESS_COOKIE_HTTPONLY": True,
+    "JWT_REFRESH_COOKIE_HTTPONLY": True,
+
+    # But CSRF cookies must be readable by JS to send with requests (HttpOnly=False)
+    "JWT_ACCESS_CSRF_COOKIE_HTTPONLY": False,
+    "JWT_REFRESH_CSRF_COOKIE_HTTPONLY": False,
+
     "JWT_ACCESS_COOKIE_PATH": "/",
     "JWT_REFRESH_COOKIE_PATH": "/",
+
+    # CSRF protection enabled
     "JWT_COOKIE_CSRF_PROTECT": True,
     "JWT_CSRF_METHODS": ["POST", "PUT", "PATCH", "DELETE"],
     "JWT_CSRF_IN_COOKIES": True,

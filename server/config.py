@@ -25,9 +25,6 @@ naming_convention = {
 
 metadata = MetaData(naming_convention=naming_convention)
 
-# Detect environment
-IS_PRODUCTION = os.getenv("FLASK_ENV") == "production" or bool(os.getenv("RENDER"))
-
 # Flask app
 app = Flask(
     __name__,
@@ -41,30 +38,31 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY", "super-secret-key")
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URI")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# JWT config
+# JWT config — strictly production-safe
 app.config.update({
     "JWT_SECRET_KEY": os.getenv("JWT_SECRET_KEY"),
     "JWT_TOKEN_LOCATION": ["cookies"],
     "JWT_ACCESS_TOKEN_EXPIRES": timedelta(hours=24),
     "JWT_REFRESH_TOKEN_EXPIRES": timedelta(days=30),
-    "JWT_COOKIE_SECURE": IS_PRODUCTION,
-    "JWT_COOKIE_SAMESITE": "None" if IS_PRODUCTION else "Lax",
-    "JWT_COOKIE_HTTPONLY": False,
-    "JWT_ACCESS_COOKIE_PATH": "/",  # allow everywhere
-    "JWT_REFRESH_COOKIE_PATH": "/",  # allow everywhere
+
+    "JWT_COOKIE_SECURE": True,            # HTTPS only
+    "JWT_COOKIE_SAMESITE": "None",        # Cross-site cookie support
+    "JWT_COOKIE_HTTPONLY": True,          # JS cannot access cookie
+    "JWT_ACCESS_COOKIE_PATH": "/",
+    "JWT_REFRESH_COOKIE_PATH": "/",
     "JWT_COOKIE_CSRF_PROTECT": True,
     "JWT_CSRF_METHODS": ["POST", "PUT", "PATCH", "DELETE"],
     "JWT_CSRF_IN_COOKIES": True,
 })
 
-# Flask-Session config (used for Google OAuth, etc.)
+# Flask-Session config (for OAuth, etc.)
 app.config.update({
     "SESSION_TYPE": "filesystem",
     "SESSION_PERMANENT": True,
     "SESSION_USE_SIGNER": True,
-    "SESSION_COOKIE_SECURE": IS_PRODUCTION,
-    "SESSION_COOKIE_HTTPONLY": False,
-    "SESSION_COOKIE_SAMESITE": "None" if IS_PRODUCTION else "Lax",
+    "SESSION_COOKIE_SECURE": True,        # HTTPS only
+    "SESSION_COOKIE_HTTPONLY": True,      # JS cannot access
+    "SESSION_COOKIE_SAMESITE": "None",    # Cross-site
     "PERMANENT_SESSION_LIFETIME": timedelta(minutes=30),
 })
 
@@ -76,13 +74,11 @@ bcrypt = Bcrypt(app=app)
 jwt = JWTManager(app)
 api = Api(app)
 
-# CORS config: allows frontend access to backend with credentials
+# CORS config — only production frontend allowed
 CORS(
     app,
     supports_credentials=True,
     origins=[
-        "http://localhost:5173",  # Vite dev
-
         "https://luma-deploy-frontend.onrender.com",
         os.getenv("FRONTEND_URL", "https://luma-deploy-frontend.onrender.com"),
     ],
@@ -97,11 +93,11 @@ google = oauth.register(
     client_id=os.getenv("CLIENT_ID"),
     client_secret=os.getenv("CLIENT_SECRET"),
     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
-    redirect_uri=os.getenv("PROD_REDIRECT_URI") if IS_PRODUCTION else os.getenv("DEV_REDIRECT_URI"),
+    redirect_uri=os.getenv("PROD_REDIRECT_URI"),
     client_kwargs={"scope": "openid email profile"}
 )
 
-# Global error handlers (to avoid HTML in React app)
+# Global error handlers
 @app.errorhandler(500)
 def internal_error(e):
     return jsonify(error="Internal Server Error", message=str(e)), 500

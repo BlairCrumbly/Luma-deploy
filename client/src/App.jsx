@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react'; 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './components/contexts/AuthContext';
 import AuthPage from './pages/AuthPage';
@@ -17,6 +17,16 @@ import UserProfile from './components/UserProfile/UserProfile';
 import { Toaster } from 'react-hot-toast';
 
 function App() {
+  useEffect(() => {
+    // Fetch CSRF token on app load
+    fetch(`${import.meta.env.VITE_API_URL || 'https://luma-deploy-backend.onrender.com'}/api/csrf-token`, {
+      method: 'GET',
+      credentials: 'include',
+    }).catch((err) => {
+      console.error('Failed to fetch CSRF token:', err);
+    });
+  }, []);
+
   return (
     <Router>
       <AuthProvider>

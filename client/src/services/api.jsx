@@ -10,9 +10,9 @@ const BASE = getBaseURL();
 
 // Helper function to get a cookie by name (for CSRF token)
 const getCookie = (name) => {
-  const cookies = document.cookie.split(';');
+  const cookies = document.cookie ? document.cookie.split('; ') : [];
   for (let cookie of cookies) {
-    const [key, value] = cookie.trim().split('=');
+    const [key, value] = cookie.split('=');
     if (key === name) return decodeURIComponent(value);
   }
   return null;
@@ -24,9 +24,9 @@ const prepareHeaders = (method) => {
     'Content-Type': 'application/json',
   };
 
-  // Attach CSRF token header only for mutating methods
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method.toUpperCase())) {
     const csrfToken = getCookie('csrf_access_token');
+    console.log('CSRF Token attached:', csrfToken); // <-- Debug line
     if (csrfToken) {
       headers['X-CSRF-TOKEN'] = csrfToken;
     }

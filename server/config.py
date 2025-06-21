@@ -44,19 +44,28 @@ app.config.update({
     "JWT_ACCESS_TOKEN_EXPIRES": timedelta(hours=24),
     "JWT_REFRESH_TOKEN_EXPIRES": timedelta(days=30),
 
-    # Cookie security for production
-    "JWT_COOKIE_SECURE": True,                # HTTPS only
-    "JWT_COOKIE_SAMESITE": "None",            # Required for cross-origin cookies
+    # Cookie settings (for HTTPS & cross-origin)
+    "JWT_COOKIE_SECURE": True,                   # Send cookies only over HTTPS
+    "JWT_COOKIE_SAMESITE": "None",               # Required for cross-site cookies
     "JWT_ACCESS_COOKIE_HTTPONLY": True,
     "JWT_REFRESH_COOKIE_HTTPONLY": True,
 
-    # CSRF protection settings
+    # CSRF protection
     "JWT_COOKIE_CSRF_PROTECT": True,
     "JWT_CSRF_IN_COOKIES": True,
     "JWT_CSRF_METHODS": ["POST", "PUT", "PATCH", "DELETE"],
-    "JWT_ACCESS_CSRF_COOKIE_HTTPONLY": False,   # JS must read this to send in headers
-    "JWT_REFRESH_CSRF_COOKIE_HTTPONLY": False,  # Same here
+
+    # Allow JavaScript to read CSRF cookies
+    "JWT_ACCESS_CSRF_COOKIE_HTTPONLY": False,
+    "JWT_REFRESH_CSRF_COOKIE_HTTPONLY": False,
+
+    #Change CSRF cookie names for clarity
+    "JWT_ACCESS_CSRF_COOKIE_NAME": "csrf_access_token",
+    "JWT_REFRESH_CSRF_COOKIE_NAME": "csrf_refresh_token",
+
+    
 })
+
 
 # Flask-Session (used for OAuth)
 app.config.update({

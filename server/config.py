@@ -69,13 +69,12 @@ app.config.update({
 
 # Flask-Session (used for OAuth)
 app.config.update({
-    "SESSION_TYPE": "filesystem",
-    "SESSION_PERMANENT": True,
-    "SESSION_USE_SIGNER": True,
-    "SESSION_COOKIE_SECURE": True,
+    "SESSION_TYPE": "filesystem",          # short-term in-memory is fine
+    "SESSION_COOKIE_NAME": "oauth_session",# custom name to avoid conflicts
+    "SESSION_COOKIE_SAMESITE": "Lax",      # protects from cross-origin noise
     "SESSION_COOKIE_HTTPONLY": True,
-    "SESSION_COOKIE_SAMESITE": "None",
-    "PERMANENT_SESSION_LIFETIME": timedelta(minutes=30),
+    "SESSION_COOKIE_SECURE": True,
+    "PERMANENT_SESSION_LIFETIME": timedelta(minutes=5),  # short-lived
 })
 
 # Initialize extensions

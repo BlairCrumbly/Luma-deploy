@@ -17,7 +17,27 @@ import UserProfile from './components/UserProfile/UserProfile';
 import { Toaster } from 'react-hot-toast';
 
 function App() {
+// Protected Route component
+const ProtectedRoute = ({ children }) => {
+  const { currentUser, loading } = useAuth();
+  
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+  
+  return currentUser ? children : <Navigate to="/login" />;
+};
 
+// Public Route component (redirect if already logged in)
+const PublicRoute = ({ children }) => {
+  const { currentUser, loading } = useAuth();
+  
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+  
+  return currentUser ? <Navigate to="/" /> : children;
+};
 
   return (
     <Router>

@@ -17,46 +17,52 @@ import traceback
 
 class Signup(Resource):
     def post(self):
-        data = request.get_json()
-        if not data:
-            return {"error": "Invalid JSON"}, 400
-        username = data.get("username", "").strip()
-        email = data.get("email", "").strip().lower()
-        password = data.get("password", "")
-
-        if not username or not email or not password:
-            return {"error": "All fields are required"}, 400
-
-        existing_user_email = User.query.filter_by(email=email).first()
-        if existing_user_email:
-            return {"error": "Email is already in use"}, 400
-
-        existing_user_username = User.query.filter_by(username=username).first()
-        if existing_user_username:
-            return {"error": "Username is already in use"}, 400
-
         try:
-            new_user = User(username=username, email=email)
-            new_user.set_password(password)
+            data = request.get_json()
+            if not data:
+                return {"error": "Invalid JSON"}, 400
+                
+            username = data.get('username', '').strip()
+            email = data.get('email', '').strip().lower()
+            password = data.get('password')
+
+            if not all([username, email, password]):
+                return {"error": "All fields required"}, 400
+
+            if User.query.filter_by(username=username).first():
+                return {"error": "Username already exists"}, 400
+            
+            if User.query.filter_by(email=email).first():
+                return {"error": "Email already exists"}, 400
+            
+            new_user = User(
+                username=username,
+                email=email,
+                password=generate_password_hash(password)
+            )
+            
             db.session.add(new_user)
             db.session.commit()
 
             access_token = create_access_token(identity=str(new_user.id))
             refresh_token = create_refresh_token(identity=str(new_user.id))
-
-            response = jsonify(new_user.to_dict())
+            
+            response = jsonify({
+                "message": "Signup successful",
+                "user": new_user.to_dict()
+            })
+            
             set_access_cookies(response, access_token)
             set_refresh_cookies(response, refresh_token)
-            response.status_code = 201
             return response
-
+            
         except IntegrityError:
             db.session.rollback()
             return {"error": "Email is already in use"}, 400
-
         except Exception as e:
             db.session.rollback()
-            return {'error': f'Error creating user: {str(e)}'}, 500
+            current_app.logger.error(f"Signup error: {str(e)}")
+            return {"error": "Signup failed"}, 500
 
 class Login(Resource):
     def post(self):
@@ -69,27 +75,28 @@ class Login(Resource):
             password = data.get('password')
             
             if not username or not password:
-                return {"error": "Username and password are required"}, 400
+                return {"error": "Username and password required"}, 400
 
             user = User.query.filter_by(username=username).first()
-            if not user:
-                return {"error": "Invalid username or password"}, 401
-
-            if not user.check_password(password):
-                return {"error": "Invalid username or password"}, 401
+            
+            if not user or not user.check_password(password):
+                return {"error": "Invalid credentials"}, 401
 
             access_token = create_access_token(identity=str(user.id))
             refresh_token = create_refresh_token(identity=str(user.id))
-
-            response = jsonify(user.to_dict())
+            
+            response = jsonify({
+                "message": "Login successful",
+                "user": user.to_dict()
+            })
+            
             set_access_cookies(response, access_token)
             set_refresh_cookies(response, refresh_token)
-            response.status_code = 200
             return response
-
+            
         except Exception as e:
-            app.logger.error(f"Login error: {str(e)}")
-            return {'error': 'An error occurred during login'}, 500
+            current_app.logger.error(f"Login error: {str(e)}")
+            return {"error": "Login failed"}, 500
 
 class Logout(Resource):
     @jwt_required()
@@ -101,22 +108,18 @@ class Logout(Resource):
             if user and user.google_token:
                 try:
                     revoke_url = f'https://oauth2.googleapis.com/revoke?token={user.google_token}'
-                    revoke_res = requests.post(revoke_url, timeout=5)
-                    if revoke_res.status_code != 200:
-                        current_app.logger.warning(f"Failed to revoke Google token: {revoke_res.text}")
+                    requests.post(revoke_url, timeout=5)
                 except Exception as e:
                     current_app.logger.error(f"Error revoking Google token: {str(e)}")
 
-            # ✅ Unset cookies & clear session
-            response = make_response(jsonify({"message": "Logged out successfully"}), 200)
+            response = jsonify({"message": "Logout successful"})
             unset_jwt_cookies(response)
             session.clear()
-
             return response
-
+            
         except Exception as e:
-            current_app.logger.error(f"❌ Logout exception: {str(e)}")
-            return jsonify({"error": "Logout failed", "details": str(e)}), 500
+            current_app.logger.error(f"Logout error: {str(e)}")
+            return {"error": "Logout failed"}, 500
 
 class GoogleLogin(Resource):
     def get(self):
@@ -287,50 +290,59 @@ class TokenRefresh(Resource):
     @jwt_required(refresh=True)
     def post(self):
         try:
-            # Get the identity (user id) from the refresh token
             current_user_id = get_jwt_identity()
-
-            # Create a new access token
             new_access_token = create_access_token(identity=current_user_id)
-
-            # Create a JSON response
-            response = jsonify({"message": "Token refreshed successfully"})
-
-            # Set the access token cookie (this also sets the CSRF token cookie)
+            
+            response = jsonify({"message": "Token refreshed"})
             set_access_cookies(response, new_access_token)
-
-            return response, 200
-
+            return response
+            
         except Exception as e:
-            app.logger.error(f"Token refresh error: {str(e)}")
-            return {"error": "Failed to refresh token"}, 500
+            current_app.logger.error(f"Token refresh error: {str(e)}")
+            return {"error": "Token refresh failed"}, 500
         
 
 
 
 class CsrfToken(Resource):
     def get(self):
+        """Generate CSRF tokens for anonymous users"""
         try:
-            access_token = create_access_token(identity="anonymous")
-            response = jsonify({"msg": "CSRF cookie set"})
-            set_access_cookies(response, access_token)
-            return response, 200
+            # Create a temporary token for CSRF protection
+            temp_token = create_access_token(identity="anonymous", expires_delta=False)
+            
+            response = jsonify({
+                "message": "CSRF tokens generated",
+                "csrf_token": get_csrf_token(temp_token)
+            })
+            
+            # Set the token in cookies
+            set_access_cookies(response, temp_token)
+            return response
+            
         except Exception as e:
             current_app.logger.error(f"Failed to generate CSRF token: {str(e)}")
-            return {"error": "Failed to get CSRF token"}, 500
+            return {"error": "Failed to generate CSRF token"}, 500
 
 class UserProfile(Resource):
     @jwt_required()
     def get(self):
         try:
             current_user_id = get_jwt_identity()
+            
+            if current_user_id == "anonymous":
+                return {"error": "Authentication required"}, 401
+                
             user = User.query.get(current_user_id)
             if not user:
                 return {"error": "User not found"}, 404
+                
             return user.to_dict(), 200
+            
         except Exception as e:
-            app.logger.error(f"Profile fetch error: {str(e)}")
-            return {"error": "Failed to fetch profile"}, 500
+            current_app.logger.error(f"Profile error: {str(e)}")
+            return {"error": "Failed to get profile"}, 500
+
 
 class UserStats(Resource):
     @jwt_required()

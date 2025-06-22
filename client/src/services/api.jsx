@@ -22,8 +22,7 @@ const getCookie = (name) => {
 
 // Get CSRF token from cookies
 const getCSRFToken = () => {
-  // Try to get the access CSRF token first, then refresh
-  return getCookie("csrf_access_token") || getCookie("csrf_refresh_token");
+  return getCookie("csrf_token_client") || getCookie("csrf_access_token") || getCookie("csrf_refresh_token");
 };
 
 // Fetch the CSRF token from the backend explicitly
@@ -51,6 +50,7 @@ export const fetchCsrfToken = async () => {
 const prepareHeaders = (method) => {
   const headers = {
     'Content-Type': 'application/json',
+
   };
 
   // Add CSRF token for state-changing requests

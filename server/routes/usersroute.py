@@ -309,18 +309,32 @@ class CsrfToken(Resource):
     def get(self):
         """Generate CSRF tokens for anonymous users"""
         try:
-            # Create a temporary token for CSRF protection
+            # Create a temporary token with CSRF protection enabled
             temp_token = create_access_token(identity="anonymous", expires_delta=False)
-            
+
+            # Extract CSRF token from the temp token
+            csrf_token = get_csrf_token(temp_token)
+
             response = jsonify({
                 "message": "CSRF tokens generated",
-                "csrf_token": get_csrf_token(temp_token)
+                "csrf_token": csrf_token
             })
-            
-            # Set the token in cookies
+
+            # Set the access token cookie (includes HttpOnly csrf_access_token)
             set_access_cookies(response, temp_token)
+
+            # 👇 Set a readable CSRF cookie for the frontend to pick up
+            response.set_cookie(
+                "csrf_token_client",
+                csrf_token,
+                httponly=False,        # must be accessible to JS
+                secure=True,           # only over HTTPS
+                samesite="None",       # allow cross-site
+                path="/"
+            )
+
             return response
-            
+
         except Exception as e:
             current_app.logger.error(f"Failed to generate CSRF token: {str(e)}")
             return {"error": "Failed to generate CSRF token"}, 500

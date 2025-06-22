@@ -84,8 +84,8 @@ def handle_user_identity(identity):
 def handle_user_lookup_error(jwt_header, jwt_payload):
     return jsonify(error="User not found"), 404
 
-@jwt.invalid_csrf_token_loader
-def handle_invalid_csrf(csrf_error):
-    return jsonify(error="Invalid CSRF token"), 403
+@app.errorhandler(CSRFError)
+def handle_csrf_error(e):
+    return jsonify(error="Invalid CSRF token", message=str(e)), 403
 
   

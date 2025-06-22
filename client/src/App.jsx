@@ -17,15 +17,7 @@ import UserProfile from './components/UserProfile/UserProfile';
 import { Toaster } from 'react-hot-toast';
 
 function App() {
-  useEffect(() => {
-    // Fetch CSRF token on app load
-    fetch(`${import.meta.env.VITE_API_URL || 'https://luma-deploy-backend.onrender.com'}/api/csrf-token`, {
-      method: 'GET',
-      credentials: 'include',
-    }).catch((err) => {
-      console.error('Failed to fetch CSRF token:', err);
-    });
-  }, []);
+
 
   return (
     <Router>

@@ -1,5 +1,5 @@
 
-from config import app, api
+from config import app, api, jwt
 from models import *
 from routes import Signup, Login, Logout, UserProfile, GoogleLogin, GoogleAuthorize, TokenRefresh, DeleteUser, UserStats, CsrfToken
 # DeleteUser
@@ -8,6 +8,8 @@ from routes.entriesroute import EntryResource, AiPromptResource,CustomAiPromptRe
 from routes.moodsroute import MoodsResource
 import os
 from flask import jsonify
+from flask_jwt_extended import JWTManager
+from flask_jwt_extended.exceptions import CSRFError
 
 @app.route("/")
 def index():
@@ -54,6 +56,36 @@ def internal_error(e):
 def not_found_error(e):
     return jsonify({"error": "Not Found"}), 404
 
-  
+@jwt.unauthorized_loader
+def handle_missing_token(reason):
+    return jsonify(error="Missing access token", message=reason), 401
+
+@jwt.invalid_token_loader
+def handle_invalid_token(reason):
+    return jsonify(error="Invalid token", message=reason), 422
+
+@jwt.expired_token_loader
+def handle_expired_token(jwt_header, jwt_payload):
+    return jsonify(error="Token expired"), 401
+
+@jwt.revoked_token_loader
+def handle_revoked_token(jwt_header, jwt_payload):
+    return jsonify(error="Token has been revoked"), 401
+
+@jwt.needs_fresh_token_loader
+def handle_fresh_token_required(jwt_header, jwt_payload):
+    return jsonify(error="Fresh token required"), 401
+
+@jwt.user_identity_loader
+def handle_user_identity(identity):
+    return str(identity)
+
+@jwt.user_lookup_error_loader
+def handle_user_lookup_error(jwt_header, jwt_payload):
+    return jsonify(error="User not found"), 404
+
+@jwt.invalid_csrf_token_loader
+def handle_invalid_csrf(csrf_error):
+    return jsonify(error="Invalid CSRF token"), 403
 
   

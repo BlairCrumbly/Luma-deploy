@@ -109,6 +109,9 @@ google = oauth.register(
     client_kwargs={"scope": "openid email profile"}
 )
 
+jwt = JWTManager(app)
+
+
 # Error handlers
 @app.errorhandler(500)
 def internal_error(e):

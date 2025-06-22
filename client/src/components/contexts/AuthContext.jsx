@@ -119,7 +119,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     setLoading(true);
     try {
-      await api.delete("/api/logout");
+      await api.post("/api/logout");
       setUser(null);
       navigate("/login");
     } catch (error) {

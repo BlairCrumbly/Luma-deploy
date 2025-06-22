@@ -14,6 +14,7 @@ import urllib.parse
 import os
 import time
 import traceback
+from werkzeug.security import generate_password_hash, check_password_hash
 
 class Signup(Resource):
     def post(self):

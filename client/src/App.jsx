@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'; 
+import React, { useEffect, useState } from 'react'; 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './components/contexts/AuthContext';
 import AuthPage from './pages/AuthPage';
@@ -15,27 +15,20 @@ import EntryForm from './components/EntryForm/EntryForm';
 import EntryEditor from './components/EntryEditor/EntryEditor';
 import UserProfile from './components/UserProfile/UserProfile';
 import { Toaster } from 'react-hot-toast';
+import '../styles/Homepage.css';
+import LoadingIndicator from './components/LoadingIndicator';
 
 function App() {
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
   const { currentUser, loading } = useAuth();
-  
-  if (loading) {
-    return <LoadingSpinner />;
-  }
-  
+  if (loading) return <LoadingIndicator message="Checking authentication..." />;
   return currentUser ? children : <Navigate to="/login" />;
 };
 
-// Public Route component (redirect if already logged in)
 const PublicRoute = ({ children }) => {
   const { currentUser, loading } = useAuth();
-  
-  if (loading) {
-    return <LoadingSpinner />;
-  }
-  
+  if (loading) return <LoadingIndicator message="Loading..." />;
   return currentUser ? <Navigate to="/" /> : children;
 };
 

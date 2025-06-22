@@ -7,9 +7,21 @@ from routes.journalsroute import JournalsResource, JournalResource
 from routes.entriesroute import EntryResource, AiPromptResource,CustomAiPromptResource, JournalEntriesResource
 from routes.moodsroute import MoodsResource
 import os
-from flask import jsonify
+from flask import jsonify, request
 from flask_jwt_extended import JWTManager
 from flask_jwt_extended.exceptions import CSRFError
+
+@app.before_request
+def log_request_info():
+    print(f"📥 {request.method} {request.path}")
+    print(f"Cookies: {request.cookies}")
+    print(f"Headers: {dict(request.headers)}")
+    if request.method != "GET":
+        try:
+            print(f"Body: {request.get_json()}")
+        except Exception as e:
+            print(f"Failed to parse JSON: {e}")
+
 
 @app.route("/")
 def index():

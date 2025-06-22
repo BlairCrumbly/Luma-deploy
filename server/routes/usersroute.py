@@ -101,26 +101,32 @@ class Login(Resource):
 
 class Logout(Resource):
     @jwt_required()
-    def delete(self):
+    def post(self):  # Using POST is more standard for logout than DELETE
         try:
             current_user_id = get_jwt_identity()
+            print(f"Logging out user ID: {current_user_id}")
+
             user = User.query.get(current_user_id)
 
+            # If this user logged in with Google, revoke their token
             if user and user.google_token:
                 try:
-                    revoke_url = f'https://oauth2.googleapis.com/revoke?token={user.google_token}'
+                    revoke_url = f"https://oauth2.googleapis.com/revoke?token={user.google_token}"
                     requests.post(revoke_url, timeout=5)
+                    print("Google token revoked successfully.")
                 except Exception as e:
-                    current_app.logger.error(f"Error revoking Google token: {str(e)}")
+                    current_app.logger.warning(f"Google token revocation failed: {str(e)}")
 
+            # Clear JWT cookies and Flask session
             response = jsonify({"message": "Logout successful"})
             unset_jwt_cookies(response)
             session.clear()
-            return response
-            
+            print("JWT cookies and session cleared.")
+            return response, 200
+
         except Exception as e:
             current_app.logger.error(f"Logout error: {str(e)}")
-            return {"error": "Logout failed"}, 500
+            return jsonify({"error": "Logout failed"}), 500
 
 class GoogleLogin(Resource):
     def get(self):

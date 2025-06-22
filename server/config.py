@@ -32,6 +32,8 @@ app = Flask(
     template_folder='../client/dist'
 )
 
+app.config['PROPAGATE_EXCEPTIONS'] = True
+
 # Core configuration
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "super-secret-key")
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URI")

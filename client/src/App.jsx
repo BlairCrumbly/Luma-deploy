@@ -15,7 +15,7 @@ import EntryForm from './components/EntryForm/EntryForm';
 import EntryEditor from './components/EntryEditor/EntryEditor';
 import UserProfile from './components/UserProfile/UserProfile';
 import { Toaster } from 'react-hot-toast';
-import '../styles/Homepage.css';
+
 import LoadingIndicator from './components/LoadingIndicator';
 
 function App() {

@@ -307,15 +307,13 @@ class TokenRefresh(Resource):
         
 
 
+
 class CsrfToken(Resource):
     def get(self):
         try:
-            # dummy acc token
             access_token = create_access_token(identity="anonymous")
-            
-            response = jsonify({"csrf": get_csrf_token()})  # or just set_access_cookies will set CSRF cookie automatically
-            set_access_cookies(response, access_token)  # This also sets the csrf_access_token cookie
-            
+            response = jsonify({"msg": "CSRF cookie set"})
+            set_access_cookies(response, access_token)
             return response, 200
         except Exception as e:
             current_app.logger.error(f"Failed to generate CSRF token: {str(e)}")

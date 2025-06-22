@@ -16,7 +16,7 @@ import EntryEditor from './components/EntryEditor/EntryEditor';
 import UserProfile from './components/UserProfile/UserProfile';
 import { Toaster } from 'react-hot-toast';
 
-import LoadingIndicator from './components/LoadingIndicator';
+import LoadingIndicator from './components/LoadingIndicator/LoadingIndicator';
 
 function App() {
 // Protected Route component

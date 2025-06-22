@@ -20,47 +20,23 @@ const getCookie = (name) => {
   return null;
 };
 
-// Get CSRF token from cookies
-const getCSRFToken = () => {
-  return getCookie("csrf_token_client") || getCookie("csrf_access_token") || getCookie("csrf_refresh_token");
-};
+// Get CSRF token only from existing cookies (never fetch after login)
+const getCSRFToken = () => getCookie("csrf_access_token");
 
-// Fetch the CSRF token from the backend explicitly
-export const fetchCsrfToken = async () => {
-  try {
-    const res = await fetch(`${BASE}/api/csrf-token`, {
-      method: 'GET',
-      credentials: 'include',
-    });
-    
-    if (!res.ok) {
-      throw new Error(`Failed to fetch CSRF token: ${res.status}`);
-    }
-    
-    const data = await res.json();
-    console.log('✅ CSRF token fetched successfully');
-    return data;
-  } catch (err) {
-    console.error('❌ Failed to fetch CSRF token:', err);
-    throw err;
-  }
-};
 
 // Prepare headers for secure requests
 const prepareHeaders = (method) => {
   const headers = {
     'Content-Type': 'application/json',
-
   };
 
-  // Add CSRF token for state-changing requests
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method.toUpperCase())) {
     const csrfToken = getCSRFToken();
     if (csrfToken) {
       headers['X-CSRF-TOKEN'] = csrfToken;
-      console.log('✅ CSRF token attached to request');
+      console.log('✅ CSRF token attached to request:', csrfToken);
     } else {
-      console.warn('⚠️ No CSRF token found in cookies!');
+      console.warn('⚠️ No CSRF token found. User may not be logged in.');
     }
   }
 
@@ -119,30 +95,13 @@ const handleResponse = async (response) => {
   }
 };
 
-// Retry logic for CSRF token issues
-const makeRequestWithRetry = async (url, options, retryCount = 0) => {
+// Clean retry logic (no CSRF retries after login)
+const makeRequestWithRetry = async (url, options) => {
   try {
     const response = await fetch(url, options);
     return await handleResponse(response);
   } catch (error) {
-    // If it's a CSRF error and we haven't retried yet, try to refresh the token
-    if (retryCount === 0 && (
-      error.message.includes('CSRF') || 
-      error.message.includes('403') ||
-      error.message.includes('Access forbidden')
-    )) {
-      console.log('🔄 CSRF error detected, fetching new token...');
-      try {
-        await fetchCsrfToken();
-        // Update headers with new CSRF token
-        const newHeaders = prepareHeaders(options.method);
-        const newOptions = { ...options, headers: newHeaders };
-        return await makeRequestWithRetry(url, newOptions, retryCount + 1);
-      } catch (csrfError) {
-        console.error('❌ Failed to refresh CSRF token:', csrfError);
-        throw error; // Throw original error
-      }
-    }
+
     throw error;
   }
 };
@@ -239,8 +198,17 @@ export const api = {
 
 // Initialize CSRF token on app start
 export const initializeCSRF = async () => {
+  // Optional: only fetch if user is not authenticated
+  const isLoggedIn = !!getCookie('access_token_cookie');
+  if (isLoggedIn) {
+    console.log('ℹ️ Already logged in, skipping CSRF init');
+    return;
+  }
+
   try {
-    await fetchCsrfToken();
+    await fetch(`${BASE}/api/csrf-token`, {
+      credentials: 'include'
+    });
     console.log('✅ CSRF token initialized');
   } catch (error) {
     console.error('❌ Failed to initialize CSRF token:', error);

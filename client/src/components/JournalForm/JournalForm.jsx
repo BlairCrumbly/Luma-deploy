@@ -2,6 +2,7 @@ import React from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { api } from '../../services/api';
+import { getCookie } from '../../services/api';
 import ColorPicker from './colorpicker';
 import './JournalForm.css';
 import toast from 'react-hot-toast';

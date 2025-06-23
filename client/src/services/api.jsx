@@ -2,7 +2,7 @@
 
 // Determine the base URL based on environment
 const getBaseURL = () => {
-  if (import.meta.env.PROD) {
+  if (import.meta.envROD) {
     return import.meta.env.VITE_API_URL || '';
   }
   return '';
@@ -11,7 +11,7 @@ const getBaseURL = () => {
 const BASE = getBaseURL();
 
 // Get cookie value by name
-const getCookie = (name) => {
+export const getCookie = (name) => {
   const cookies = document.cookie.split(";");
   for (let cookie of cookies) {
     const [key, value] = cookie.trim().split("=");

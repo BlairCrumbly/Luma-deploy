@@ -33,6 +33,7 @@ app = Flask(
 )
 
 app.config['PROPAGATE_EXCEPTIONS'] = True
+IS_PRODUCTION = os.getenv("FLASK_ENV") == "production" or os.getenv("NODE_ENV") == "production"
 
 # Core configuration
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "super-secret-key")
@@ -46,9 +47,9 @@ app.config.update({
     "JWT_ACCESS_TOKEN_EXPIRES": timedelta(hours=24),
     "JWT_REFRESH_TOKEN_EXPIRES": timedelta(days=30),
 
-    # Cookie settings (for HTTPS & cross-origin)
-    "JWT_COOKIE_SECURE": True,                   # Send cookies only over HTTPS
-    "JWT_COOKIE_SAMESITE": "None",               # Required for cross-site cookies
+    # Cookie settings - adjust based on environment
+    "JWT_COOKIE_SECURE": IS_PRODUCTION,  # Only require HTTPS in production
+    "JWT_COOKIE_SAMESITE": "None" if IS_PRODUCTION else "Lax",
     "JWT_ACCESS_COOKIE_HTTPONLY": True,
     "JWT_REFRESH_COOKIE_HTTPONLY": True,
 
@@ -61,22 +62,20 @@ app.config.update({
     "JWT_ACCESS_CSRF_COOKIE_HTTPONLY": False,
     "JWT_REFRESH_CSRF_COOKIE_HTTPONLY": False,
 
-    #Change CSRF cookie names for clarity
+    # CSRF cookie names
     "JWT_ACCESS_CSRF_COOKIE_NAME": "csrf_access_token",
     "JWT_REFRESH_CSRF_COOKIE_NAME": "csrf_refresh_token",
-
-    
 })
 
 
 # Flask-Session (used for OAuth)
 app.config.update({
-    "SESSION_TYPE": "filesystem",          # short-term in-memory is fine
-    "SESSION_COOKIE_NAME": "oauth_session",# custom name to avoid conflicts
-    "SESSION_COOKIE_SAMESITE": "Lax",      # protects from cross-origin noise
+    "SESSION_TYPE": "filesystem",
+    "SESSION_COOKIE_NAME": "oauth_session",
+    "SESSION_COOKIE_SAMESITE": "None" if IS_PRODUCTION else "Lax",
     "SESSION_COOKIE_HTTPONLY": True,
-    "SESSION_COOKIE_SECURE": True,
-    "PERMANENT_SESSION_LIFETIME": timedelta(minutes=5),  # short-lived
+    "SESSION_COOKIE_SECURE": IS_PRODUCTION,
+    "PERMANENT_SESSION_LIFETIME": timedelta(minutes=5),
 })
 
 # Initialize extensions
@@ -87,14 +86,24 @@ bcrypt = Bcrypt(app=app)
 jwt = JWTManager(app)
 api = Api(app)
 
-# CORS config
+# Update CORS configuration for production
+frontend_urls = [
+    "https://luma-deploy-frontend.onrender.com",
+    os.getenv("FRONTEND_URL", "https://luma-deploy-frontend.onrender.com"),
+]
+
+# Add localhost for development
+if not IS_PRODUCTION:
+    frontend_urls.extend([
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:5173",
+    ])
+
 CORS(
     app,
     supports_credentials=True,
-    origins=[
-        "https://luma-deploy-frontend.onrender.com",
-        os.getenv("FRONTEND_URL", "https://luma-deploy-frontend.onrender.com"),
-    ],
+    origins=frontend_urls,
     allow_headers=["Content-Type", "Authorization", "X-CSRF-TOKEN"],
     methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
 )

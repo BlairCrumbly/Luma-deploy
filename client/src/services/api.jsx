@@ -1,8 +1,8 @@
-// client/src/utils/api.js
+// client/src/services/api.js
 
 // Determine the base URL based on environment
 const getBaseURL = () => {
-  if (import.meta.envROD) {
+  if (import.meta.env.PROD) {
     return import.meta.env.VITE_API_URL || '';
   }
   return '';
@@ -20,9 +20,11 @@ export const getCookie = (name) => {
   return null;
 };
 
-// Get CSRF token only from existing cookies (never fetch after login)
-const getCSRFToken = () => getCookie("csrf_access_token");
-
+// Get CSRF token from cookies
+const getCSRFToken = () => {
+  // Try different possible CSRF cookie names
+  return getCookie("csrf_access_token") || getCookie("csrf_token_client");
+};
 
 // Prepare headers for secure requests
 const prepareHeaders = (method) => {
@@ -36,7 +38,7 @@ const prepareHeaders = (method) => {
       headers['X-CSRF-TOKEN'] = csrfToken;
       console.log('✅ CSRF token attached to request:', csrfToken);
     } else {
-      console.warn('⚠️ No CSRF token found. User may not be logged in.');
+      console.warn('⚠️ No CSRF token found. This may cause 403 errors.');
     }
   }
 
@@ -66,13 +68,14 @@ const handleResponse = async (response) => {
 
     // Handle authentication errors
     if (response.status === 401) {
-      console.warn('🔒 Authentication required - redirecting to login');
-      // Don't redirect immediately, let the calling code handle it
+      console.warn('🔒 Authentication required');
       throw new Error(errorData.error || 'Authentication required');
     }
 
+    // Handle CSRF errors
     if (response.status === 403) {
-      throw new Error(errorData.error || 'Access forbidden - CSRF token may be invalid');
+      console.error('🚫 CSRF token error - may need to refresh');
+      throw new Error(errorData.error || 'CSRF token invalid or missing');
     }
 
     throw new Error(errorData.error || `Request failed with status ${response.status}`);
@@ -95,13 +98,27 @@ const handleResponse = async (response) => {
   }
 };
 
-// Clean retry logic (no CSRF retries after login)
+// Make request with retry logic for CSRF errors
 const makeRequestWithRetry = async (url, options) => {
   try {
     const response = await fetch(url, options);
     return await handleResponse(response);
   } catch (error) {
-
+    // If CSRF error and this is not already a CSRF token request, try to refresh CSRF token
+    if (error.message.includes('CSRF') && !url.includes('/csrf-token')) {
+      console.log('🔄 Attempting to refresh CSRF token...');
+      try {
+        await initializeCSRF();
+        // Retry the original request with new CSRF token
+        const newHeaders = prepareHeaders(options.method);
+        const retryOptions = { ...options, headers: newHeaders };
+        const retryResponse = await fetch(url, retryOptions);
+        return await handleResponse(retryResponse);
+      } catch (retryError) {
+        console.error('❌ CSRF refresh failed:', retryError);
+        throw error; // Throw original error
+      }
+    }
     throw error;
   }
 };
@@ -198,18 +215,17 @@ export const api = {
 
 // Initialize CSRF token on app start
 export const initializeCSRF = async () => {
-  // Optional: only fetch if user is not authenticated
-  const isLoggedIn = !!getCookie('access_token_cookie');
-  if (isLoggedIn) {
-    console.log('ℹ️ Already logged in, skipping CSRF init');
-    return;
-  }
-
   try {
-    await fetch(`${BASE}/api/csrf-token`, {
-      credentials: 'include'
+    const response = await fetch(`${BASE}/api/csrf-token`, {
+      credentials: 'include',
+      method: 'GET'
     });
-    console.log('✅ CSRF token initialized');
+    
+    if (response.ok) {
+      console.log('✅ CSRF token initialized');
+    } else {
+      console.error('❌ Failed to initialize CSRF token:', response.status);
+    }
   } catch (error) {
     console.error('❌ Failed to initialize CSRF token:', error);
   }

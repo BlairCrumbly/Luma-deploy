@@ -1,4 +1,4 @@
-// client/src/contexts/AuthContext.jsx
+// client/src/components/contexts/AuthContext.jsx
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, initializeCSRF } from "../../services/api";
@@ -16,25 +16,32 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        // First, initialize CSRF token
-        await initializeCSRF();
-        
-        // Then try to get user profile
-        const userData = await api.get("/api/user/profile");
-        
-        if (userData && userData.id) {
-          setUser(userData);
-        } else {
-          setUser(null);
+        // First, try to get user profile (this will work if user is already logged in)
+        try {
+          const userData = await api.get("/api/user/profile");
+          if (userData && userData.id) {
+            setUser(userData);
+            setLoading(false);
+            return; // User is already authenticated, no need to initialize CSRF
+          }
+        } catch (error) {
+          // If profile fetch fails, user is not authenticated
+          console.log("User not authenticated, initializing CSRF...");
         }
+
+        // Initialize CSRF token for unauthenticated users
+        await initializeCSRF();
+        setUser(null);
+        
       } catch (error) {
         console.error("Error initializing auth:", error);
         setUser(null);
         
-        // If it's an auth error, don't redirect immediately
-        // Let the user try to log in first
-        if (!error.message.includes('Authentication required')) {
-          console.error("Unexpected auth initialization error:", error);
+        // Try to initialize CSRF even if there's an error
+        try {
+          await initializeCSRF();
+        } catch (csrfError) {
+          console.error("Failed to initialize CSRF:", csrfError);
         }
       } finally {
         setLoading(false);
@@ -67,9 +74,7 @@ export const AuthProvider = ({ children }) => {
     return () => clearInterval(refreshInterval);
   }, [user, loading]);
 
-  // --------------------
-  // Login
-  // --------------------
+  // Login function
   const login = async (username, password) => {
     setLoading(true);
     try {
@@ -84,15 +89,32 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       setUser(null);
+      
+      // If login fails due to CSRF, try to reinitialize and retry once
+      if (error.message.includes('CSRF')) {
+        try {
+          console.log("🔄 Reinitializing CSRF and retrying login...");
+          await initializeCSRF();
+          const userData = await api.post("/api/login", { username, password });
+          
+          if (userData && userData.user) {
+            setUser(userData.user);
+            navigate("/");
+            return userData;
+          }
+        } catch (retryError) {
+          console.error("Login retry failed:", retryError);
+          throw retryError;
+        }
+      }
+      
       throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  // --------------------
-  // Signup
-  // --------------------
+  // Signup function
   const signup = async (username, email, password) => {
     setLoading(true);
     try {
@@ -107,25 +129,53 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       setUser(null);
+      
+      // If signup fails due to CSRF, try to reinitialize and retry once
+      if (error.message.includes('CSRF')) {
+        try {
+          console.log("🔄 Reinitializing CSRF and retrying signup...");
+          await initializeCSRF();
+          const userData = await api.post("/api/signup", { username, email, password });
+          
+          if (userData && userData.user) {
+            setUser(userData.user);
+            navigate("/");
+            return userData;
+          }
+        } catch (retryError) {
+          console.error("Signup retry failed:", retryError);
+          throw retryError;
+        }
+      }
+      
       throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  // --------------------
-  // Logout
-  // --------------------
+  // Logout function
   const logout = async () => {
     setLoading(true);
     try {
       await api.post("/api/logout");
       setUser(null);
+      
+      // Reinitialize CSRF token for next login
+      await initializeCSRF();
+      
       navigate("/login");
     } catch (error) {
       console.error("Logout error:", error);
-      // Even if logout fails on server, clear local state
       setUser(null);
+      
+      // Reinitialize CSRF token even if logout fails
+      try {
+        await initializeCSRF();
+      } catch (csrfError) {
+        console.error("Failed to reinitialize CSRF after logout:", csrfError);
+      }
+      
       navigate("/login");
     } finally {
       setLoading(false);
@@ -138,6 +188,7 @@ export const AuthProvider = ({ children }) => {
     login,
     signup,
     logout,
+    setUser, // Expose setUser for OAuth handling
   };
 
   return (
